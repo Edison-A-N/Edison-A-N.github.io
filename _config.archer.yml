@@ -10,7 +10,7 @@ social:
   email: zhangn661@gmail.com
   github: //github.com/Edison-A-N
   # wechat should be a path of qr-code image path
-  # wechat: /assets/example_qr.png
+  wechat: wechat.jpeg
   # qq should be a path of qr-code image path
   qq: 
   telegram: 
