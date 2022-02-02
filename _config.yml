@@ -106,6 +106,8 @@ deploy:
   type: git
   repository: git@github.com:Edison-A-N/Edison-A-N.github.io.git
   branch: gh-pages
+  name: Edison
+  email: Edison.A.N@hotmail.com
 
 social:
   rss: /atom.xml
