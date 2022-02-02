@@ -2,7 +2,7 @@
 layout: post
 title: 敏捷开发辅助新项目验证与落地
 author: Edison
-date: 2020/11/08
+date: 2020-11-08
 ---
 
 ### 精益创业中的反馈循环
