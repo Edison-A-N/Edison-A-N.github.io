@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Edison</title>
+  
+  
+  <link href="https://zhangn661.com/atom.xml" rel="self"/>
+  
+  <link href="https://zhangn661.com/"/>
+  <updated>2022-02-13T14:07:49.280Z</updated>
+  <id>https://zhangn661.com/</id>
+  
+  <author>
+    <name>Edison</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>Git commit 规范</title>
+    <link href="https://zhangn661.com/2022/02/13/commit-format-and-auto-changelog/"/>
+    <id>https://zhangn661.com/2022/02/13/commit-format-and-auto-changelog/</id>
+    <published>2022-02-13T14:04:17.000Z</published>
+    <updated>2022-02-13T14:07:49.280Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="commit-message-format"><a href="#commit-message-format" class="headerlink" title="commit message format"></a>commit message format</h3><h4 id="提交格式"><a href="#提交格式" class="headerlink" title="提交格式"></a>提交格式</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;type&gt;(&lt;scope&gt;): &lt;subject&gt;</span><br><span class="line">&lt;BLANK LINE&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">&lt;BLANK LINE&gt;</span><br><span class="line">&lt;footer&gt;</span><br></pre></td></tr></table></figure><h5 id="type"><a href="#type" class="headerlink" title="type"></a>type</h5><ul><li><code>build</code>：对构建系统或者外部依赖项进行了修改</li><li><code>ci</code>：对CI配置文件或脚本进行了修改</li><li><code>feature</code>：增加新的特征，一般指的是大的变更</li><li><code>func</code>： 增加新的功能，一般指小的功能</li><li><code>fix</code>：修复bug</li><li><code>impr</code>: improvement，小的代码设计改进</li><li><code>conf</code>: 仅配置变化，Spring配置、properties文件</li><li><code>perf</code>：提高性能的代码更改</li><li><code>refactor</code>：既不是修复bug也不是添加特征的代码重构</li><li><code>docs</code>：对文档进行了修改</li><li><code>style</code>：不影响代码含义的修改，比如空格、格式化、缺失的分号等</li><li><code>typo</code>: 修复小的拼写错误</li><li><code>test</code>：增加确实的测试或者矫正已存在的测试</li><li><code>revert</code>: 回滚提交</li></ul><h5 id="scope"><a href="#scope" class="headerlink" title="scope"></a>scope</h5><p>选填，一般填写作用于哪个文件</p><h5 id="subject"><a href="#subject" class="headerlink" title="subject"></a>subject</h5><p>必填，变更的摘要</p><ul><li>使用动宾语句，仅讲变更的内容</li><li>现在时态：<code>change</code>不是<code>changing</code>也不是<code>changed</code></li><li>不要大写首字母</li><li>不在末尾添加句号</li></ul><h5 id="body"><a href="#body" class="headerlink" title="body"></a>body</h5><p>和主题设置类似，使用命令式、现在时态</p><p>应该包含修改的动机以及和之前行为的对比.</p><ul><li>回滚操作，需要添加本句：<code>This reverts commit hash: **********</code></li></ul><h5 id="footer"><a href="#footer" class="headerlink" title="footer"></a>footer</h5><ul><li><code>BREAKING CHANGE</code>: 不兼容的更新说明，比如public API的修改等</li><li><code>Closes</code>: 指针对哪个issue的修改，可以关联某个story或者bug</li></ul><h3 id="一些想法"><a href="#一些想法" class="headerlink" title="一些想法"></a>一些想法</h3><h4 id="为什么需要规范"><a href="#为什么需要规范" class="headerlink" title="为什么需要规范"></a>为什么需要规范</h4><p>git提交规范，有利于代码变动的稳定性监控。更大的价值是，后续跟进维护的同学可以通过commit查找变更的细节，以及了解某段代码引入的目的。</p><h4 id="中文or英文"><a href="#中文or英文" class="headerlink" title="中文or英文"></a>中文or英文</h4><p>在内部工程中，如果团队大多数都是中国人，建议还是使用中文描述。不准确的英文描述会影响后续对commit的阅读，也就无所谓理解了。当然，最好还是使用英文。</p><h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://www.ruanyifeng.com/blog/2016/01/commit_message_change_log.html">Commit message 和 Change log 编写指南 - 阮一峰</a><br><a href="https://zj-git-guide.readthedocs.io/zh_CN/latest/message/Angular%E6%8F%90%E4%BA%A4%E4%BF%A1%E6%81%AF%E8%A7%84%E8%8C%83/">Angular提交信息规范</a><br><a href="https://cloud.tencent.com/developer/article/1762300">美团 GIT Commit Log规范</a></p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h3 id=&quot;commit-message-format&quot;&gt;&lt;a href=&quot;#commit-message-format&quot; class=&quot;headerlink&quot; title=&quot;commit message format&quot;&gt;&lt;/a&gt;commit message format&lt;/</summary>
+      
+    
+    
+    
+    
+    <category term="thinking" scheme="https://zhangn661.com/tags/thinking/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>思考与交流</title>
+    <link href="https://zhangn661.com/2022/02/03/tight-lipped/"/>
+    <id>https://zhangn661.com/2022/02/03/tight-lipped/</id>
+    <published>2022-02-02T16:44:49.000Z</published>
+    <updated>2022-02-02T16:48:39.101Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="题记"><a href="#题记" class="headerlink" title="题记"></a>题记</h3><p>想写这篇文章，是因为在某平台看某用户的一篇文章，想了解一下作者的背景，进而看到其在一些回答中与评论者争吵的情况。其实技术水平高低本身是受很多情况影响的，评价一个人也不是一维的。事实上，没有任何标准可以真正的评价一个人。技术讨论和技术辩论是受欢迎的，因为大家技术水平不在一个等级而无法正常的讨论进而主动拒绝讨论本身也是可以接受的。黑一门技术，则显得狭隘了。</p><p>为了调解自己的思想，再一次阅读了《黑客与画家》“守口如瓶”这一章，并分享一些感悟。</p><h3 id="自由的思考"><a href="#自由的思考" class="headerlink" title="自由的思考"></a>自由的思考</h3><p>自由的思考，强调的是，不要轻易的被各种论断影响。我们需要去思考一个论点的论证逻辑，了解其论据是否足够充分。信息时代，我们每天都会从各种渠道接受到各种各样的信息。当我们可以自由的思考的时候，我们可以让思考变得更加理性客观。所以我们要减少跟别人辩个明白的行为。辩论，是为了信息和思考进行交换，是为了让我们有更多的角度来思考，是为了更自由的思考。</p><p>思考一个话题的时候，该话题本身是没有正确与否的区别的，只有是否合逻辑，合情理。当然这些逻辑和情理也是预置的。所以我们需要交流，来持续拓展我们预先存储的对逻辑和情理的认识，让我们的思考更加自由和理性。</p><h3 id="选择可以交流的人"><a href="#选择可以交流的人" class="headerlink" title="选择可以交流的人"></a>选择可以交流的人</h3><p>很多时候，我们会遇到非要辩个明白的人。这其实已经算是一件幸事。至少他只是要强调他的观点是正确的，不一定会攻击我们。有时候，我们还会遇到，直接对自己进行攻击的人。</p><p>因为，我们跟别人讨论甚至辩论，是为了启发思考，是为了避免自己呆在一个井底。所以，我们要找可以交流的人。可以交流的人，是那些可以只对观点发表看法，并同时尊重你的观点，最重要的是不会因为观点不一致而气急败坏的人。</p><p>这样的人很多也很少。我们可以多跟不同的人交流，去试探他们是不是这样的人。如果一个人始终处于“不能交流”的状态，那么就要远离他。因为，一旦我们跟他辩论，我们的思考就很容易陷入偏颇，此时只想着辩赢，而不是自由的思考。</p><p>无论如何，我们一定要积极去结识，更多的结识可以交流的朋友，因为“观点不讨论，就什么观点也没有了。”</p><p>还有一种方法是看书，看书，就是与作者交流的过程。</p><h3 id="接受不一样的观点"><a href="#接受不一样的观点" class="headerlink" title="接受不一样的观点"></a>接受不一样的观点</h3><p>与可以交流的人交流，我们就可以兴平气和的讨论一个与自己原先理解不一样的观点。有时候，我们可能在讨论之后，仍然不认可该观点。但是，因为我们的交流，是为了自由的思考，所以，一个不一样的观点是可以被接受的。在未来与更多的人交流，自己思考的更多的时候，或许，会有更充分的论据和更严谨的论证，来说服自己不认可该观点，当然也可能让自己认可了该观点。</p><p>地心说，在提出的年代可能都不被认可，但是我们可以先存着，在后来的认知不断提高的过程，逐渐认可这个观点。如果我们只是去跟哥白尼“争论”，如果我们不能接受不一样的观点，那我们的思考也将不自由。</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h3 id=&quot;题记&quot;&gt;&lt;a href=&quot;#题记&quot; class=&quot;headerlink&quot; title=&quot;题记&quot;&gt;&lt;/a&gt;题记&lt;/h3&gt;&lt;p&gt;想写这篇文章，是因为在某平台看某用户的一篇文章，想了解一下作者的背景，进而看到其在一些回答中与评论者争吵的情况。其实技术水平高低本身是受很多</summary>
+      
+    
+    
+    
+    
+    <category term="thinking" scheme="https://zhangn661.com/tags/thinking/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>知识掌握的广度与深度</title>
+    <link href="https://zhangn661.com/2022/01/30/knowledge-breath-and-depth/"/>
+    <id>https://zhangn661.com/2022/01/30/knowledge-breath-and-depth/</id>
+    <published>2022-01-29T16:00:00.000Z</published>
+    <updated>2022-01-30T16:55:23.397Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="什么是广度与深度"><a href="#什么是广度与深度" class="headerlink" title="什么是广度与深度"></a>什么是广度与深度</h3><p>想要想做一名架构师的同学，大都会听到一句话：“一名架构师要有技术的广度与深度”。很多同学在跟hr交流的时候，或者跟领导、行业大佬交流的时候，也经常会听到这样的建议：“要做一名T&#x2F;π型人才”。</p><p>那么，广度要怎么理解，深度又要怎么理解呢。我们掌握了一些知识或者信息，需要达到一个什么程度，算是覆盖了广度，或是达到了深度。</p><p>我个人的感受是，当我们对知识、信息达到了，</p><ul><li><strong>能够理解其中的原理与逻辑，同时能够自己进行复述</strong>，则算是达到了广度的覆盖</li><li><strong>能够机遇已有的信息，思考其深层次的逻辑，举一反三的实践或思考总结，并能达到一定效果</strong>，则算是深度的掌握。</li></ul><p>我们每天会浏览五花八门的信息，会folloe各种博客阅读新的思想。多数时候，我们以为我们已经了解其中的相关内容，其实我们仅限于“知道“。我们没有能够梳理其中的逻辑，也更无可能无法复述其中的逻辑。<strong>但是没有关系，因为我们的时间有限，不可能对大多数信息都能完整了解。</strong> 对于我们需要去了解的领域，则需要做到”广度式“的了解。比如很多人打王者荣耀，有的人只是消磨时间，有的人则会去了解每个英雄的连招、出装、阵容搭配等等。前者算不得广度，即不能在相亲介绍中的兴趣爱好栏写打王者荣耀，顶多只能写无聊时打打王者。做到深度掌握打王者打同学，则要摸清楚某个英雄的各种细节，在各种场景中如何操作。</p><p>当然，具体要掌握到什么程度，取决于自己。比如我，就只是无聊时打打王者。</p><h3 id="如何达到广度与深度"><a href="#如何达到广度与深度" class="headerlink" title="如何达到广度与深度"></a>如何达到广度与深度</h3><p>我曾经咨询过一位架构师，聊“如何覆盖技术的广度与深度”。在我的工作内容中，甚少会接触大数据工程，也没有直接接触AI项目（两大当前热门“泡沫”领域），我如何让我的技术覆盖到那里呢。我收到的回答是：“当你需要的时候，你自然会去学习去了解。”</p><p>需要的时候，是一个很有趣的描述。什么是需要的时候，想“知道”一下，方便吹牛的时候扯扯专业名词；想“了解”一下，虽然用不到但是可以学一学原理；想“挖掘”一下，在某个项目中应用。还有其他的各种情况，都会成为需要的时候。</p><p>在当前的互联网时代，要达到知识掌握的广度，其实不难。要了解一个领域的知识，有各种各样的搜索引擎和问答社区，可以找到资料。无论是否正确，逻辑总能在一定程度上自洽。要找到不自洽的点，当然需要更深入的学习理解了。如同狼人杀发言，论述粗看一定有道理，至于是不是真的合理，就需要高级玩家才能分辨出来。</p><h3 id="有计划的拓展广度和深度"><a href="#有计划的拓展广度和深度" class="headerlink" title="有计划的拓展广度和深度"></a>有计划的拓展广度和深度</h3><p>虎年马上要到来，也是2022年的一月份，很多人都会给自己做计划，也有很多人没有什么特别的计划。计划的执行可能也都不一样。我十分建议，能够为自己的知识的广度与深度的拓展做足计划，且最好是有长时与短时计划。也许有的人不知道未来三五年自己会做什么，但是大家多少都有一个方向，或者有些兴趣点。</p><p>有计划的去拓展和达成，可以让自己持续的达到某些里程碑，从而持续对自己形成正向激励。 </p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h3 id=&quot;什么是广度与深度&quot;&gt;&lt;a href=&quot;#什么是广度与深度&quot; class=&quot;headerlink&quot; title=&quot;什么是广度与深度&quot;&gt;&lt;/a&gt;什么是广度与深度&lt;/h3&gt;&lt;p&gt;想要想做一名架构师的同学，大都会听到一句话：“一名架构师要有技术的广度与深度”。很多同学在跟</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>如何撰写技术设计文档</title>
+    <link href="https://zhangn661.com/2021/12/16/software-design-doc/"/>
+    <id>https://zhangn661.com/2021/12/16/software-design-doc/</id>
+    <published>2021-12-15T16:00:00.000Z</published>
+    <updated>2022-01-30T16:55:23.397Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>架构设计与编码，是为了解决问题，是一套解决方案。当我们在设计架构和代码开发的时候，有一份相对应的设计文档，可以有效且快速的让团队更好的理解在解决的问题，以及方案的设计思路。</p><h3 id="为什么要写设计文档"><a href="#为什么要写设计文档" class="headerlink" title="为什么要写设计文档"></a>为什么要写设计文档</h3><ul><li>要解决的问题是什么需要用文档先介绍清楚</li><li>有些问题使用一份设计文档描述思路已经足够</li><li>解决方案的选择（decision）是权衡的结果，我们不仅需要了解结果，也需要知道结果产生的原因，即权衡的过程。只有记录下权衡的过程，在后续偿还技术债的时候，才可以更方便的理解产生的原因或初衷，并有更充分的执行架构演进的依据</li><li>让团队成员对问题和设计有一个共识</li></ul><h3 id="设计文档核心内容"><a href="#设计文档核心内容" class="headerlink" title="设计文档核心内容"></a>设计文档核心内容</h3><p>基于以上原因，我们也可以推论出，设计文档所需要具备的核心内容：</p><ul><li>问题的上下文。一个问题需要解决，自然需要关于该问题的上下文内容。</li><li>想要达成的目标是什么</li><li>哪些不是我们的目标<br>如果在讨论与设计过程中，发现一些可能会对设计带来干扰，但是明确不是当前要解决的目标，需要记录下来，以便团队对此形成共识</li><li>权衡的过程<ul><li>为什么选择某个方案</li><li>为什么不选择某个方案<br>如果对于某一个方案，有十分明确的不使用的原因，尤其是行业有充分的应用经验而设计的时候考虑不使用的时候，需要将其记录下来，作为权衡的参考，以避免后续团队演进设计的时候，朝着原先不选择的方案前进。</li><li>当前的一个或多个方案有什么条件限制或成本考虑</li><li>收益是如何的，创造的价值是什么</li></ul></li></ul><h3 id="什么时候写设计文档"><a href="#什么时候写设计文档" class="headerlink" title="什么时候写设计文档"></a>什么时候写设计文档</h3><p><strong>在着手实现之前，先完成设计文档的撰写与迭代。</strong></p><p>不要试图等到将功能实现之后在补充文档。开发者喜欢写代码甚于写文档。对于开发者来说，在文档中描述某种架构实现方案，不如实现一个demo来演示该方案。当开始写demo之后，很可能就会开始将demo做修修补补，最后完成一份可上线代码。当代码完成之后，除非有某种强制推力要求自己必须完成，或是为了向多个团队或个人介绍自己的方案而减少</p><p>在实现之前，完成设计文档的撰写与迭代，可以持续的思考自己的设计的缺陷，并记录下来</p><p>设计文档的基本写作步骤：<br>打草稿 -&gt; 重写 -&gt; 重写 -&gt; 重写 -&gt; 重写 -&gt; …</p><ul><li>需求持续在变</li><li>有新的设计想法或方案</li><li>有新的condition或constraint出现，需要调整设计</li></ul><h3 id="写文档是一件有趣的事情"><a href="#写文档是一件有趣的事情" class="headerlink" title="写文档是一件有趣的事情"></a>写文档是一件有趣的事情</h3><p>写文档，犹如在将学习理解掌握的事情，再向其他人介绍与论述，以寻求与他人的共鸣。我们在白板前讨论的问题，在讨论完毕之后就会被擦除；我们编写的代码，会因为各种需求的变化而被调整（感谢svn让我们可以回顾第一行代码）。而文档，在未来的某一天，仍旧将有人会来翻阅，如同著书立说，言论可能会过时，但是却是在当下时代的最佳产物。</p><h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://www.industrialempathy.com/posts/design-docs-at-google/">Design Docs at Google</a></p><p><a href="https://blog.pragmaticengineer.com/scaling-engineering-teams-via-writing-things-down-rfcs/">Scaling Engineering Teams via RFCs: Writing Things Down</a></p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h3 id=&quot;前言&quot;&gt;&lt;a href=&quot;#前言&quot; class=&quot;headerlink&quot; title=&quot;前言&quot;&gt;&lt;/a&gt;前言&lt;/h3&gt;&lt;p&gt;架构设计与编码，是为了解决问题，是一套解决方案。当我们在设计架构和代码开发的时候，有一份相对应的设计文档，可以有效且快速的让团队更好的理解在</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>突破式创新的产品设计</title>
+    <link href="https://zhangn661.com/2021/11/21/breaking-creation-product/"/>
+    <id>https://zhangn661.com/2021/11/21/breaking-creation-product/</id>
+    <published>2021-11-20T16:00:00.000Z</published>
+    <updated>2022-01-30T16:55:23.397Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="10倍的产品改进"><a href="#10倍的产品改进" class="headerlink" title="10倍的产品改进"></a>10倍的产品改进</h3><p>《从0到1》介绍了一款产品的推出，如果只是2-3倍的改进，可能可以在一开始吸引用户去使用。如果产品所属的市场价值极大，2-3倍的改进会引来一大群竞争者轻易的介入，这将使得产品在后续的迭代中疲于与其他竞争者斡旋，而丢失了让产品变得更好的目标。如果产品的市场价值有限，那么产品能带来的收益也有限，投入的成本也将有限，并很难再继续做大。事实上，有相当一部分产品的推出，比原来的产品带来的改进少于其带来的麻烦。这样的产品，基本很难吸引到用户。俞军提出的产品价值公式可以很好诠释这一点，即<code>新产品价值 &gt; 旧产品价值 + 迁移成本</code>，这样的新产品才有可能成功。</p><p>一款产品想要在推出的时候，占领并持续垄断市场，需要十倍的产品改进。这里我们不细谈市场是否存在，假设已经经过足够的调研验证市场确实存在。如同我们使用微信，很难有新一款社交工具可以打败。</p><p>10倍的改进不只在于产品功能本身，还有其交互体验，产品性能与稳定。chrome关于其核心原则的介绍，可以很好的指导10倍的改进。</p><p>10倍的改进本身并不容易衡量。但是我们可以从以下几个点去判断：</p><ul><li>技术不可替代</li><li>交互更加简单</li><li>稳定性更佳</li><li>交互反应更加快速</li></ul><p>此外，安全性不在这里提出，但是也越来越重要，越来越成为一款产品是否“改进”的判断标准之一。</p><p>“MVP法则”本身并没有问题，但是很多人在定义minimum value的时候，往往只抓住了某个核心需求即快速的进行产品设计，开发者也只专注于实现核心功能而不考虑优化。当用户有多个价值需求的时候，技术不满足、产品没有完成设计，会让用户体验不佳而造成初始不良印象，甚至放弃使用该产品。而用户对产品的不良反馈将会严重打击产品迭代的积极性。除非产品经理与开发者能认识到自身的不足。更可惜的是，着急推出的可能可以创造改变但是设计不良的产品，无异于让竞争者快速入场并将自己打到。</p><p>一款“MVP”产品，应该在一开始就具备建立垄断的能力。Apple产品、Chrome、微信都是如此。即使后来的各种移动端设备、浏览器(包括app内建的浏览器如微信搜索)、社交工具，都无法撼动。Apple在近些年不断被挑战，也是因为其仅做的2-3倍的改进，让华为、小米等竞争者可以快速完成替代，并在其他方面创造竞争力。尽管不足以将Apple踢出竞争环境，但是也不断在蚕食其市场。而其他踢出竞争环境的产品包括Firefox、柯达等。</p><p>要做到10倍的改进行，需要深耕技术基础的工程师，准确理解用户需求的产品经理。</p><p>要做到看起来很难，事实也是如此。而最基本的方法是，每一次做技术设计或产品设计的时候，都问自己，</p><ul><li>有没有理解不到位的地方？</li><li>有没有更好的解决方法？</li><li>不调整设计减少的成本和收益比是否可以承受？</li></ul>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h3 id=&quot;10倍的产品改进&quot;&gt;&lt;a href=&quot;#10倍的产品改进&quot; class=&quot;headerlink&quot; title=&quot;10倍的产品改进&quot;&gt;&lt;/a&gt;10倍的产品改进&lt;/h3&gt;&lt;p&gt;《从0到1》介绍了一款产品的推出，如果只是2-3倍的改进，可能可以在一开始吸引用户去使用。如</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>DRF Exception Handle</title>
+    <link href="https://zhangn661.com/2021/07/15/parallel-and-asynchronous-python/"/>
+    <id>https://zhangn661.com/2021/07/15/parallel-and-asynchronous-python/</id>
+    <published>2021-07-14T16:00:00.000Z</published>
+    <updated>2022-01-30T16:55:23.397Z</updated>
+    
+    <content type="html"><![CDATA[<p>持续更新关于python并行计算与异步计算的包，后续再根据篇章拆分。</p><h3 id="Python-并行"><a href="#Python-并行" class="headerlink" title="Python 并行"></a>Python 并行</h3><h4 id="并行库"><a href="#并行库" class="headerlink" title="并行库"></a>并行库</h4><p><a href="https://docs.python.org/3/library/threading.html">threading</a><br><a href="https://docs.python.org/3/library/multiprocessing.html">multiprocessing</a></p><h4 id="multiprocessing-中的一些问题"><a href="#multiprocessing-中的一些问题" class="headerlink" title="multiprocessing 中的一些问题"></a>multiprocessing 中的一些问题</h4><h5 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h5><ul><li><a href="https://docs.python.org/3/library/multiprocessing.html#contexts-and-start-methods">开启子进程的方法与问题</a><br>  spawn相比fork会更耗时，但是fork在处理一个多线程的进程时可能会陷入死锁等问题。这是由于<a href="https://man7.org/linux/man-pages/man2/fork.2.html">fork本身的机制</a>造成的。这也使得在使用包的过程中常常遇到一些问题。</li><li>IO问题<br>  <a href="https://man7.org/linux/man-pages/man2/fork.2.html">fork本身会继承打开文件的描述符</a>，所以对于多进程的处理，要留意IO处理带来的不良影响<h5 id="建议"><a href="#建议" class="headerlink" title="建议"></a>建议</h5>由于使用多进程更多是因为，CPython本身的GIL造成无法使用多个CPU核，而使用多进程的方式进行处理。所以仅当处理多核计算任务的时候，我们使用multiprocessing，并且尽量让处理内容限定在计算而不包含IO。</li></ul><h3 id="Python-异步"><a href="#Python-异步" class="headerlink" title="Python 异步"></a>Python 异步</h3><h4 id="gunicorn-gevent"><a href="#gunicorn-gevent" class="headerlink" title="gunicorn + gevent"></a>gunicorn + gevent</h4><p><a href="https://docs.gunicorn.org/en/latest/design.html#async-workers">gunicorn async worker</a></p><h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><p><a href="https://en.wikipedia.org/wiki/Event_loop">Event Loop Wiki</a></p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;p&gt;持续更新关于python并行计算与异步计算的包，后续再根据篇章拆分。&lt;/p&gt;
+&lt;h3 id=&quot;Python-并行&quot;&gt;&lt;a href=&quot;#Python-并行&quot; class=&quot;headerlink&quot; title=&quot;Python 并行&quot;&gt;&lt;/a&gt;Python 并行&lt;/h3&gt;&lt;h4</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>DRF Exception Handle</title>
+    <link href="https://zhangn661.com/2021/06/17/DRF-Exception/"/>
+    <id>https://zhangn661.com/2021/06/17/DRF-Exception/</id>
+    <published>2021-06-16T16:00:00.000Z</published>
+    <updated>2022-01-30T16:55:23.397Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="框架报错源码解析"><a href="#框架报错源码解析" class="headerlink" title="框架报错源码解析"></a>框架报错源码解析</h3><ul><li><p>exception 处理器</p><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># rest_framework.views 71-101</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">exception_handler</span>(<span class="params">exc, context</span>):</span></span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    Returns the response that should be used for any given exception.</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    By default we handle the REST framework `APIException`, and also</span></span><br><span class="line"><span class="string">    Django&#x27;s built-in `Http404` and `PermissionDenied` exceptions.</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Any unhandled exceptions may return `None`, which will cause a 500 error</span></span><br><span class="line"><span class="string">    to be raised.</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">isinstance</span>(exc, Http404):</span><br><span class="line">        exc = exceptions.NotFound()</span><br><span class="line">    <span class="keyword">elif</span> <span class="built_in">isinstance</span>(exc, PermissionDenied):</span><br><span class="line">        exc = exceptions.PermissionDenied()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">isinstance</span>(exc, exceptions.APIException):</span><br><span class="line">        headers = &#123;&#125;</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">getattr</span>(exc, <span class="string">&#x27;auth_header&#x27;</span>, <span class="literal">None</span>):</span><br><span class="line">            headers[<span class="string">&#x27;WWW-Authenticate&#x27;</span>] = exc.auth_header</span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">getattr</span>(exc, <span class="string">&#x27;wait&#x27;</span>, <span class="literal">None</span>):</span><br><span class="line">            headers[<span class="string">&#x27;Retry-After&#x27;</span>] = <span class="string">&#x27;%d&#x27;</span> % exc.wait</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">isinstance</span>(exc.detail, (<span class="built_in">list</span>, <span class="built_in">dict</span>)):</span><br><span class="line">            data = exc.detail</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            data = &#123;<span class="string">&#x27;detail&#x27;</span>: exc.detail&#125;</span><br><span class="line"></span><br><span class="line">        set_rollback()</span><br><span class="line">        <span class="keyword">return</span> Response(data, status=exc.status_code, headers=headers)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">None</span></span><br></pre></td></tr></table></figure><p>从处理器源码可以看到，当抛出一个<code>str</code>的错误的时候，处理器会主动为其添加一个<code>detail</code>的<code>key</code>来包裹成可以被后续处理为<code>json</code>的格式，而对于<code>list</code>与<code>dict</code>的格式，则直接返回。</p></li><li><p>ValidationError 处理</p></li></ul><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#rest_framework.exceptions.ValidationError 140-158</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ValidationError</span>(<span class="params">APIException</span>):</span></span><br><span class="line">    status_code = status.HTTP_400_BAD_REQUEST</span><br><span class="line">    default_detail = _(<span class="string">&#x27;Invalid input.&#x27;</span>)</span><br><span class="line">    default_code = <span class="string">&#x27;invalid&#x27;</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self, detail=<span class="literal">None</span>, code=<span class="literal">None</span></span>):</span></span><br><span class="line">        <span class="keyword">if</span> detail <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">            detail = self.default_detail</span><br><span class="line">        <span class="keyword">if</span> code <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">            code = self.default_code</span><br><span class="line"></span><br><span class="line">        <span class="comment"># For validation failures, we may collect many errors together,</span></span><br><span class="line">        <span class="comment"># so the details should always be coerced to a list if not already.</span></span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">isinstance</span>(detail, <span class="built_in">tuple</span>):</span><br><span class="line">            detail = <span class="built_in">list</span>(detail)</span><br><span class="line">        <span class="keyword">elif</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(detail, <span class="built_in">dict</span>) <span class="keyword">and</span> <span class="keyword">not</span> <span class="built_in">isinstance</span>(detail, <span class="built_in">list</span>):</span><br><span class="line">            detail = [detail]</span><br><span class="line"></span><br><span class="line">        self.detail = _get_error_details(detail, code)</span><br></pre></td></tr></table></figure><p>对于<code>ValidationError</code>错误，会强制将最后的值转换为<code>list</code>类型，这是考虑到一个<code>field</code>可能有多条不同的错误需要累积。</p><ul><li>序列化报错处理</li></ul><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#rest_framework.serializers 323-346</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">as_serializer_error</span>(<span class="params">exc</span>):</span></span><br><span class="line">    <span class="keyword">assert</span> <span class="built_in">isinstance</span>(exc, (ValidationError, DjangoValidationError))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">isinstance</span>(exc, DjangoValidationError):</span><br><span class="line">        detail = get_error_detail(exc)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        detail = exc.detail</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">isinstance</span>(detail, Mapping):</span><br><span class="line">        <span class="comment"># If errors may be a dict we use the standard &#123;key: list of values&#125;.</span></span><br><span class="line">        <span class="comment"># Here we ensure that all the values are *lists* of errors.</span></span><br><span class="line">        <span class="keyword">return</span> &#123;</span><br><span class="line">            key: value <span class="keyword">if</span> <span class="built_in">isinstance</span>(value, (<span class="built_in">list</span>, Mapping)) <span class="keyword">else</span> [value]</span><br><span class="line">            <span class="keyword">for</span> key, value <span class="keyword">in</span> detail.items()</span><br><span class="line">        &#125;</span><br><span class="line">    <span class="keyword">elif</span> <span class="built_in">isinstance</span>(detail, <span class="built_in">list</span>):</span><br><span class="line">        <span class="comment"># Errors raised as a list are non-field errors.</span></span><br><span class="line">        <span class="keyword">return</span> &#123;</span><br><span class="line">            api_settings.NON_FIELD_ERRORS_KEY: detail</span><br><span class="line">        &#125;</span><br><span class="line">    <span class="comment"># Errors raised as a string are non-field errors.</span></span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">        api_settings.NON_FIELD_ERRORS_KEY: [detail]</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure><p>drf中的序列化器<code>serializers</code>，在运行<code>run_validation</code>序列化报错的过程中，会给没有列出具体字段错误的<code>detail</code>信息，即不是<code>dict</code>格式的信息，带上一个<code>non_field_errors</code>的key来标准化。</p><h3 id="推荐方案"><a href="#推荐方案" class="headerlink" title="推荐方案"></a>推荐方案</h3><ul><li>非400报错<br>对于403，404等错误码，直接获取<code>detail</code>下的值即可</li><li>400报错<br>对于ValidationError错误，需要做两种处理<ol><li>单独创建，报错如下，直接识别到错误的字段<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;id&quot;: [&quot;Not Unique&quot;]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li><li>批量创建，报错如下，按顺序识别创建的条目的错误字段。如果为空，则说明无校验错误。<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[</span><br><span class="line">  &#123;&#125;,</span><br><span class="line">  &#123;</span><br><span class="line">    &quot;id&quot;: [&quot;Not Unique&quot;]</span><br><span class="line">  &#125;,</span><br><span class="line">  &#123;&#125;,</span><br><span class="line">  &#123;&#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure>此外，关于返回值为数组，需要前端进行相应处理具有多个错误信息的报错。<h3 id="其他方案"><a href="#其他方案" class="headerlink" title="其他方案"></a>其他方案</h3>根据参考方案，按照团队习惯，可以自定义<code>exception_handler</code>，以定义团队使用的错误信息格式。<h3 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h3><a href="https://www.django-rest-framework.org/api-guide/exceptions/#custom-exception-handling">drf-exception</a></li></ol></li></ul>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h3 id=&quot;框架报错源码解析&quot;&gt;&lt;a href=&quot;#框架报错源码解析&quot; class=&quot;headerlink&quot; title=&quot;框架报错源码解析&quot;&gt;&lt;/a&gt;框架报错源码解析&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;exception 处理器&lt;/p&gt;
+&lt;figure class=&quot;high</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Django With DDD</title>
+    <link href="https://zhangn661.com/2021/06/15/Django-With-DDD/"/>
+    <id>https://zhangn661.com/2021/06/15/Django-With-DDD/</id>
+    <published>2021-06-14T16:00:00.000Z</published>
+    <updated>2022-01-30T16:55:23.397Z</updated>
+    
+    <content type="html"><![CDATA[<p>在<a href="https://zhangn661.com/2021/03/30/DRF-Bussiness-Logic/">DRF业务逻辑实现</a>篇中，提到关于使用Django框架编写业务逻辑的一些局限性以及可能的解决方案。当业务开始扩展的时候，渐渐发现，框架对复杂业务的支持能力明显不足，已经超出了使用service来处理的能力了。</p><p>当开始尝试使用DDD来进行模块与架构设计时，不仅要理解DDD是什么，同时需要去理解DDD在Django中应用的困难<a href="%5Bactive-record%5D(https://www.martinfowler.com/eaaCatalog/activeRecord.html)">^1</a></p><p>一种有效的方法是，从<code>serializers</code>中封装<code>domail_serializers</code>，用来承担<code>view</code>中的业务逻辑执行，担任一个<code>实体</code>。<code>view</code>作为一个<code>bounded context</code>的存在，绑定多个<code>serializers</code>，完成一个业务逻辑的执行。</p><p>显然，<code>DRF</code>已经基于这样的方式实现了，不足之处在于<code>serializers</code>的能力有限，同时，<code>DRF</code>没有强调<code>serializers</code>是一个<code>domain</code></p><p>(先占坑，后续再补充DDD的调研与实践…)</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;p&gt;在&lt;a href=&quot;https://zhangn661.com/2021/03/30/DRF-Bussiness-Logic/&quot;&gt;DRF业务逻辑实现&lt;/a&gt;篇中，提到关于使用Django框架编写业务逻辑的一些局限性以及可能的解决方案。当业务开始扩展的时候，渐渐发现，框架对复</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>敏捷软件开发：设计</title>
+    <link href="https://zhangn661.com/2021/05/09/Agile-Design/"/>
+    <id>https://zhangn661.com/2021/05/09/Agile-Design/</id>
+    <published>2021-05-08T16:00:00.000Z</published>
+    <updated>2022-01-30T16:55:23.397Z</updated>
+    
+    <content type="html"><![CDATA[<p>本篇为阅读《敏捷软件开发：原则，模式与实践》后的读后感。主要阅读的是第二部分：敏捷设计。<br>这本书的第一部分，关于敏捷开发中的测试驱动开发与重构，可以阅读其他专门的书籍。我阅读的是《重构，改善既有代码设计》。<br>本书第三部分的案例，可自由选择是否阅读以加深理解。我自己更多的是结合自己遇到的问题，从书中描述找到问题的解决方案。</p><h3 id="什么是敏捷设计"><a href="#什么是敏捷设计" class="headerlink" title="什么是敏捷设计"></a>什么是敏捷设计</h3><h4 id="软件越来越难维护"><a href="#软件越来越难维护" class="headerlink" title="软件越来越难维护"></a>软件越来越难维护</h4><p>软件在第一版本发布的时候，是软件设计最干净清晰的时候。随着复杂的需求与软件持续迭代，软件代码往往会在原来的设计上做各种hack以满足新的需求。</p><p>这系列的破坏设计的操作，会在后续的需求增加的过程中逐渐变得难以维护，而后的需求迭代速率将越来越慢。</p><h4 id="使用敏捷设计"><a href="#使用敏捷设计" class="headerlink" title="使用敏捷设计"></a>使用敏捷设计</h4><p>所以我们推荐使用<code>TDD + 重构</code>的形式，来持续调整代码设计，每一次做微小的重构，尽管对单次迭代耗时长，但是把一个大的重构的时间分散在每次迭代中，将有利于代码持续维护。</p><p>此外，在后续的内容中，将使用经典的软件设计原则，来从一开始就让软件设计趋于敏捷，或者说，让软件设计能更好的<strong>拥抱变化</strong>。</p><h4 id="尽可能保持代码干净"><a href="#尽可能保持代码干净" class="headerlink" title="尽可能保持代码干净"></a>尽可能保持代码干净</h4><p>由于在实际开发项目中，文档是软件开发的附属物，代码才是软件开发的本身。如果代码设计的好，将有效的加快开发过程，同时方便新任开发者快速接手，阅读，理解与进一步设计。</p><h3 id="软件设计原则"><a href="#软件设计原则" class="headerlink" title="软件设计原则"></a>软件设计原则</h3><p>软件设计原则篇章，重点讲述了经典的六大设计原则中的其中五项<code>SOLID</code>。</p><h4 id="单一职责原则"><a href="#单一职责原则" class="headerlink" title="单一职责原则"></a>单一职责原则</h4><blockquote><p>就一个类而言，应该只有一个引起他变化的原因</p></blockquote><p>将一个类中复杂的耦合分离开来，是该原则的实践。这要求，每一次做类设计，都要避免将一堆复杂的逻辑放在一个类中，否则这个类就失去了单一职责的原则。</p><p>而在具体情况中，对于几乎不会发生变化的模块，我们不需要为了解耦而解耦，而是将他们放在一个类即可。</p><p>单一职责原则，简单也复杂。难点在于，我们很难在一开始就知道，哪些职责（引起变化的原因 ）是需要解耦的。所以，我们仍然需要通过持续重构来不断优化类设计，使其符合单一职责原则。</p><h4 id="开发-封闭原则"><a href="#开发-封闭原则" class="headerlink" title="开发-封闭原则"></a>开发-封闭原则</h4><blockquote><p>对扩展开放，对更改封闭</p></blockquote><p>对扩展开放，是指，对一个类新增能力是允许的，而且可以非常容易做到的。对更改封闭，是指，对一个类做能力新增的时候，只需要添加代码，而不需要对旧的代码做修改。</p><p>开放-封闭原则是一种非常理想的原则。我们很难在实际业务中，完全不修改旧代码的逻辑，而新增新的代码，除非代码架构从一开始就是与业务不耦合的架构。我们新增业务逻辑的时候，是完全有可能修改旧的逻辑使其具备支持新的业务逻辑的能力。甚至，修改旧的业务逻辑本身就是这次新增的一部分。而我们在编写原来的业务逻辑的时候，并不一定能考虑到其不能支持新增的需求。</p><p>所以，事实上，要实现该原则，要做的就是，重构。我们需要先将旧的代码逻辑重构成符合开放-封闭原则的代码，并跑通测试。然后，在对更改封闭的前提下编写类扩展代码。</p><p>书中提到预测，我认为，预测是一种潜意识的行为，当对业务熟悉，对团队熟悉，对设计方法熟悉，自然会在设计过程中做出更准群的预测。可以说，有办法做到预测，且确实准确预测，则执行该原则会变得简单。而即使没有预测，通过重构，我们依然可以解决问题。</p><h4 id="里氏替换"><a href="#里氏替换" class="headerlink" title="里氏替换"></a>里氏替换</h4><blockquote><p>子类型必须能够替换掉基类型</p></blockquote><p>里氏替换的应用场景是这样子的：假设我们定一个一个base类和一个sub类，其中，base类定义了一个method，sub类复写了该method。同时我们定义了一个function用于接受base类的输入，并执行base类的method。这个时候，我们要求子类可以作为function的输入，即是说，子类复写的method必须是与base类的method在输入和输出上是一致的，仅内部计算逻辑不一致。</p><p>当我们在sub类复写了method，造成sub类不能替换base类的时候，我们可能会在function对输入做处理，让其可以接受base类和sub类。我们更可能为sub类专门写一个测试验证其能通过。其实这两者都违反了前述的开放-封闭原则。即我们对function的修改没有对sub类封闭。</p><p>另外需要说的是：</p><ul><li>里氏原则是面向行为的。一个行为限制了某种输入，才有原则的应用场景。</li><li>基于契约设计。显然，我们预先约定了base类和sub类符合里氏原则，才有办法开发接受base类的符合原则的function</li><li>继承本身是复杂的设计，golang甚至舍弃了继承，但我们在这里不谈关于继承的问题。当我们在使用继承的时候，要时刻注意是否符合里氏替换原则。</li></ul><h4 id="接口隔离原则"><a href="#接口隔离原则" class="headerlink" title="接口隔离原则"></a>接口隔离原则</h4><blockquote><p>不应该让client依赖于使用不到的方法</p></blockquote><p>一个client需要来源于其他类的某一个特殊的功能，这个时候，如果使用继承，则会将另一个类的所有接口都携带进来，这个时候对client本身是不利的。</p><p>解决方案：</p><ul><li>可以使用适配器（Adapter）来实现隔离，不过这会造成性能问题</li><li>使用多重继承</li></ul><h4 id="依赖倒置原则"><a href="#依赖倒置原则" class="headerlink" title="依赖倒置原则"></a>依赖倒置原则</h4><blockquote><p>高层模块不应该依赖于低层模块，两者应该都依赖于抽象<br>抽象不应该依赖于细节，细节应该依赖于抽象</p></blockquote><p>一个经典的例子是，我们在使用框架进行web服务开发的时候，通常只需要编写处理request与返回response的业务逻辑，而request与response的具体执行，都由框架直接执行。从分层的角度，框架是底层，我们实现的web业务是高层。显然，web服务没有调用底层的http处理，而是底层的处理调用了高层的web业务。</p><p>高层模块通常都会依赖底层模块。依赖倒置的目的是为了应对底层模块经常变动的情况。基于开发-封闭原则，如果底层模块变动造成了依赖他的高层模块需要调整，则应该拒绝高层对底层的依赖，而是让两者依赖于不变动的抽象。</p><p>至于细节依赖抽象，则比较好理解。通常，细节是比较容易因为需求增加或调整而发生变更的，抽象则不然。所以细节需要依赖抽象，而抽象不应该依赖细节，即不应该因为细节变更而造成抽象的变更。</p><h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>敏捷设计的基础是，在测试驱动开发的前提下，持续重构。同时使用软件设计基本原则，保障代码不至于陷入“坏味道”而难以重构。</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;p&gt;本篇为阅读《敏捷软件开发：原则，模式与实践》后的读后感。主要阅读的是第二部分：敏捷设计。&lt;br&gt;这本书的第一部分，关于敏捷开发中的测试驱动开发与重构，可以阅读其他专门的书籍。我阅读的是《重构，改善既有代码设计》。&lt;br&gt;本书第三部分的案例，可自由选择是否阅读以加深理解。我自</summary>
+      
+    
+    
+    
+    
+    <category term="agile" scheme="https://zhangn661.com/tags/agile/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Django Restful Framework Business Logic</title>
+    <link href="https://zhangn661.com/2021/03/30/DRF-Bussiness-Logic/"/>
+    <id>https://zhangn661.com/2021/03/30/DRF-Bussiness-Logic/</id>
+    <published>2021-03-29T16:00:00.000Z</published>
+    <updated>2022-01-30T16:55:23.397Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="Django-Restful-Framework-Business-Logic"><a href="#Django-Restful-Framework-Business-Logic" class="headerlink" title="Django Restful Framework Business Logic"></a>Django Restful Framework Business Logic</h3><h4 id="Django-Restful-Framework"><a href="#Django-Restful-Framework" class="headerlink" title="Django Restful Framework"></a>Django Restful Framework</h4><ul><li>Restful API<br>Django Restful Framework 提供了非常便利的方法序列化Restful API，并且提供了统一的数据返回格式（包括错误返回）。</li><li>Serializer<br>Serializer 提供了数据序列化反序列的操作，并承担了validation的工作，validator有内置，也可以自主添加。</li></ul><h4 id="局限性"><a href="#局限性" class="headerlink" title="局限性"></a>局限性</h4><p>我们在使用中也发现了一些局限性。这些局限，根本上是因为框架是基于Model去设计的。当我们遇到API由多个不同的Django Model组成数据的时候，就会遇到限制。当AP</p><ul><li>Writtable Nested SerializerI的输入输出由多个Django Model组成时，我们无法写入nested serializer。如果是一个relation field，当指定<code>source</code>的时候，我们会发现，由于<code>set_value</code>是字典嵌套赋值操作，该field作为入参没有办法被成功<code>set_value</code>。为了在执行<code>serializer.save()</code>的时候能够顺利存储多个Django Model，我们不得不修改serializer的<code>create</code>和<code>update</code>操作。而这破坏了前述serializer所提供的能力。</li></ul><h4 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h4><ul><li>使用宽表</li></ul><p>对于需要在一个<code>serializer</code>进行读写的数据，本质上也说明了该数据集很有可能属于同一个领域模型。对于一个模型，我们可以使用一张表存下它。如果模型包含的字段较多，我们可以使用宽表。</p><p>宽表在OLTP场景中，可能会带来写入性能的影响。我们需要权衡的是，我们的业务量是否会因此而带来性能影响。对于小型业务，这是一个不错的考虑。</p><p>使用宽表还有另一个问题，就是migration会不断在同一张表上进行，随着数据量增加，可能会对migration的性能带来不良影响。同样的，在小型业务中，这些问题仍然不会很显著。当我们遇到性能问题的时候，很可能表结构已经因为业务发展做了拆分了。</p><ul><li>使用service层</li></ul><p>使用service层，是将view与model隔离的一种好方法。将大量复杂的业务逻辑封装在service层中，在view层为业务提供适配的API，并引入各种权限校验等通用逻辑，在model层独立设计模型及其关系，由service层将两者串联起来。</p><p>service层像是设计模式中的适配器，当model设计与前端的model不完全一致的时候，service充当适配器的效果，将两者串联起来。</p><p>service的引入会带来代码的开发，增加开发成本，当然也相应会带来不稳定的因素。</p><h4 id="框架只是解决一部分问题"><a href="#框架只是解决一部分问题" class="headerlink" title="框架只是解决一部分问题"></a>框架只是解决一部分问题</h4><p>使用DRF框架显然可以快速的开发一个restful的应用，在业务逻辑非常简单的时候（常规的CRUD居多），完成一个项目的开发可能只需要一两天的时间。而我们在实际使用中也发现框架对读取数据及其关联数据的能力非常强大，相对的写入关联数据的支持非常少。这个在官方文档中关于<code>writtable nested serializer</code>的描述就很显见了，在<code>ListSerializer</code>的<code>update</code>方法也提到需要由开发者自行编写。这其实是框架设计团队的权衡与取舍，毕竟写入的逻辑通常很复杂，由用户定义会比提供一套内置方法更加有价值。在各类社区中，有很多开发者也分享了写入场景及写入方法的代码。</p><p>框架中还出现了同一个方法的输入不一致等问题。比如对于<code>ListSerializer</code>的<code>to_representation</code>方法，输入的<code>data</code>是一个<code>Database Manager</code>，而对于字段类型的<code>Serializer</code>，则是对应的<code>value</code>。</p><p>这些问题都说明了，框架只能解决一部分的问题，框架也只想解决一部分的问题。框架提供了某一类非常方便的接口，其内部封装则是非常复杂的，这些封装在经过充分测试之后通常会变得稳定，尽管里面仍可能存在不好理解的地方。</p><p>因此，我们使用DRF的时候，如果可以充分利用其能力，达到低代码高稳定的效果，则尽管使用。但是，我们也不需要被<code>serializer</code>的设计框住，自定义必须的service来处理业务逻辑，反而可以使整个业务逻辑更清晰，更具备可测试性与可维护性。</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h3 id=&quot;Django-Restful-Framework-Business-Logic&quot;&gt;&lt;a href=&quot;#Django-Restful-Framework-Business-Logic&quot; class=&quot;headerlink&quot; title=&quot;Django Restful</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>Graphql and Restful API</title>
+    <link href="https://zhangn661.com/2021/03/21/graphql-and-restful/"/>
+    <id>https://zhangn661.com/2021/03/21/graphql-and-restful/</id>
+    <published>2021-03-20T16:00:00.000Z</published>
+    <updated>2022-01-30T16:55:23.397Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="GraphQL-与-RESTful"><a href="#GraphQL-与-RESTful" class="headerlink" title="GraphQL 与 RESTful"></a>GraphQL 与 RESTful</h3><h4 id="GraphQL"><a href="#GraphQL" class="headerlink" title="GraphQL"></a>GraphQL</h4><ul><li>数据一次获取<br>数据返回被封装在一个入口，一次请求</li><li>所见及所得<br>想要获取什么数据，就定义相应的查询字段。</li></ul><h4 id="RESTful"><a href="#RESTful" class="headerlink" title="RESTful"></a>RESTful</h4><ul><li>明确资源间的关系</li><li>HTTP verb定义对资源的行为</li></ul><h3 id="API设计"><a href="#API设计" class="headerlink" title="API设计"></a>API设计</h3><p>对于前后端分离架构，API成为了前后端间数据通信协议。当一个产品经理列出需求之后之后，前后端工程师设计领域模型，抽象需求与原型成为代码可以描述的对象。在实践中发现，大多数前端工程师会对<code>页面</code>进行建模，而后端工程师则对<code>资源</code>进行建模。于是会发现，前后端工程师对模型的定义会有些差别，即使我们在设计阶段有领域模型设计，我们也无法保障前端工程师能按照领域模型设计组件，这是由页面和UI决定的。</p><p>尽管API作为数据通信的协议，往往是由前后端工程师共同约定的，实际情况是，API是前端获取数据的入口，更多的时候更像是后端交付给前端的“产品”。这个时候，前端对获取数据的逻辑设计产生的需求，会转换成对API设计的复杂要求。</p><p>当我们使用RESTful style API的时候，我们会需要前端工程师对领域模型也有充分的理解，这在一些团队是不一定可以做得到的。尤其是当页面组件设计需要多个资源的时候，前端工程师不得不</p><p>显然，RESTful API 更偏向于后端设计的API，GraphQL则对前端更友好。</p><p>如果API作为交付给前端的<code>产品</code>，则我们应该让前端工程师调用更方便更易理解，RESTful这类与后端模型相耦的风格则显现不足。通常，RESTful API无法完全由模型推导API，后端还是要修饰API以返回前端友好的数据结构。GraphQL风格则对后端提出更高的要求，包括接口性能和数据拼接等。</p><h3 id="新的解决方案-BFF"><a href="#新的解决方案-BFF" class="headerlink" title="新的解决方案 BFF"></a>新的解决方案 BFF</h3><p>BFF是Backend for Frontend。从实践前后端分离之后，前端工程师更关注单页面应用的设计，而后端工程师则持续深研领域建模。当后端工程师基于模型实现的API不足以满足前端工程师的复杂访问逻辑的时候，我们需要有一个专门为前端应用设计的后端服务，来提供API服务。</p><h4 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h4><p><strong>加快前端应用开发</strong>  </p><p>前后端分离，要求先完成API设计，再进行前后端开发，可以保证联调前大家都能完成各自大部分代码实现。而现实中，由于花费大量精力定义API文档并不是一种敏捷的模式，所以很难在开发前完成API文档统一设计。同时领域模型会在开发中不断与产品经理讨论而调整，后端工程师在迭代中会不断调整接口返回格式，前端工程师并不愿意在接口不work之前就进入自己的开发（除了一些页面模版）。</p><p>因此，BFF可以满足前端自主定义API数据格式，并完成页面设计与开发。待后端接口work之后，再在BFF层对接后端接口汇集数据，实现联调。</p><p>NodeJS的出现，更加方便前端工程师实现BFF层。有趣的事，过往只有后端工程师，后来独立出前端工程师只负责前端模块，而现在前端工程师又回到了需要做后端开发的时代。</p><h4 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h4><p><strong>新增一层的复杂度</strong></p><ul><li><p>错误返回无法很好处理<br>由于很多权限设计汇聚在后端业务逻辑中，当BFF层调用多个接口汇集数据之后在传回前端，此时的错误回传前端会变得复杂</p></li><li><p>错误追踪复杂<br>当出现页面错误的时候，我们需要多查看一层数据层的调用情况</p></li></ul><h3 id="没有银弹"><a href="#没有银弹" class="headerlink" title="没有银弹"></a>没有银弹</h3><p>我们在本篇没有关注性能等优势，比如，在HTTP1.1Graph QL性能有优势，而HTTP2支持下RESTful风格多个API并不会有加载问题，当然还有如传输无效数据浪费带宽。我们认为，这些都是可以有应对的方法。</p><p>本篇更强调的是前后端协作的问题，以及使用哪一种风格更有利于加快迭代。后续会分享，前后端工程师如何拆解领域模型，并保持在same page。事实上，当前后端对业务理解趋于一致，API的设计也会更易于取得平衡。</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h3 id=&quot;GraphQL-与-RESTful&quot;&gt;&lt;a href=&quot;#GraphQL-与-RESTful&quot; class=&quot;headerlink&quot; title=&quot;GraphQL 与 RESTful&quot;&gt;&lt;/a&gt;GraphQL 与 RESTful&lt;/h3&gt;&lt;h4 id=&quot;Graph</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>grpc hello world</title>
+    <link href="https://zhangn661.com/2021/03/08/grpc-hello-world/"/>
+    <id>https://zhangn661.com/2021/03/08/grpc-hello-world/</id>
+    <published>2021-03-07T16:00:00.000Z</published>
+    <updated>2022-01-30T16:55:23.397Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="获取源码"><a href="#获取源码" class="headerlink" title="获取源码"></a>获取源码</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://github.com/grpc/grpc-go.git</span><br></pre></td></tr></table></figure><p>源码在 <code>grpc-go/examples/helloworld</code>文件夹</p><h3 id="源码解析"><a href="#源码解析" class="headerlink" title="源码解析"></a>源码解析</h3><h4 id="proto文件"><a href="#proto文件" class="headerlink" title="proto文件"></a>proto文件</h4><ul><li>声明使用proto3。这是最新版的格式，具体可以了解<a href="https://developers.google.com/protocol-buffers/docs/proto3">proto3</a>与<a href="https://developers.google.com/protocol-buffers/docs/proto">proto2</a>的区别。一般直接使用proto3即可。<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">syntax = &quot;proto3&quot;;</span><br></pre></td></tr></table></figure></li><li>声明包路径，指向了使用proto文件生成的包名。默认与被应用的go包一致，也可以使用该声明自主定义。<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">option go_package = &quot;google.golang.org/grpc/examples/helloworld/helloworld&quot;;</span><br></pre></td></tr></table></figure></li><li>声明生成java代码时的一些规则，在此处应该没什么用。<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">option java_multiple_files = true;</span><br><span class="line">option java_package = &quot;io.grpc.examples.helloworld&quot;;</span><br><span class="line">option java_outer_classname = &quot;HelloWorldProto&quot;;</span><br></pre></td></tr></table></figure></li><li>声明应用的包名。<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">package helloworld;</span><br></pre></td></tr></table></figure></li><li>声明服务调用接口。<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">// The greeting service definition.</span><br><span class="line">service Greeter &#123;</span><br><span class="line">  // Sends a greeting</span><br><span class="line">  rpc SayHello (HelloRequest) returns (HelloReply) &#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li><li>消息体(message)定义。消息体是一个集成的结构，用于把各种参数集成到一个，类似于结构体。<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">// The request message containing the user&#x27;s name.</span><br><span class="line">message HelloRequest &#123;</span><br><span class="line">  string name = 1;</span><br><span class="line">&#125;</span><br><span class="line">// The response message containing the greetings</span><br><span class="line">message HelloReply &#123;</span><br><span class="line">  string message = 1;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li></ul><h4 id="server文件"><a href="#server文件" class="headerlink" title="server文件"></a>server文件</h4><ul><li>头部声明。注意需要导入grpc包，同时需要把基于proto文件生成的包即<code>go_package</code>导入。<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">// Package main implements a server for Greeter service.</span><br><span class="line">package main</span><br><span class="line">import (</span><br><span class="line">&quot;context&quot;</span><br><span class="line">&quot;log&quot;</span><br><span class="line">&quot;net&quot;</span><br><span class="line"></span><br><span class="line">&quot;google.golang.org/grpc&quot;</span><br><span class="line">pb &quot;google.golang.org/grpc/examples/helloworld/helloworld&quot;</span><br><span class="line">)</span><br></pre></td></tr></table></figure></li><li>端口<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">const (</span><br><span class="line">port = &quot;:50051&quot;</span><br><span class="line">)</span><br></pre></td></tr></table></figure></li><li>获取pb包里生成的server，并编写接口业务逻辑<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// server is used to implement helloworld.GreeterServer.</span><br><span class="line">type server struct &#123;</span><br><span class="line">pb.UnimplementedGreeterServer</span><br><span class="line">&#125;</span><br><span class="line">// SayHello implements helloworld.GreeterServer</span><br><span class="line">func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) &#123;</span><br><span class="line">log.Printf(&quot;Received: %v&quot;, in.GetName())</span><br><span class="line">return &amp;pb.HelloReply&#123;Message: &quot;Hello &quot; + in.GetName()&#125;, nil</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li><li>main函数，启动服务。使用grpc创建server，并注册到pb包中。<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">func main() &#123;</span><br><span class="line">lis, err := net.Listen(&quot;tcp&quot;, port)</span><br><span class="line">if err != nil &#123;</span><br><span class="line">log.Fatalf(&quot;failed to listen: %v&quot;, err)</span><br><span class="line">&#125;</span><br><span class="line">s := grpc.NewServer()</span><br><span class="line">pb.RegisterGreeterServer(s, &amp;server&#123;&#125;)</span><br><span class="line">if err := s.Serve(lis); err != nil &#123;</span><br><span class="line">log.Fatalf(&quot;failed to serve: %v&quot;, err)</span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li></ul><h4 id="client文件"><a href="#client文件" class="headerlink" title="client文件"></a>client文件</h4><ul><li>与server一样，导入相关包<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">// Package main implements a client for Greeter service.</span><br><span class="line">package main</span><br><span class="line">import (</span><br><span class="line">&quot;context&quot;</span><br><span class="line">&quot;log&quot;</span><br><span class="line">&quot;os&quot;</span><br><span class="line">&quot;time&quot;</span><br><span class="line"></span><br><span class="line">&quot;google.golang.org/grpc&quot;</span><br><span class="line">pb &quot;google.golang.org/grpc/examples/helloworld/helloworld&quot;</span><br><span class="line">)</span><br><span class="line">const (</span><br><span class="line">address     = &quot;localhost:50051&quot;</span><br><span class="line">defaultName = &quot;world&quot;</span><br><span class="line">)</span><br></pre></td></tr></table></figure>使用<code>pb.NewGreeterClient</code>创建client，并直接调用pb创建的service内接口<code>SayHello</code>.<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">func main() &#123;</span><br><span class="line">// Set up a connection to the server.</span><br><span class="line">conn, err := grpc.Dial(address, grpc.WithInsecure(), grpc.WithBlock())</span><br><span class="line">if err != nil &#123;</span><br><span class="line">log.Fatalf(&quot;did not connect: %v&quot;, err)</span><br><span class="line">&#125;</span><br><span class="line">defer conn.Close()</span><br><span class="line">c := pb.NewGreeterClient(conn)</span><br><span class="line">// Contact the server and print out its response.</span><br><span class="line">name := defaultName</span><br><span class="line">if len(os.Args) &gt; 1 &#123;</span><br><span class="line">name = os.Args[1]</span><br><span class="line">&#125;</span><br><span class="line">ctx, cancel := context.WithTimeout(context.Background(), time.Second)</span><br><span class="line">defer cancel()</span><br><span class="line">r, err := c.SayHello(ctx, &amp;pb.HelloRequest&#123;Name: name&#125;)</span><br><span class="line">if err != nil &#123;</span><br><span class="line">log.Fatalf(&quot;could not greet: %v&quot;, err)</span><br><span class="line">&#125;</span><br><span class="line">log.Printf(&quot;Greeting: %s&quot;, r.GetMessage())</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li></ul><h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>使用grpc犹如餐厅里的厨房窗口(service)，服务员将菜单小票(request message)递进窗口，厨房做好菜后将菜(reply message)再送出来。   </p><p>我们只需要再一开始将厨房窗口设计好，一个完整的做菜流就定义完成。后续只需要增加厨师和菜色，以满足不同的菜的需求即可。</p><h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p><a href="https://developers.google.com/protocol-buffers/docs/proto3">proto3 语法</a><br><a href="https://developers.google.com/protocol-buffers/docs/gotutorial">基于go的教程</a></p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h3 id=&quot;获取源码&quot;&gt;&lt;a href=&quot;#获取源码&quot; class=&quot;headerlink&quot; title=&quot;获取源码&quot;&gt;&lt;/a&gt;获取源码&lt;/h3&gt;&lt;figure class=&quot;highlight plaintext&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>我如何学一门新的编程语言</title>
+    <link href="https://zhangn661.com/2021/01/03/New-Coding-Language/"/>
+    <id>https://zhangn661.com/2021/01/03/New-Coding-Language/</id>
+    <published>2021-01-02T16:00:00.000Z</published>
+    <updated>2022-01-30T16:55:23.397Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="先写一个demo"><a href="#先写一个demo" class="headerlink" title="先写一个demo"></a>先写一个demo</h3><p>学编程语言需要先用，先尝试使用他发挥作用。想想我们学习自己的母语，不是从认识拼音开始的，也不是从认字开始的，而是先模仿，喊出一些基本的称呼等等，逐步知道每个发音代表的一些特殊含义。我们不一定理解那些含义，但是我们已经尝试着让他发挥作用。<br>我学习编程语言也是如此，写一个简单的小游戏或者小工具，也许是一个简单的猜字游戏，也许是一个定时闹钟，也许是一个仿grep功能的工具。不管是什么工具，我基本可以快速理清设计方案，然后花一个小时，基于google，找到各种代码编写的方案，完成小工具的实现。<br>在实现的过程中，我会比想象中投入，因为我的目标已经变成了工具实现，而不是语言学习。犹如用新英雄打王者荣耀，刷野怪的时候我或许会体验一下新技能，打团战的时候我一门心思只想赢。做demo同理，我会因为关注成功实现而变得投入，会在敲下每一行代码的过程中，去了解编程语言在做某件事的时候的处理方式。<br>这样，我对一门编程语言就有一个基本的印象了。</p><h3 id="开始看编程书"><a href="#开始看编程书" class="headerlink" title="开始看编程书"></a>开始看编程书</h3><p>看编程书很多时候只需要对内容描述有一个印象就可以了。看的过程中，我几乎不写代码。复现某一个语言特性，看起来是增强对语言的理解，但是如果只是做一次，其实很快就忘记了，所看个印象就可以了。我只大概看一下有些什么不一样的特性，看一眼代码是怎么展示这个特性就结束了。<br>因为光看不练，是不能在需要的时候用上的。所以，看编程书的具体内容会看的很快，后面基本上只把编程书当做索引来查看，不再专门做完整的阅读。</p><h2 id="开始尝试使用代码"><a href="#开始尝试使用代码" class="headerlink" title="开始尝试使用代码"></a>开始尝试使用代码</h2><p>正常情况下，在看完编程书后，再来写代码，基本是啥也写不出来的。就像数学题，完整的看了例题，到应用的时候，基本还是不知道从哪里入手。</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h3 id=&quot;先写一个demo&quot;&gt;&lt;a href=&quot;#先写一个demo&quot; class=&quot;headerlink&quot; title=&quot;先写一个demo&quot;&gt;&lt;/a&gt;先写一个demo&lt;/h3&gt;&lt;p&gt;学编程语言需要先用，先尝试使用他发挥作用。想想我们学习自己的母语，不是从认识拼音开始的，也不</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>敏捷开发辅助新项目验证与落地</title>
+    <link href="https://zhangn661.com/2020/11/08/Agile-Dev/"/>
+    <id>https://zhangn661.com/2020/11/08/Agile-Dev/</id>
+    <published>2020-11-07T16:00:00.000Z</published>
+    <updated>2022-02-02T17:03:20.698Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="精益创业中的反馈循环"><a href="#精益创业中的反馈循环" class="headerlink" title="精益创业中的反馈循环"></a>精益创业中的反馈循环</h3><p>在《精益创业》这本书中提到的一个反馈循环为<code>开发-测量-认知</code>。即，使用最小的力量开发一个产品，将其投入到小范围的市场中进行假设验证，最后收集反馈进行认知更新，并迭代到开发中。在这个循环中，如果一切顺利的话，我们会将产品逐渐优化。如果测量验证出现非期望的结果，我们可以及时终止投入，减少沉没成本。</p><h3 id="何为MVP"><a href="#何为MVP" class="headerlink" title="何为MVP"></a>何为MVP</h3><p>MVP，英文为：Minimum Viable Product。即最小有价值（可用）产品。许多人将关注点放在可用，却忽视了验证可用。部分产品经理在设计产品及进行排期的时候，是按产品的功能堆迭进行排期的。即一期包含了什么功能，二期包含了什么功能。却从来没有去想一期验证了用户需要什么功能，二期验证了用户需要什么功能。</p><p>我们在某一个系统设计的时候，在最初阶段，没有对数据库索引做设计。我们认为，在当时的阶段，尽快将业务逻辑实现，并验证模型设计是适合业务应用的，那才是当务之急。做索引设计只会分散我们的注意力和时间，而无益于我们验证设计是否符合需求。按照需求的持续发展，我们在根据实际情况进行索引的设计与增添，是完全来得及的。也就是说，就那个阶段而言，模型设计与业务逻辑实现才是MVP，索引设计不包含在MVP之中。而这一切，基于我们要验证什么需求，而不是基于我们想要推出什么功能。</p><h3 id="验证需求而不是满足需求"><a href="#验证需求而不是满足需求" class="headerlink" title="验证需求而不是满足需求"></a>验证需求而不是满足需求</h3><p>我们在设计一款产品的时候，需求来源往往有两个。一个是用户明确提出他对某个具体的功能或者服务有需求；另一个是产品设计者通过某些调研判断某个功能或者服务能解决用户当前意识不到的需求，即创造用户需求。举个例子，老年人可以方便的使用微信，不是简单的老年人也能学习微信，微信方便易学，而是老年人不得不去学。所以微信为老年人创造了需求。</p><p>无论一个需求来源于何处，基本上他都是一个假设性的需求。<strong>我们所做的每一款产品，并不是在解决或者满足用户的需求，而是在持续不断的验证用户确实有这些需求</strong>。如果我们能够站在这个角度去思考产品设计的时候，我们就该知道，当对产品进行迭代排期，需要达成的目标是，每一次更新验证了什么，而不是每一次更新解决了什么。</p><p>所有的需求都有多个解决方案，没有一个人的解决方案是绝对可行的。但是我们却可以验证某个实践确实解决了问题。也就是说，做出来才是第一要务，设计是为了做的更好，本质仍在于做出产品。</p><h3 id="敏捷开发辅助新产品实践"><a href="#敏捷开发辅助新产品实践" class="headerlink" title="敏捷开发辅助新产品实践"></a>敏捷开发辅助新产品实践</h3><p>敏捷开发一个核心要义就是快速迭代。</p><p>用户的需求如果是非常紧急的，即缺少了某种解决方案会非常不方便。比如下班高峰期打不到出租车，需要更多的车投入运营等；或者用户的需求是被创造出来的。比如不玩微信玩抖音，不玩抖音看电视。无论是什么样子的需求，用市场的角度去解析，都是“不稳定”的。需求时刻在变，要求迭代要足够快速，用迭代来验证需求已经改变；用产品更新来让持续产生用户价值。</p><p>如果我们意识不到迭代的重要性，认为目前没有迭代的情况下，用户仍能很好的处理好自己的问题，而不积极去推进自己的产品迭代，那相当于，我们自己放弃了验证用户需求的机会。其结果会是两种，如果用户有多个依赖，那么，用户需求会被其他的迭代更快的产品所验证和满足，如果用户只能使用自己的产品，比如，规定了我们只能使用某一款笔记本，工作沟通工具等，且其迭代周期不够，那么当用户需求急升的时候，就会是该产品无法承受而被迫革新的时候。被革新虽然是常有的事，但是作为该产品的负责人和参与者，不一定希望自己的产品是这样的结尾 。</p><h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>敏捷开发模式希望通过坚持快速迭代来不断验证用户需求，最终保持产品持续走在最具竞争力的位置。即时验证用户需求不及预期，也可以降低沉没成本并即时调整航向。</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h3 id=&quot;精益创业中的反馈循环&quot;&gt;&lt;a href=&quot;#精益创业中的反馈循环&quot; class=&quot;headerlink&quot; title=&quot;精益创业中的反馈循环&quot;&gt;&lt;/a&gt;精益创业中的反馈循环&lt;/h3&gt;&lt;p&gt;在《精益创业》这本书中提到的一个反馈循环为&lt;code&gt;开发-测量-认知&lt;/c</summary>
+      
+    
+    
+    
+    
+  </entry>
+  
+</feed>
