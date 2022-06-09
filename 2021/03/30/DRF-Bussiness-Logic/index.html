@@ -202,9 +202,9 @@
     <link rel="preload" href="/css/dark.css?v=20211217" as="style">
     <link rel="stylesheet" href="/css/dark.css">
     <link rel="stylesheet" href="/css/mobile.css?v=20211217" media="(max-width: 960px)">
-    <link rel="preload" href="https://unpkg.com/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" as="style"
-        onload="this.onload=null;this.rel='stylesheet'">
-    <link rel="preload" href="https://unpkg.com/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css"
+        as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
     <link rel="preload" href="/scripts/main.js?v=20211217" as="script">
     <link rel="preload" href="/scripts/dark.js?v=20211217" as="script">
     <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
@@ -230,7 +230,7 @@
     <link rel="alternate" href="/atom.xml" title="Edison" type="application/atom+xml">
 </head>
 
-<script src="https://unpkg.com/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
 <script type="text/javascript">
     if (typeof window.$ == undefined) {
         console.warn('jquery load from jsdelivr failed, will load local script')
@@ -490,7 +490,7 @@
 
             asyncLoadWithFallBack(
                 [
-                    'https://unpkg.com/npm/webfontloader@1.6.28/webfontloader.min.js',
+                    'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
                     'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
                     "/lib/webfontloader.min.js",
                 ],
@@ -1079,7 +1079,7 @@
     <!-- dark mode -->
     <script src="/scripts/dark.js?v=20211217"></script>
     <!-- fancybox -->
-    <script src="https://unpkg.com/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" defer></script>
     <!-- algolia -->
 
     <!-- busuanzi -->
