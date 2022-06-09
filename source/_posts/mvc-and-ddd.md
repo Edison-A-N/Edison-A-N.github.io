@@ -1,7 +1,7 @@
 ---
 title: mvc-and-ddd
 date: 2022-05-23 13:10:03
-tags:
+tags: DDD
 ---
 
 
