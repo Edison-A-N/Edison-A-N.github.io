@@ -6,7 +6,7 @@
   <link href="https://zhangn661.com/atom.xml" rel="self"/>
   
   <link href="https://zhangn661.com/"/>
-  <updated>2022-02-13T14:07:49.280Z</updated>
+  <updated>2022-06-09T04:26:18.405Z</updated>
   <id>https://zhangn661.com/</id>
   
   <author>
@@ -15,6 +15,50 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>ddd-thinking</title>
+    <link href="https://zhangn661.com/2022/06/09/ddd-thinking/"/>
+    <id>https://zhangn661.com/2022/06/09/ddd-thinking/</id>
+    <published>2022-06-09T04:26:18.000Z</published>
+    <updated>2022-06-09T04:26:18.405Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="DDD-关键概念"><a href="#DDD-关键概念" class="headerlink" title="DDD 关键概念"></a>DDD 关键概念</h3><h4 id="Domain-中的概念"><a href="#Domain-中的概念" class="headerlink" title="Domain 中的概念"></a>Domain 中的概念</h4><h5 id="Context"><a href="#Context" class="headerlink" title="Context"></a>Context</h5><p>一个Domain独占一个Context。在Context中完成下述的一系列逻辑。在应用DDD中，最难的一步是，划定Context。将不同Domain的边界准确的描述清楚，对于抽象能力、业务理解准确性与未来预期的判断能力要求极高。边界划定的不好，也将难以保障内聚与耦合的合理性。</p><h5 id="Aggregate、Entity、Value-Object"><a href="#Aggregate、Entity、Value-Object" class="headerlink" title="Aggregate、Entity、Value Object"></a>Aggregate、Entity、Value Object</h5><p>将三者放在一起，是因为三者是一个包含关系，并对上层提供引用。在这些model中，会提供独占的attribute以及对应的对attribute的访问方法。</p><h5 id="Service"><a href="#Service" class="headerlink" title="Service"></a>Service</h5><p>对于一些无法由一个model完成执行的方法逻辑，可以通过service进行包装。service的设计取舍比较复杂，在<a href="#%E5%85%B3%E4%BA%8Edomain-service">后续章节中详说</a></p><h5 id="Event"><a href="#Event" class="headerlink" title="Event"></a>Event</h5><p>将Domain Event提前到这个位置提出，是因为，Event Driven模式在越来越的复杂应用中，会被使用。（不复杂的应用，也不建议使用DDD进行建模，增加了过多的实体反而提高了理解成本）。Domain Event主要应用于异步驱动其他Domain执行一些业务处理，其中也会涉及到复杂的事务处理与资源竞争访问的问题。相关话题与Event Driven模式相关，在这里不详述。</p><h5 id="Factory方法"><a href="#Factory方法" class="headerlink" title="Factory方法"></a>Factory方法</h5><p><code>Factory</code>方法用于创建一个对应的model（可能是一个Aggregate、Entity或者Value Object），并执行一些复杂的初始化操作。**<code>Factory</code>不用于从<code>Repository</code>重建model，重建应该将<code>Factory</code>创建的model的引用，作为参数传入<code>Repository</code>接口中，执行重建**</p><h5 id="Repository"><a href="#Repository" class="headerlink" title="Repository"></a>Repository</h5><p><code>Repository</code>用于将model写入到数据存储中以及从数据存储中重建model。数据存储可以是sql数据库或nosql数据库以及具有存储能力的MQ以及磁盘系统。<code>Repository</code>提供一系列interface来访问数据存储。</p><ul><li>写入和重建<br>创建、更新、重建model，都会将model传入<code>Repository</code>的<code>interface</code>中，<strong>这是因为，<code>Repository</code>也是属于Domain，属于Context，所以，Repository需要理解同一个Context中的model包含什么attribute，并将其映射写入到存储中或从存储中重建model。</strong></li><li>其他访问数据的方法<br>list是一个在DDD中没有提到，在实际业务中经常使用的数据访问形式，这一系列扩展的数据访问方法，可以通过扩展<code>Repository</code>的<code>interface</code>支持Domain的数据访问。</li></ul><h4 id="跨Domain的访问"><a href="#跨Domain的访问" class="headerlink" title="跨Domain的访问"></a>跨Domain的访问</h4><h5 id="Facade接口"><a href="#Facade接口" class="headerlink" title="Facade接口"></a>Facade接口</h5><p>使用Facade模式来避免跨Context直接调用内部方法，便于底层model的持续重构。</p><h3 id="关于domain-service"><a href="#关于domain-service" class="headerlink" title="关于domain service"></a>关于domain service</h3><p>什么样的业务逻辑会放在领域服务中，在DDD中没有具体说，这可能也受限于DDD提出的时代背景。后续的实践者，包括我自己，也只能通过举例来说明。我个人的理解是，对于Web应用中，pagination、validator、permission、serializer等模块，都可以使用service来进行处理。也就是说，service是一个大的package，其中会根据不同domain需求再做复杂的service拆分。这些service通常也是interface模式，传入model的引用执行一些数据处理或校验，并按需返回数据。</p><h3 id="DDD-在不同领域的应用"><a href="#DDD-在不同领域的应用" class="headerlink" title="DDD 在不同领域的应用"></a>DDD 在不同领域的应用</h3><p>DDD的提出，是为了解决Web应用开发中出现的大量贫血模型。在前后端分离架构中，后端越来越专注与数据模型与数据处理逻辑的设计与开发，并最终交付Rest API。客户端渲染模式交由前端完成。随着后端数据模型复杂度的提高，原有的M+V模式割裂了数据处理逻辑与数据模型，不利于持续维护和迭代开发。DDD的设计可以将数据与数据处理很好的融合起来，实现了高内聚低耦合。</p><p>高内聚低耦合在复杂度高的软件开发中是十分必要的，对于保障软件整体的可维护性与稳定可用有很大价值。<strong>DDD的设计则可用应用在这一系列软件设计中。</strong> 比如，通过对Context-Aggregate-Entity-ValueObj的模型层次设计，让数据模型更好理解，通过Factory方法来维护唯一创建入口让初始化更简单易理解。跨domain使用facade模式进行interface设计，也让模型之间的访问不会产生复杂的耦合。</p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h3 id=&quot;DDD-关键概念&quot;&gt;&lt;a href=&quot;#DDD-关键概念&quot; class=&quot;headerlink&quot; title=&quot;DDD 关键概念&quot;&gt;&lt;/a&gt;DDD 关键概念&lt;/h3&gt;&lt;h4 id=&quot;Domain-中的概念&quot;&gt;&lt;a href=&quot;#Domain-中的概念&quot; class</summary>
+      
+    
+    
+    
+    
+    <category term="DDD" scheme="https://zhangn661.com/tags/DDD/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>mvc-and-ddd</title>
+    <link href="https://zhangn661.com/2022/05/23/mvc-and-ddd/"/>
+    <id>https://zhangn661.com/2022/05/23/mvc-and-ddd/</id>
+    <published>2022-05-23T05:10:03.000Z</published>
+    <updated>2022-06-09T02:11:59.382Z</updated>
+    
+    <content type="html"><![CDATA[<h1 id="MVC与DDD比较-2022-05-23"><a href="#MVC与DDD比较-2022-05-23" class="headerlink" title="MVC与DDD比较(2022.05.23)"></a>MVC与DDD比较(2022.05.23)</h1><p>MVC与DDD其实并不是对立的。在MVC中，我们会在controller中执行一些校验逻辑，包含可能的鉴权、参数校验等。我们也会在view里面实现service，包含各种validator与serializer以及data transfer。</p><p>DDD拆解并丰富了MVC中的M，将一些在V中执行的逻辑迁移到M中，由domain model执行model内的业务处理，同时将DTO从M中剥离出来放到infrastructure中，借由其他的设计模式如repository或者CQRS等进行处理。</p><p>同时，DDD中依然会有一些业务操作无法在model中完成，这时候，借由domain service和application service来进行处理。其中，domain service执行数据间的判断与操作，application service则负责完整执行需要service与model与infrastructure协同的操作。application service面向client提供完整功能，domain service仅处理model无法承担的业务功能。</p><p>其实这两种方式都是对web服务处理业务逻辑的一种抽象，而DDD只是提供我们另一种抽象方式，协助我们更紧凑的封装data model。当然，其代价就是由于严格的分层，造成同样属性的模型重复在request与response序列化、domain model处理以及repository处理中实现。借鉴<a href="https://www.django-rest-framework.org/">Django Rest Framework</a>中对serializer的设计，我们可以实现通用的从某一个<code>domain model Entity and ValueObj</code> generate不同的适配不同module的data model。以减少model重复定义，避免提高维护复杂度</p><h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><p><a href="https://stackoverflow.com/a/2279729">domain service vs application service vs infrastructure service</a><br><a href="https://stackoverflow.com/a/16847409">uniquevalidation in DDD</a><br><a href="https://www.infoq.cn/article/star-driven-approaches">驱动方法不能改变任何事情</a></p>]]></content>
+    
+    
+      
+      
+    <summary type="html">&lt;h1 id=&quot;MVC与DDD比较-2022-05-23&quot;&gt;&lt;a href=&quot;#MVC与DDD比较-2022-05-23&quot; class=&quot;headerlink&quot; title=&quot;MVC与DDD比较(2022.05.23)&quot;&gt;&lt;/a&gt;MVC与DDD比较(2022.05.23)&lt;/h1</summary>
+      
+    
+    
+    
+    
+    <category term="DDD" scheme="https://zhangn661.com/tags/DDD/"/>
+    
+  </entry>
   
   <entry>
     <title>Git commit 规范</title>
