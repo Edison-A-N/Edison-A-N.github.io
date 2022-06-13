@@ -38,11 +38,11 @@ about:
   image: '/intro/about-bg.jpg'
 # Search for website
 search:
-  enable: false
+  enable: true
   # Seach URL, must be set. For example: 'fi3ework.github.io'
-  url: 
+  url: zhangn661.com
   # Search engine: 'bing' (default), 'google' or 'baidu'
-  engine: bing
+  engine: google
 # Display icons of friends, about and search
 # You can only use free icons started with 'fab' and 'fas' by default
 # https://fontawesome.com/v5.15/icons?d=gallery&p=2&s=brands,solid&m=free
@@ -65,8 +65,8 @@ profile_links:
 SEO_title: Edison's Blog
 # keywords for site (good for SEO)
 SEO_keywords:
-  - hexo
-  - 'hexo-theme'
+  - Edison
+  - DDD
   - 'hexo-blog'
 # main title shown in header image
 main_title: Edison's Studio.
@@ -171,7 +171,7 @@ CNZZ_analytics:
 
 # ========== Others ========== #
 # Favicon
-favicon: /assets/favicon.ico
+favicon: avatar/avatar.jpg
 # Post copyright
 copyright:
   enable: true
