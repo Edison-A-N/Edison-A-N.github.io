@@ -3,50 +3,48 @@ layout: resume
 title: Resume
 ---
 
-张楠
-============
+## 张楠
 
--------------------     ----------------------------
-Emain                            zhangn661@gmail.com
--------------------     ----------------------------
+---
 
-Education
----------
+Emain zhangn661@gmail.com
+
+---
+
+## Education
 
 2013-2017
-:   **BSc, 海洋科学**; 中山大学
+: **BSc, 海洋科学**; 中山大学
 
-Experience
-----------
+## Experience
 
-**药物管线管理平台**
+### 药物管线管理平台
 
 药物管线管理平台主要承担复杂的药物研发项目管理。
 
-* 负责模型设计，基于药物研发里程碑与研发迭代周期分子推进业务，设计Assignment模块，支持分子DMTA周期任务分配流程
-* 负责技术选型工作，demo阶段选用Django + Django RestFramework组合，快速实现基于模型的Rest API，验证功能与需求
-* 调研多种权限管理模型与框架，使用RBAC模型及Casbin框架实现权限管理，以简化用户对权限功能理解，降低权限配置门槛
+- 负责模型设计，基于药物研发里程碑与研发迭代周期分子推进业务，设计 Assignment 模块，支持分子 DMTA 周期任务分配流程
+- 负责技术选型工作，demo 阶段选用 Django + Django RestFramework 组合，快速实现基于模型的 Rest API，验证功能与需求
+- 调研多种权限管理模型与框架，使用 RBAC 模型及 Casbin 框架实现权限管理，以简化用户对权限功能理解，降低权限配置门槛
 
-**药物分子库**
+### 药物分子库
 
-药物分子库主要承担药物研发业务中，DMTA全周期的分子数据存储管理，并提供在线分析能力
+药物分子库主要承担药物研发业务中，DMTA 全周期的分子数据存储管理，并提供在线分析能力
 
-**DMPK实验管理平台**
-DMPK实验管理平台，主要用于提供Assay(类似于电商系统的商品)的创建与编辑，并提供API给予不同客户端提交Assay订单(类似于电商系统的下单购买)，完成订单后回传Assay分析的结果数据(交付订单结果)。
+### DMPK 实验管理平台
 
-Technical Experience
---------------------
+DMPK 实验管理平台，主要用于提供 Assay(类似于电商系统的商品)的创建与编辑，并提供 API 给予不同客户端提交 Assay 订单(类似于电商系统的下单购买)，完成订单后回传 Assay 分析的结果数据(交付订单结果)。
+
+## Technical Experience
+
 Programming Languages
-:   **first-lang:** Python
-:   **second-lang:** Golang
+: **first-lang:** Python
+: **second-lang:** Golang
 
 Database
-:  **Sql** Postgres, Mysql, 主要了解基本的索引、锁、事务等机制
-:  **NoSQL** Redis
+: **Sql** Postgres, Mysql, 主要了解基本的索引、锁、事务等机制
+: **NoSQL** Redis
 
 Message Queue
-:  **MQ** RabitMQ, Kafka, Pulsar: 主要了解其内部架构
+: **MQ** RabitMQ, Kafka, Pulsar: 主要了解其内部架构
 
-
-Extra Section, Call it Whatever You Want
-----------------------------------------
+## Extra Section, Call it Whatever You Want
