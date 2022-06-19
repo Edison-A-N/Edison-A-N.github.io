@@ -7,7 +7,7 @@ title: Resume
 
 ---
 
-Emain zhangn661@gmail.com
+Email zhangn661@gmail.com
 
 ---
 
