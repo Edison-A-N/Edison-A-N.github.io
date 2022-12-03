@@ -1,6 +1,6 @@
 ---
 title: opnetelemetry-jaeger
-tags: '可观测性, opentelemetry'
+tags: ['可观测性', 'opentelemetry']
 date: 2022-12-03 15:43:31
 ---
 
