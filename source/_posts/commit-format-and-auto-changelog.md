@@ -66,3 +66,4 @@ git提交规范，有利于代码变动的稳定性监控。更大的价值是�
 [Commit message 和 Change log 编写指南 - 阮一峰](https://www.ruanyifeng.com/blog/2016/01/commit_message_change_log.html)
 [Angular提交信息规范](https://zj-git-guide.readthedocs.io/zh_CN/latest/message/Angular%E6%8F%90%E4%BA%A4%E4%BF%A1%E6%81%AF%E8%A7%84%E8%8C%83/)
 [美团 GIT Commit Log规范](https://cloud.tencent.com/developer/article/1762300)
+[conventional commits](https://www.conventionalcommits.org/en/v1.0.0/)
