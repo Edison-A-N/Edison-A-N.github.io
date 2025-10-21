@@ -11,6 +11,10 @@ date: 2025-09-29 00:00:00
 excerpt: 本文分析了自动转换REST API到MCP的陷阱和问题，探讨了传统API设计与AI原生接口的根本差异，提出了从代理故事开始设计、遵循单一职责原则等最佳实践，为构建真正适合AI代理的接口提供设计指导。
 ---
 
+<div style="color: #666; font-style: italic; font-size: 0.9em; margin-bottom: 1em;">
+本文内容由AI生成
+</div>
+
 ### 为什么开发者想要转换REST API到MCP
 
 随着AI代理的兴起，许多开发者面临一个现实需求：如何让现有的REST API能够被LLM直接使用。这催生了各种自动转换工具，如 [fastapi_mcp](https://github.com/tadata-org/fastapi_mcp) 和 [FastMCP 的 `from_openapi()` 功能](https://gofastmcp.com/integrations/fastapi#mounting-an-mcp-server)，它们基于 OpenAPI 规范自动将 Web API 转换为符合 MCP Tool 规范的接口。

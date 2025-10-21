@@ -10,6 +10,10 @@ date: 2025-09-29 00:00:00
 excerpt: 本文深入探讨了MCP Output Schema在数据验证、安全保障和结构化输出方面的核心价值，分析了LLM处理结构化数据的局限性，并提出了基于单一职责原则的Schema设计最佳实践，为构建可靠的AI代理系统提供技术指导。
 ---
 
+<div style="color: #666; font-style: italic; font-size: 0.9em; margin-bottom: 1em;">
+本文内容由AI生成
+</div>
+
 ### MCP Output Schema的核心价值与应用场景
 
 Model Context Protocol (MCP) 的output schema机制在复杂的数据交互场景中发挥着关键作用。基于[MCP官方文档](https://modelcontextprotocol.io/specification/2025-06-18/server/tools#output-schema)的定义，output schema能够"验证工具结果的结构，并在验证后对包含的值进行更明智的检查"。
