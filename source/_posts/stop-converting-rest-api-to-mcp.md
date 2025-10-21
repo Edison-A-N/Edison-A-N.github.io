@@ -128,7 +128,7 @@ excerpt: 本文分析了自动转换REST API到MCP的陷阱和问题，探讨了
 
 AI代理的承诺不仅仅是让现有软件变得"健谈"，而是设计更简洁、更有意图、以机器为先的接口的机会。
 
-**停止转换你的REST API，开始策划它们**：从代理故事开始，直接构建AI原生的MCP接口，而不是简单地将人类设计的API强加给AI系统。
+**停止转换你的REST API，开始策划它们**：从代理故事(Agent Story)开始，直接构建AI原生的MCP接口，而不是简单地将人类设计的API强加给AI系统。
 
 ## 参考资料
 1. [Stop Converting Your REST APIs to MCP](https://www.jlowin.dev/blog/stop-converting-rest-apis-to-mcp)
