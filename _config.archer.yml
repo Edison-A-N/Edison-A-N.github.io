@@ -11,6 +11,7 @@ social:
   github: //github.com/Edison-A-N
   # wechat should be a path of qr-code image path
   # qq should be a path of qr-code image path
+  # wechat: 
   qq: 
   telegram: 
   weibo: 
