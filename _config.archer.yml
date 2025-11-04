@@ -11,7 +11,7 @@ social:
   github: //github.com/Edison-A-N
   # wechat should be a path of qr-code image path
   # qq should be a path of qr-code image path
-  # wechat: 
+  wechat: 
   qq: 
   telegram: 
   weibo: 
@@ -38,7 +38,7 @@ about:
   image: '/intro/about-bg.jpg'
 # Search for website
 search:
-  enable: true
+  enable: false
   # Seach URL, must be set. For example: 'fi3ework.github.io'
   url: zhangn661.com
   # Search engine: 'bing' (default), 'google' or 'baidu'
