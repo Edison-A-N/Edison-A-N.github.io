@@ -218,6 +218,255 @@
 
             gtag('config', 'UA-188648772-3');
         </script>
+    <!-- Language Switcher & Browser Translation -->
+        <meta name="language" content="zh-CN">
+        <meta http-equiv="Content-Language" content="zh-CN">
+        <!-- Load Google Translate script for page translation -->
+        <script type="text/javascript">
+            function googleTranslateElementInit() {
+                // Google Translate will be initialized when hash is present
+                if (window.location.hash && window.location.hash.match(/#googtrans\(/)) {
+                    // Google Translate will automatically translate the page
+                }
+            }
+        </script>
+        <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+        <style>
+            /* Hide Google Translate default banner */
+            .goog-te-banner-frame.skiptranslate {
+                display: none !important;
+            }
+            body {
+                top: 0 !important;
+            }
+            .goog-te-banner {
+                display: none !important;
+            }
+            .goog-te-balloon-frame {
+                display: none !important;
+            }
+            
+            /* Language Switcher Styling */
+            .language-switcher {
+                position: relative;
+                display: inline-block;
+                vertical-align: middle;
+                margin-right: 0.5rem;
+            }
+            
+            .language-switcher-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.4rem;
+                padding: 0.4rem 0.8rem;
+                background-color: rgba(255, 255, 255, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                border-radius: 6px;
+                color: #ffffff;
+                font-size: 0.85rem;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                user-select: none;
+                font-family: inherit;
+            }
+            
+            .language-switcher-btn:hover {
+                background-color: rgba(255, 255, 255, 0.2);
+                border-color: rgba(255, 255, 255, 0.5);
+                transform: translateY(-1px);
+            }
+            
+            .language-switcher-btn:active {
+                transform: translateY(0);
+            }
+            
+            .language-switcher-btn .flag {
+                font-size: 1rem;
+                line-height: 1;
+            }
+            
+            .language-switcher-btn .arrow {
+                font-size: 0.7rem;
+                transition: transform 0.3s ease;
+                opacity: 0.8;
+            }
+            
+            .language-switcher.active .language-switcher-btn .arrow {
+                transform: rotate(180deg);
+            }
+            
+            .language-switcher-menu {
+                position: absolute;
+                top: calc(100% + 8px);
+                right: 0;
+                background: #ffffff;
+                border-radius: 8px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+                min-width: 140px;
+                opacity: 0;
+                visibility: hidden;
+                transform: translateY(-10px);
+                transition: all 0.3s ease;
+                z-index: 1000;
+                overflow: hidden;
+            }
+            
+            .language-switcher.active .language-switcher-menu {
+                opacity: 1;
+                visibility: visible;
+                transform: translateY(0);
+            }
+            
+            .language-switcher-item {
+                display: flex;
+                align-items: center;
+                gap: 0.6rem;
+                padding: 0.75rem 1rem;
+                color: #333;
+                font-size: 0.9rem;
+                cursor: pointer;
+                transition: background-color 0.2s ease;
+                border: none;
+                background: none;
+                width: 100%;
+                text-align: left;
+            }
+            
+            .language-switcher-item:hover {
+                background-color: #f5f5f5;
+            }
+            
+            .language-switcher-item.active {
+                background-color: #e8f4f8;
+                color: #2c5aa0;
+                font-weight: 500;
+            }
+            
+            .language-switcher-item .flag {
+                font-size: 1.1rem;
+                line-height: 1;
+            }
+            
+            .language-switcher-item .name {
+                flex: 1;
+            }
+            
+            .language-switcher-item.active::after {
+                content: '✓';
+                color: #2c5aa0;
+                font-weight: bold;
+                margin-left: auto;
+            }
+            
+            /* Dark mode support */
+            @media (prefers-color-scheme: dark) {
+                .language-switcher-menu {
+                    background: #2d2d2d;
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+                }
+                
+                .language-switcher-item {
+                    color: #e0e0e0;
+                }
+                
+                .language-switcher-item:hover {
+                    background-color: #3d3d3d;
+                }
+                
+                .language-switcher-item.active {
+                    background-color: #2c5aa0;
+                    color: #ffffff;
+                }
+            }
+        </style>
+        <script>
+            (function() {
+                // Language Switcher Logic
+                const currentLang = 'zh-CN';
+                const languages = [{"code":"zh-CN","name":"中文","flag":"🇨🇳"},{"code":"en","name":"English","flag":"🇺🇸"}];
+                
+                // Translation function using Google Translate
+                function translatePage(targetLang) {
+                    if (targetLang === currentLang) {
+                        // Reset to original language - remove translation
+                        var url = window.location.href.split('#')[0];
+                        window.location.href = url;
+                        return;
+                    }
+                    
+                    // Use Google Translate hash method
+                    // Format: #googtrans(源语言|目标语言)
+                    var hash = '#googtrans(' + currentLang + '|' + targetLang + ')';
+                    
+                    // Check if already translated to this language
+                    if (window.location.hash === hash) {
+                        return;
+                    }
+                    
+                    // Set hash and reload page to trigger Google Translate
+                    window.location.hash = hash;
+                    window.location.reload();
+                }
+                
+                // Initialize language switcher
+                document.addEventListener('DOMContentLoaded', function() {
+                    const switcher = document.querySelector('.language-switcher');
+                    if (!switcher) return;
+                    
+                    const btn = switcher.querySelector('.language-switcher-btn');
+                    const menu = switcher.querySelector('.language-switcher-menu');
+                    
+                    // Check current translation state from URL hash
+                    var hash = window.location.hash;
+                    var hashMatch = hash.match(/#googtrans\(([^|]+)\|([^)]+)\)/);
+                    var currentDisplayLang = currentLang;
+                    
+                    if (hashMatch) {
+                        currentDisplayLang = hashMatch[2];
+                        // Update button to show translated language
+                        var translatedLangObj = languages.find(function(l) { return l.code === currentDisplayLang; });
+                        if (translatedLangObj && btn) {
+                            var flagSpan = btn.querySelector('.flag');
+                            var nameSpan = btn.querySelector('.name');
+                            if (flagSpan) flagSpan.textContent = translatedLangObj.flag;
+                            if (nameSpan) nameSpan.textContent = translatedLangObj.name;
+                        }
+                        
+                        // Update active state in menu
+                        menu.querySelectorAll('.language-switcher-item').forEach(function(item) {
+                            if (item.dataset.lang === currentDisplayLang) {
+                                item.classList.add('active');
+                            } else {
+                                item.classList.remove('active');
+                            }
+                        });
+                    }
+                    
+                    // Toggle menu
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        switcher.classList.toggle('active');
+                    });
+                    
+                    // Close menu when clicking outside
+                    document.addEventListener('click', function(e) {
+                        if (!switcher.contains(e.target)) {
+                            switcher.classList.remove('active');
+                        }
+                    });
+                    
+                    // Handle language selection
+                    menu.querySelectorAll('.language-switcher-item').forEach(function(item) {
+                        item.addEventListener('click', function() {
+                            const langCode = this.dataset.lang;
+                            switcher.classList.remove('active');
+                            
+                            translatePage(langCode);
+                        });
+                    });
+                });
+            })();
+        </script>
 <meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Edison" type="application/atom+xml">
 </head>
 
@@ -243,6 +492,24 @@
     </div>
     <!-- header actions -->
     <div class="header-actions">
+        <!-- Language Switcher -->
+        <div class="language-switcher header-element">
+            <button class="language-switcher-btn" aria-label="Language Switcher">
+                <span class="flag">🇨🇳</span>
+                <span class="name">中文</span>
+                <span class="arrow">▼</span>
+            </button>
+            <div class="language-switcher-menu">
+                <button class="language-switcher-item active" data-lang="zh-CN">
+                    <span class="flag">🇨🇳</span>
+                    <span class="name">中文</span>
+                </button>
+                <button class="language-switcher-item" data-lang="en">
+                    <span class="flag">🇺🇸</span>
+                    <span class="name">English</span>
+                </button>
+            </div>
+        </div>
         <!-- theme mode switch button -->
         <span class="header-theme-btn header-element">
             <i class="fas fa-adjust"></i>
@@ -424,6 +691,26 @@
             <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" alt="loading">
             <div class="container container-unloaded">
                 <main class="main index-page">
+            
+        <article class="index-post">
+            <a class="abstract-title" href="/2021/06/17/DRF-Exception/">
+                <span class="abstract-title-text">DRF Exception Handle</span>
+            </a>
+            <div class="abstract-content">
+                框架报错源码解析
+exception 处理器
+1234567891011121314151617181920212223242526272829303132# rest_framework.views 71-101def exception_handler(exc, context):    &quot;&quot;&quot;    Returns the response that should be used for any given exception.    By default we handle the REST framework `APIException`, and...
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2025/09/20">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/06/17</span>
+                </div>
+                <!-- tags -->
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
             
         <article class="index-post">
             <a class="abstract-title" href="/2021/06/15/Django-With-DDD/">
@@ -672,15 +959,20 @@ API设计对于前后端分离架构，API成为了前后端间数据通信协�
         
         
         
+        
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 27
+        Total : 28
         </div>
         <!-- search  -->
     </div>
     <div class="post-archive">
             <div class="archive-year"> 2025 </div>
             <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2025/11/10/mcp-recent-sharing/">MCP 近期内容分享：从 Resources、Tools 到 Prompts 的实践探索</a>
+        </li>
         <li class="archive-post-item">
             <span class="archive-post-date">10/28</span>
             <a class="archive-post-title" href="/2025/10/28/args_doc_format_comparison/">Tool Args Documentation Format Comparison Analysis</a>
@@ -810,10 +1102,6 @@ API设计对于前后端分离架构，API成为了前后端间数据通信协�
 
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
-            <span class="sidebar-tag-name" data-tags="agile">
-                <span class="iconfont-archer">&#xe606;</span>
-                agile
-            </span>
             <span class="sidebar-tag-name" data-tags="LLM">
                 <span class="iconfont-archer">&#xe606;</span>
                 LLM
@@ -821,6 +1109,14 @@ API设计对于前后端分离架构，API成为了前后端间数据通信协�
             <span class="sidebar-tag-name" data-tags="AI Agent">
                 <span class="iconfont-archer">&#xe606;</span>
                 AI Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="MCP">
+                <span class="iconfont-archer">&#xe606;</span>
+                MCP
+            </span>
+            <span class="sidebar-tag-name" data-tags="agile">
+                <span class="iconfont-archer">&#xe606;</span>
+                agile
             </span>
             <span class="sidebar-tag-name" data-tags="Tool Format">
                 <span class="iconfont-archer">&#xe606;</span>
@@ -834,17 +1130,17 @@ API设计对于前后端分离架构，API成为了前后端间数据通信协�
                 <span class="iconfont-archer">&#xe606;</span>
                 DDD
             </span>
-            <span class="sidebar-tag-name" data-tags="MCP">
+            <span class="sidebar-tag-name" data-tags="ASGI, Python, FastAPI">
                 <span class="iconfont-archer">&#xe606;</span>
-                MCP
+                ASGI, Python, FastAPI
             </span>
             <span class="sidebar-tag-name" data-tags="multi-tenant">
                 <span class="iconfont-archer">&#xe606;</span>
                 multi-tenant
             </span>
-            <span class="sidebar-tag-name" data-tags="ASGI, Python, FastAPI">
+            <span class="sidebar-tag-name" data-tags="API Design">
                 <span class="iconfont-archer">&#xe606;</span>
-                ASGI, Python, FastAPI
+                API Design
             </span>
             <span class="sidebar-tag-name" data-tags="可观测性">
                 <span class="iconfont-archer">&#xe606;</span>
@@ -853,10 +1149,6 @@ API设计对于前后端分离架构，API成为了前后端间数据通信协�
             <span class="sidebar-tag-name" data-tags="opentelemetry">
                 <span class="iconfont-archer">&#xe606;</span>
                 opentelemetry
-            </span>
-            <span class="sidebar-tag-name" data-tags="API Design">
-                <span class="iconfont-archer">&#xe606;</span>
-                API Design
             </span>
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
