@@ -118,6 +118,12 @@ Model Context Protocol (MCP) 中的 Resources、Tools 和 Prompts 三种功能�
    - `openai/widgetDescription`：帮助模型理解组件功能
 
 
-#### 补充阅读：MCP 协议的分裂风险
+#### 补充阅读
 
-[grapeot 的文章](https://grapeot.me/mcp-revisited.html)从另一个角度讨论了**协议分裂的风险**：[OpenAI Apps SDK](https://developers.openai.com/apps-sdk) 通过 `_meta` 域创建了私有扩展（`openai/*` 命名空间），这可能导致 MCP 协议出现类似 SQL dialect 的分裂
+**MCP 协议的分裂风险**
+
+[grapeot 的文章](https://grapeot.me/mcp-revisited.html)从另一个角度讨论了**协议分裂的风险**：[OpenAI Apps SDK](https://developers.openai.com/apps-sdk) 通过 `_meta` 域创建了私有扩展（`openai/*` 命名空间），这可能导致 MCP 协议出现类似 SQL dialect 的分裂。
+
+**MCP 忽视 40 年 RPC 最佳实践的风险**
+
+[Julien Simon 的文章](https://julsimon.medium.com/why-mcps-disregard-for-40-years-of-rpc-best-practices-will-burn-enterprises-8ef85ce5bc9b)深入分析了 MCP 协议在企业级应用中的潜在风险。文章指出，虽然 MCP 的简洁性加速了采用，但它系统性地忽视了分布式系统领域 40 年来的经验教训，包括类型安全、分布式追踪、服务发现、版本管理等关键能力。这些缺失可能导致企业在生产环境中面临调试困难、成本归因危机、安全漏洞等严重问题。文章强调，MCP 需要从 UNIX RPC、CORBA、REST、SOAP、gRPC 等历史协议中学习，才能真正满足企业级部署的需求。
