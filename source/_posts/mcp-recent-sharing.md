@@ -12,23 +12,22 @@ excerpt: >-
 date: 2025-11-10 00:00:00
 ---
 
-
 <div style="color: #666; font-style: italic; font-size: 0.9em; margin-bottom: 1em;">
 本文内容由 AI 协助生成
 </div>
 
 ### 一、Resources、Tools 与 Prompts 的用户交互模型对比
 
-Model Context Protocol (MCP) 中的 Resources、Tools 和 Prompts 三种功能在设计理念和用户交互模型上存在显著差异。基于[MCP官方文档](https://modelcontextprotocol.io/specification/2025-06-18/)的规范，以下是三种功能的详细对比：
+Model Context Protocol (MCP) 中的 Resources、Tools 和 Prompts 三种功能在设计理念和用户交互模型上存在显著差异。基于[MCP 官方文档](https://modelcontextprotocol.io/specification/2025-06-18/)的规范，以下是三种功能的详细对比：
 
-| 维度 | Resources（资源） | Tools（工具） | Prompts（提示） |
-|------|------------------|--------------|----------------|
-| **控制方式** | 应用程序驱动（Application-driven）<br>[参考文档](https://modelcontextprotocol.io/specification/2025-06-18/server/resources#user-interaction-model) | 模型控制（Model-controlled）<br>[参考文档](https://modelcontextprotocol.io/specification/2025-06-18/server/tools#user-interaction-model) | 用户控制（User-controlled）<br>[参考文档](https://modelcontextprotocol.io/specification/2025-06-18/server/prompts#user-interaction-model) |
-| **用户交互模型描述** | 资源设计为应用程序驱动，主机应用程序根据需要决定如何整合上下文。应用程序可以：<br>• 通过 UI 元素以树状或列表视图显式选择资源<br>• 允许用户搜索和过滤可用资源<br>• 基于启发式或 AI 模型的选择实现自动上下文包含 | 工具设计为模型控制，语言模型可以根据其上下文理解和用户的提示自动发现和调用工具。协议本身不强制任何特定的用户交互模型。 | 提示从服务器暴露给客户端，用户可以明确选择使用。通常通过用户界面中的用户发起命令触发，允许用户自然地发现和调用可用的提示。 |
-| **典型交互方式** | • 树状或列表视图选择<br>• 搜索和过滤<br>• 自动上下文包含 | • 模型自动发现和调用<br>• 基于上下文理解自动执行 | • 用户发起的命令（如斜杠命令）<br>• 明确的用户选择<br>• 自然发现和调用 |
-| **控制权归属** | 应用程序决定如何整合和使用资源 | AI 模型自动发现和调用，但需要人工确认 | 用户完全控制何时使用 |
-| **交互主动性** | 被动提供，由应用程序主动选择 | 主动执行，由模型根据上下文自动调用 | 被动等待，由用户主动触发 |
-| **安全机制** | 通过 URI 验证和访问控制保障安全<br>• 服务器必须验证所有资源 URI<br>• 对敏感资源实施访问控制 | 必须有人工确认环节，防止恶意或意外操作<br>• 提供清晰的工具暴露 UI<br>• 工具调用时插入视觉指示器<br>• 对操作提供确认提示 | 用户完全控制何时使用提示，风险相对较低 |
+| 维度                 | Resources（资源）                                                                                                                                                                                              | Tools（工具）                                                                                                                            | Prompts（提示）                                                                                                                           |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **控制方式**         | 应用程序驱动（Application-driven）<br>[参考文档](https://modelcontextprotocol.io/specification/2025-06-18/server/resources#user-interaction-model)                                                             | 模型控制（Model-controlled）<br>[参考文档](https://modelcontextprotocol.io/specification/2025-06-18/server/tools#user-interaction-model) | 用户控制（User-controlled）<br>[参考文档](https://modelcontextprotocol.io/specification/2025-06-18/server/prompts#user-interaction-model) |
+| **用户交互模型描述** | 资源设计为应用程序驱动，主机应用程序根据需要决定如何整合上下文。应用程序可以：<br>• 通过 UI 元素以树状或列表视图显式选择资源<br>• 允许用户搜索和过滤可用资源<br>• 基于启发式或 AI 模型的选择实现自动上下文包含 | 工具设计为模型控制，语言模型可以根据其上下文理解和用户的提示自动发现和调用工具。协议本身不强制任何特定的用户交互模型。                   | 提示从服务器暴露给客户端，用户可以明确选择使用。通常通过用户界面中的用户发起命令触发，允许用户自然地发现和调用可用的提示。                |
+| **典型交互方式**     | • 树状或列表视图选择<br>• 搜索和过滤<br>• 自动上下文包含                                                                                                                                                       | • 模型自动发现和调用<br>• 基于上下文理解自动执行                                                                                         | • 用户发起的命令（如斜杠命令）<br>• 明确的用户选择<br>• 自然发现和调用                                                                    |
+| **控制权归属**       | 应用程序决定如何整合和使用资源                                                                                                                                                                                 | AI 模型自动发现和调用，但需要人工确认                                                                                                    | 用户完全控制何时使用                                                                                                                      |
+| **交互主动性**       | 被动提供，由应用程序主动选择                                                                                                                                                                                   | 主动执行，由模型根据上下文自动调用                                                                                                       | 被动等待，由用户主动触发                                                                                                                  |
+| **安全机制**         | 通过 URI 验证和访问控制保障安全<br>• 服务器必须验证所有资源 URI<br>• 对敏感资源实施访问控制                                                                                                                    | 必须有人工确认环节，防止恶意或意外操作<br>• 提供清晰的工具暴露 UI<br>• 工具调用时插入视觉指示器<br>• 对操作提供确认提示                  | 用户完全控制何时使用提示，风险相对较低                                                                                                    |
 
 #### 设计理念的启示
 
@@ -117,7 +116,6 @@ Model Context Protocol (MCP) 中的 Resources、Tools 和 Prompts 三种功能�
    - `openai/widgetAccessible`：允许组件内部发起工具调用
    - `openai/widgetDescription`：帮助模型理解组件功能
 
-
 #### 补充阅读
 
 **MCP 协议的分裂风险**
@@ -127,3 +125,7 @@ Model Context Protocol (MCP) 中的 Resources、Tools 和 Prompts 三种功能�
 **MCP 忽视 40 年 RPC 最佳实践的风险**
 
 [Julien Simon 的文章](https://julsimon.medium.com/why-mcps-disregard-for-40-years-of-rpc-best-practices-will-burn-enterprises-8ef85ce5bc9b)深入分析了 MCP 协议在企业级应用中的潜在风险。文章指出，虽然 MCP 的简洁性加速了采用，但它系统性地忽视了分布式系统领域 40 年来的经验教训，包括类型安全、分布式追踪、服务发现、版本管理等关键能力。这些缺失可能导致企业在生产环境中面临调试困难、成本归因危机、安全漏洞等严重问题。文章强调，MCP 需要从 UNIX RPC、CORBA、REST、SOAP、gRPC 等历史协议中学习，才能真正满足企业级部署的需求。
+
+**MCP 联合创建者的深度访谈**
+
+[a16z 的播客访谈](https://a16z.com/podcast/mcp-co-creator-on-the-next-wave-of-llm-innovation/)邀请了 Anthropic 的 David Soria Parra（MCP 联合创建者之一）深入探讨了 MCP 项目的起源、设计理念和未来发展。访谈揭示了 MCP 诞生的背景故事：为了解决在不同 AI 应用（如 Claude Desktop 和代码编辑器）之间共享工作流的 M×N 问题，David 与 Justin Spahr-Summers 共同创建了这个协议。访谈还讨论了 MCP 如何通过标准化的接口实现类似 API 生态系统的效果，让开发者能够构建一次 MCP 服务器，在多个客户端（Cursor、Claude Desktop、Goose 等）中复用，从而大大降低了集成成本。这对于理解 MCP 的设计初衷和未来发展方向具有重要参考价值。
