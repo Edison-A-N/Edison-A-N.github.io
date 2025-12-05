@@ -59,7 +59,7 @@ title: About
 
 深度参与 Model Context Protocol (MCP) 生态建设，在多个核心项目中贡献代码：
 
-- **[python-sdk](https://github.com/modelcontextprotocol/python-sdk)** (官方 MCP Python SDK, 20k+ stars): 修复 StreamableHTTP 传输中的竞态条件问题，处理 `ClosedResourceError`；报告并修复 StreamableHTTP GET 请求连接问题
+- **[python-sdk](https://github.com/modelcontextprotocol/python-sdk)** (官方 MCP Python SDK, 20k+ stars): 修复 StreamableHTTP 传输中的竞态条件问题，处理 `ClosedResourceError` ([#1384](https://github.com/modelcontextprotocol/python-sdk/pull/1384)，已合并)；报告并修复 StreamableHTTP GET 请求连接问题
 - **[mcpadapt](https://github.com/grll/mcpadapt)**: 修复 `outputSchema` 处理逻辑，优化 LLM prompt token 使用；添加 WebSocket 依赖支持
 - **[fastapi_mcp](https://github.com/tadata-org/fastapi_mcp)**: 在 FastAPI 转 MCP 方向进行深入探索与实践，修复循环引用递归、实现 stateless HTTP 传输、集成请求上下文，总结 REST API 转 MCP 的设计思考与实践经验
 - **[smolagents](https://github.com/huggingface/smolagents)**: 添加嵌套参数格式化支持
