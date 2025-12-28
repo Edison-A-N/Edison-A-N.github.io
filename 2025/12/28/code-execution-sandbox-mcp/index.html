@@ -18,7 +18,7 @@
 <meta property="og:description" content="本文提出了一种 LLM 驱动的 Agent 架构，通过代码执行沙箱和 MCP 服务集成，解决复杂工具编排和管理的挑战。架构将控制代码与功能代码分离，LLM 生成的控制代码在轻量级沙箱中执行，通过 MCP 协议调用功能代码服务，实现安全、高效、可扩展的工具调用能力。">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2025-12-28T08:03:30.000Z">
-<meta property="article:modified_time" content="2025-12-28T08:21:26.278Z">
+<meta property="article:modified_time" content="2025-12-28T08:57:42.683Z">
 <meta property="article:author" content="Edison">
 <meta property="article:tag" content="LLM">
 <meta property="article:tag" content="Architecture">
@@ -313,7 +313,7 @@
 
                 <!-- 文章字数统计 -->
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">7.4k</span>Reading time: <span class="post-count reading-time">26 min</span></span>
+                        <span>Word count: <span class="post-count word-count">4.7k</span>Reading time: <span class="post-count reading-time">16 min</span></span>
                     </div>
                 <div class="post-intro-meta">
                     <!-- 撰写日期 -->
@@ -867,338 +867,28 @@
 <li>✅ <strong>健壮性</strong>：错误处理和自愈机制确保系统可靠运行</li>
 <li>✅ <strong>可观测性</strong>：全链路追踪和监控支持问题定位和优化</li>
 </ul>
-<h2 id="5-沙箱实现方案调研-draft"><a href="#5-沙箱实现方案调研-draft" class="headerlink" title="5. 沙箱实现方案调研 ( draft )"></a>5. 沙箱实现方案调研 ( draft )</h2><h3 id="5-1-AWS-Firecracker"><a href="#5-1-AWS-Firecracker" class="headerlink" title="5.1 AWS Firecracker"></a>5.1 AWS Firecracker</h3><p><strong>简介</strong>：AWS Firecracker 是由亚马逊云服务（AWS）开发的开源虚拟机管理器（VMM），专为无服务器计算和容器化工作负载设计。</p>
-<p><strong>核心特性</strong>：</p>
+<h2 id="5-沙箱实现方案调研-draft"><a href="#5-沙箱实现方案调研-draft" class="headerlink" title="5. 沙箱实现方案调研 ( draft )"></a>5. 沙箱实现方案调研 ( draft )</h2><h3 id="5-1-AWS-Firecracker"><a href="#5-1-AWS-Firecracker" class="headerlink" title="5.1 AWS Firecracker"></a>5.1 AWS Firecracker</h3><p>AWS 开源的虚拟机管理器，专为无服务器计算设计。microVM 可在 125ms 内启动，基于 KVM 提供硬件级安全隔离。</p>
 <ul>
-<li><strong>快速启动</strong>：microVM 可在 125 毫秒内启动，支持在单台主机上运行数千个实例</li>
-<li><strong>强安全隔离</strong>：基于 KVM，提供硬件级别的安全隔离，精简的设备模型减少了攻击面</li>
-<li><strong>内存安全</strong>：使用 Rust 语言开发，从语言层面避免内存安全漏洞</li>
-<li><strong>轻量级</strong>：结合了容器的启动速度和虚拟机的安全隔离特性</li>
-</ul>
-<p><strong>适用场景</strong>：</p>
-<ul>
-<li>无服务器计算（Serverless）</li>
-<li>多租户容器工作负载</li>
-<li>需要快速启动和高安全性的场景</li>
-</ul>
-<p><strong>官方网站</strong>：<a target="_blank" rel="noopener" href="https://firecracker-microvm.github.io/">https://firecracker-microvm.github.io/</a></p>
-<p><strong>GitHub</strong>：<a target="_blank" rel="noopener" href="https://github.com/firecracker-microvm/firecracker">https://github.com/firecracker-microvm/firecracker</a></p>
-<hr>
-<h3 id="5-2-E2B"><a href="#5-2-E2B" class="headerlink" title="5.2 E2B"></a>5.2 E2B</h3><p><strong>简介</strong>：E2B（Execution to the Boundary）是一个开源运行时环境，旨在在安全的云沙箱中执行 AI 生成的代码。</p>
-<p><strong>核心特性</strong>：</p>
-<ul>
-<li><strong>快速启动</strong>：沙箱启动时间小于 200 毫秒，避免冷启动延迟</li>
-<li><strong>多语言支持</strong>：支持 Python、JavaScript、Ruby、C++ 等多种编程语言</li>
-<li><strong>安全可靠</strong>：基于 Firecracker 微型虚拟机，确保代码执行的安全性和隔离性</li>
-<li><strong>私有化部署</strong>：允许用户在 AWS 或 GCP 账户中部署 E2B，实现私有化部署</li>
-<li><strong>长时间会话</strong>：支持长达 24 小时的会话</li>
-</ul>
-<p><strong>适用场景</strong>：</p>
-<ul>
-<li>AI 生成的代码执行</li>
-<li>代码评测和在线编程环境</li>
-<li>需要安全隔离的代码执行场景</li>
-</ul>
-<p><strong>官方网站</strong>：<a target="_blank" rel="noopener" href="https://e2b.dev/">https://e2b.dev/</a></p>
-<p><strong>GitHub</strong>：<a target="_blank" rel="noopener" href="https://github.com/e2b-dev/e2b">https://github.com/e2b-dev/e2b</a></p>
-<hr>
-<h3 id="5-3-阿里巴巴云方案"><a href="#5-3-阿里巴巴云方案" class="headerlink" title="5.3 阿里巴巴云方案"></a>5.3 阿里巴巴云方案</h3><h4 id="5-3-1-阿里云函数计算（Function-Compute）"><a href="#5-3-1-阿里云函数计算（Function-Compute）" class="headerlink" title="5.3.1 阿里云函数计算（Function Compute）"></a>5.3.1 阿里云函数计算（Function Compute）</h4><p><strong>简介</strong>：阿里云函数计算引入了 FaaSNet 系统，旨在加速自定义无服务器容器运行时的部署。</p>
-<p><strong>核心特性</strong>：</p>
-<ul>
-<li><strong>快速部署</strong>：FaaSNet 通过轻量级、自适应的函数树结构，实现了大规模容器的快速部署</li>
-<li><strong>高性能</strong>：评估结果显示，FaaSNet 能在 8.3 秒内在 1000 台虚拟机上部署 2500 个函数容器</li>
-<li><strong>可扩展性</strong>：适用于需要高弹性和快速扩展的无服务器平台</li>
-</ul>
-<p><strong>适用场景</strong>：</p>
-<ul>
-<li>无服务器函数计算</li>
-<li>大规模容器部署</li>
-<li>需要快速扩展的场景</li>
-</ul>
-<p><strong>官方网站</strong>：<a target="_blank" rel="noopener" href="https://www.alibabacloud.com/product/function-compute">https://www.alibabacloud.com/product/function-compute</a></p>
-<p><strong>相关论文</strong>：FaaSNet - Scalable Middleware for Accelerating FaaS Container Supply (arXiv:2105.11229)</p>
-<h4 id="5-3-2-阿里云安全容器服务"><a href="#5-3-2-阿里云安全容器服务" class="headerlink" title="5.3.2 阿里云安全容器服务"></a>5.3.2 阿里云安全容器服务</h4><p><strong>简介</strong>：阿里云提供的安全容器服务，提供轻量级沙箱环境用于运行应用程序。</p>
-<p><strong>核心特性</strong>：</p>
-<ul>
-<li>强调安全性和效率</li>
-<li>适用于需要快速扩展和隔离的场景</li>
-<li>提供轻量级沙箱环境</li>
-</ul>
-<p><strong>官方网站</strong>：<a target="_blank" rel="noopener" href="https://www.alibabacloud.com/product/secure-container-service">https://www.alibabacloud.com/product/secure-container-service</a></p>
-<hr>
-<h3 id="5-4-字节跳动方案"><a href="#5-4-字节跳动方案" class="headerlink" title="5.4 字节跳动方案"></a>5.4 字节跳动方案</h3><h4 id="5-4-1-SandboxFusion"><a href="#5-4-1-SandboxFusion" class="headerlink" title="5.4.1 SandboxFusion"></a>5.4.1 SandboxFusion</h4><p><strong>简介</strong>：字节跳动开源的安全沙箱，支持多种编程语言的代码运行和评测。</p>
-<p><strong>核心特性</strong>：</p>
-<ul>
-<li><strong>多语言支持</strong>：支持 Python、C++、Go、Java 等多种编程语言</li>
-<li><strong>安全隔离</strong>：提供安全的代码执行环境</li>
-<li><strong>代码评测</strong>：适用于在线编程和代码评测场景</li>
-</ul>
-<p><strong>适用场景</strong>：</p>
-<ul>
-<li>在线编程平台</li>
-<li>代码评测系统</li>
-<li>需要安全执行用户代码的场景</li>
-</ul>
-<p><strong>GitHub</strong>：<a target="_blank" rel="noopener" href="https://github.com/bytedance/SandboxFusion">https://github.com/bytedance/SandboxFusion</a></p>
-<h4 id="5-4-2-FunLess"><a href="#5-4-2-FunLess" class="headerlink" title="5.4.2 FunLess"></a>5.4.2 FunLess</h4><p><strong>简介</strong>：为私有边缘云系统设计的 FaaS 平台，利用 WebAssembly 作为运行时环境。</p>
-<p><strong>核心特性</strong>：</p>
-<ul>
-<li><strong>轻量级</strong>：提供轻量级、沙盒化的运行环境</li>
-<li><strong>WebAssembly</strong>：利用 WebAssembly 作为运行时环境</li>
-<li><strong>边缘计算</strong>：适用于资源受限的边缘设备</li>
-</ul>
-<p><strong>适用场景</strong>：</p>
-<ul>
-<li>边缘计算场景</li>
-<li>资源受限的设备</li>
-<li>需要轻量级运行时的 FaaS 平台</li>
-</ul>
-<p><strong>相关论文</strong>：FunLess: A Serverless FaaS Platform for Private Edge Clouds (arXiv:2405.21009)</p>
-<h4 id="5-4-3-火山引擎-AI-密态计算（AICC）"><a href="#5-4-3-火山引擎-AI-密态计算（AICC）" class="headerlink" title="5.4.3 火山引擎 AI 密态计算（AICC）"></a>5.4.3 火山引擎 AI 密态计算（AICC）</h4><p><strong>简介</strong>：火山引擎提供的 AI 密态计算技术，旨在保障 AI 应用的数据安全。</p>
-<p><strong>核心特性</strong>：</p>
-<ul>
-<li><strong>机密部署</strong>：支持”机密部署”方式，一键开启各种模型的机密推理服务</li>
-<li><strong>数据安全</strong>：实现对内部机密知识库的安全保护</li>
-<li><strong>成本优化</strong>：降低部署成本</li>
-</ul>
-<p><strong>适用场景</strong>：</p>
-<ul>
-<li>AI 模型推理服务</li>
-<li>需要数据安全保护的场景</li>
-<li>机密计算场景</li>
-</ul>
-<p><strong>官方网站</strong>：<a target="_blank" rel="noopener" href="https://www.volcengine.com/">https://www.volcengine.com/</a></p>
-<hr>
-<h3 id="5-5-方案对比总结"><a href="#5-5-方案对比总结" class="headerlink" title="5.5 方案对比总结"></a>5.5 方案对比总结</h3><table>
-<thead>
-<tr>
-<th>方案</th>
-<th>启动时间</th>
-<th>隔离级别</th>
-<th>适用场景</th>
-<th>开源状态</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>AWS Firecracker</td>
-<td>~125ms</td>
-<td>硬件级（KVM）</td>
-<td>无服务器、多租户容器</td>
-<td>开源</td>
-</tr>
-<tr>
-<td>E2B</td>
-<td>&lt;200ms</td>
-<td>硬件级（基于 Firecracker）</td>
-<td>AI 代码执行、代码评测</td>
-<td>开源</td>
-</tr>
-<tr>
-<td>阿里云 FaaSNet</td>
-<td>秒级</td>
-<td>容器级</td>
-<td>大规模函数计算</td>
-<td>部分开源</td>
-</tr>
-<tr>
-<td>SandboxFusion</td>
-<td>-</td>
-<td>进程级</td>
-<td>代码评测、在线编程</td>
-<td>开源</td>
-</tr>
-<tr>
-<td>FunLess</td>
-<td>-</td>
-<td>WebAssembly</td>
-<td>边缘计算、FaaS</td>
-<td>部分开源</td>
-</tr>
-</tbody></table>
-<p><strong>选择建议</strong>：</p>
-<ul>
-<li><strong>需要硬件级隔离和快速启动</strong>：AWS Firecracker 或 E2B</li>
-<li><strong>AI 代码执行场景</strong>：E2B（专为 AI 生成代码设计）</li>
-<li><strong>大规模函数计算</strong>：阿里云 FaaSNet</li>
-<li><strong>代码评测平台</strong>：SandboxFusion</li>
-<li><strong>边缘计算场景</strong>：FunLess（WebAssembly）</li>
+<li><strong>官方网站</strong>：<a target="_blank" rel="noopener" href="https://firecracker-microvm.github.io/">https://firecracker-microvm.github.io/</a></li>
+<li><strong>GitHub</strong>：<a target="_blank" rel="noopener" href="https://github.com/firecracker-microvm/firecracker">https://github.com/firecracker-microvm/firecracker</a></li>
 </ul>
 <hr>
-<h2 id="6-安全与性能"><a href="#6-安全与性能" class="headerlink" title="6. 安全与性能"></a>6. 安全与性能</h2><h3 id="6-1-防止控制代码滥用-MCP-服务"><a href="#6-1-防止控制代码滥用-MCP-服务" class="headerlink" title="6.1 防止控制代码滥用 MCP 服务"></a>6.1 防止控制代码滥用 MCP 服务</h3><p>防止控制代码滥用 MCP 服务需要从认证、授权、限流、监控等多个维度进行防护。</p>
-<h4 id="6-1-1-认证与授权"><a href="#6-1-1-认证与授权" class="headerlink" title="6.1.1 认证与授权"></a>6.1.1 认证与授权</h4><p><strong>身份认证</strong>：</p>
+<h3 id="5-2-E2B"><a href="#5-2-E2B" class="headerlink" title="5.2 E2B"></a>5.2 E2B</h3><p>开源运行时环境，专为 AI 生成代码执行设计。启动时间 &lt;200ms，基于 Firecracker，支持多语言和长时间会话。</p>
 <ul>
-<li><strong>API Key 认证</strong>：为每个沙箱分配唯一的 API Key</li>
-<li><strong>JWT Token</strong>：使用 JWT Token 进行身份验证</li>
-<li><strong>mTLS（双向 TLS）</strong>：使用客户端证书进行身份验证</li>
-<li><strong>OAuth 2.0</strong>：支持标准的 OAuth 2.0 认证流程</li>
+<li><strong>官方网站</strong>：<a target="_blank" rel="noopener" href="https://e2b.dev/">https://e2b.dev/</a></li>
+<li><strong>GitHub</strong>：<a target="_blank" rel="noopener" href="https://github.com/e2b-dev/e2b">https://github.com/e2b-dev/e2b</a></li>
 </ul>
-<p><strong>授权机制</strong>：</p>
-<ul>
-<li><strong>RBAC（基于角色的访问控制）</strong>：为不同角色分配不同的权限</li>
-<li><strong>ABAC（基于属性的访问控制）</strong>：基于沙箱属性进行权限控制</li>
-<li><strong>最小权限原则</strong>：只授予必要的权限</li>
-<li><strong>权限动态调整</strong>：根据任务需求动态调整权限</li>
-</ul>
-<p><strong>实现示例</strong>：</p>
-<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 沙箱权限配置示例</span></span><br><span class="line"><span class="attr">sandbox_permissions:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">sandbox_id:</span> <span class="string">&quot;sandbox-001&quot;</span></span><br><span class="line">    <span class="attr">allowed_tools:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&quot;molecular_docking&quot;</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&quot;admet_prediction&quot;</span></span><br><span class="line">    <span class="attr">rate_limit:</span></span><br><span class="line">      <span class="attr">requests_per_minute:</span> <span class="number">100</span></span><br><span class="line">    <span class="attr">resource_quota:</span></span><br><span class="line">      <span class="attr">max_execution_time:</span> <span class="string">300s</span></span><br><span class="line">      <span class="attr">max_memory:</span> <span class="string">&quot;1GB&quot;</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="6-1-2-限流与配额"><a href="#6-1-2-限流与配额" class="headerlink" title="6.1.2 限流与配额"></a>6.1.2 限流与配额</h4><p><strong>限流策略</strong>：</p>
-<p><strong>1. 请求频率限制（Rate Limiting）</strong>：</p>
-<ul>
-<li><strong>固定窗口</strong>：固定时间窗口内的请求数限制</li>
-<li><strong>滑动窗口</strong>：滑动时间窗口内的请求数限制</li>
-<li><strong>令牌桶</strong>：基于令牌桶算法的限流</li>
-<li><strong>漏桶</strong>：基于漏桶算法的限流</li>
-</ul>
-<p><strong>2. 配额管理</strong>：</p>
-<ul>
-<li><strong>每日配额</strong>：限制每日调用次数</li>
-<li><strong>资源配额</strong>：限制资源使用量（CPU、内存、存储）</li>
-<li><strong>成本配额</strong>：限制调用成本（如 GPU 使用时间）</li>
-</ul>
-<p><strong>实现技术</strong>：</p>
-<ul>
-<li><strong>Redis + Lua</strong>：使用 Redis 实现分布式限流</li>
-<li><strong>Envoy Rate Limiting</strong>：使用 Envoy 代理实现限流</li>
-<li><strong>Kong API Gateway</strong>：使用 Kong 实现 API 限流</li>
-<li><strong>Istio Rate Limiting</strong>：使用 Istio 服务网格实现限流</li>
-</ul>
-<p><strong>限流示例</strong>：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 令牌桶限流示例</span></span><br><span class="line"><span class="keyword">from</span> redis <span class="keyword">import</span> Redis</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">RateLimiter</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, redis_client, key, rate, capacity</span>):</span><br><span class="line">        self.redis = redis_client</span><br><span class="line">        self.key = key</span><br><span class="line">        self.rate = rate  <span class="comment"># 每秒补充的令牌数</span></span><br><span class="line">        self.capacity = capacity  <span class="comment"># 桶容量</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">acquire</span>(<span class="params">self</span>):</span><br><span class="line">        now = time.time()</span><br><span class="line">        <span class="comment"># 使用 Redis 实现令牌桶算法</span></span><br><span class="line">        <span class="comment"># ...</span></span><br></pre></td></tr></table></figure>
-
-<h4 id="6-1-3-请求验证与过滤"><a href="#6-1-3-请求验证与过滤" class="headerlink" title="6.1.3 请求验证与过滤"></a>6.1.3 请求验证与过滤</h4><p><strong>输入验证</strong>：</p>
-<ul>
-<li><strong>参数校验</strong>：验证请求参数的合法性</li>
-<li><strong>大小限制</strong>：限制请求体大小</li>
-<li><strong>类型检查</strong>：验证参数类型和格式</li>
-<li><strong>恶意代码检测</strong>：检测和过滤恶意代码片段</li>
-</ul>
-<p><strong>请求过滤</strong>：</p>
-<ul>
-<li><strong>黑名单过滤</strong>：过滤已知的恶意请求模式</li>
-<li><strong>白名单验证</strong>：只允许预定义的安全操作</li>
-<li><strong>行为分析</strong>：分析请求行为模式，识别异常</li>
-</ul>
-<h4 id="6-1-4-监控与审计"><a href="#6-1-4-监控与审计" class="headerlink" title="6.1.4 监控与审计"></a>6.1.4 监控与审计</h4><p><strong>实时监控</strong>：</p>
-<ul>
-<li><strong>调用频率监控</strong>：实时监控每个沙箱的调用频率</li>
-<li><strong>资源使用监控</strong>：监控资源使用情况</li>
-<li><strong>异常检测</strong>：自动检测异常调用模式</li>
-</ul>
-<p><strong>审计日志</strong>：</p>
-<ul>
-<li><strong>调用日志</strong>：记录所有 MCP 服务调用</li>
-<li><strong>访问日志</strong>：记录访问时间和来源</li>
-<li><strong>错误日志</strong>：记录错误和异常情况</li>
-<li><strong>安全事件日志</strong>：记录安全相关事件</li>
-</ul>
-<p><strong>告警机制</strong>：</p>
-<ul>
-<li><strong>频率告警</strong>：调用频率异常时告警</li>
-<li><strong>资源告警</strong>：资源使用超限时告警</li>
-<li><strong>安全告警</strong>：检测到安全威胁时告警</li>
-</ul>
-<h4 id="6-1-5-防护策略示例"><a href="#6-1-5-防护策略示例" class="headerlink" title="6.1.5 防护策略示例"></a>6.1.5 防护策略示例</h4><p><strong>多层防护架构</strong>：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────────────────────┐</span><br><span class="line">│   沙箱（控制代码）                │</span><br><span class="line">└──────────────┬──────────────────┘</span><br><span class="line">               │</span><br><span class="line">┌──────────────▼──────────────────┐</span><br><span class="line">│   认证网关                        │</span><br><span class="line">│   (API Key、JWT、mTLS)           │</span><br><span class="line">└──────────────┬──────────────────┘</span><br><span class="line">               │</span><br><span class="line">┌──────────────▼──────────────────┐</span><br><span class="line">│   限流网关                        │</span><br><span class="line">│   (Rate Limiting、Quota)         │</span><br><span class="line">└──────────────┬──────────────────┘</span><br><span class="line">               │</span><br><span class="line">┌──────────────▼──────────────────┐</span><br><span class="line">│   请求验证                        │</span><br><span class="line">│   (参数校验、恶意检测)            │</span><br><span class="line">└──────────────┬──────────────────┘</span><br><span class="line">               │</span><br><span class="line">┌──────────────▼──────────────────┐</span><br><span class="line">│   MCP 服务                        │</span><br><span class="line">│   (功能代码执行)                  │</span><br><span class="line">└─────────────────────────────────┘</span><br></pre></td></tr></table></figure>
-
 <hr>
-<h3 id="6-2-性能优化考虑"><a href="#6-2-性能优化考虑" class="headerlink" title="6.2 性能优化考虑"></a>6.2 性能优化考虑</h3><p>性能优化需要从启动时间、执行效率、资源利用率等多个维度进行优化。</p>
-<h4 id="6-2-1-冷启动优化"><a href="#6-2-1-冷启动优化" class="headerlink" title="6.2.1 冷启动优化"></a>6.2.1 冷启动优化</h4><p><strong>问题</strong>：沙箱冷启动会导致延迟增加，影响用户体验。</p>
-<p><strong>优化策略</strong>：</p>
-<p><strong>1. 预热机制（Warm-up）</strong>：</p>
+<h3 id="5-3-阿里云函数计算"><a href="#5-3-阿里云函数计算" class="headerlink" title="5.3 阿里云函数计算"></a>5.3 阿里云函数计算</h3><p>阿里云的 FaaSNet 系统，用于加速无服务器容器部署。能在 8.3 秒内在 1000 台虚拟机上部署 2500 个函数容器。</p>
 <ul>
-<li><strong>预创建沙箱</strong>：提前创建一定数量的沙箱实例</li>
-<li><strong>保持活跃连接</strong>：保持与 MCP 服务的连接池</li>
-<li><strong>预加载资源</strong>：提前加载常用资源</li>
+<li><strong>官方网站</strong>：<a target="_blank" rel="noopener" href="https://www.alibabacloud.com/product/function-compute">https://www.alibabacloud.com/product/function-compute</a></li>
 </ul>
-<p><strong>2. 快速启动技术</strong>：</p>
+<hr>
+<h3 id="5-4-字节跳动-SandboxFusion"><a href="#5-4-字节跳动-SandboxFusion" class="headerlink" title="5.4 字节跳动 SandboxFusion"></a>5.4 字节跳动 SandboxFusion</h3><p>字节跳动开源的安全沙箱，支持 Python、C++、Go、Java 等多种编程语言，适用于代码评测和在线编程场景。</p>
 <ul>
-<li><strong>轻量级沙箱</strong>：使用 Firecracker、gVisor 等轻量级方案</li>
-<li><strong>镜像优化</strong>：精简镜像大小，减少启动时间</li>
-<li><strong>延迟加载</strong>：按需加载非关键组件</li>
+<li><strong>GitHub</strong>：<a target="_blank" rel="noopener" href="https://github.com/bytedance/SandboxFusion">https://github.com/bytedance/SandboxFusion</a></li>
 </ul>
-<p><strong>3. 沙箱复用</strong>：</p>
-<ul>
-<li><strong>会话保持</strong>：保持沙箱会话，避免频繁创建销毁</li>
-<li><strong>连接复用</strong>：复用网络连接和资源</li>
-<li><strong>状态缓存</strong>：缓存常用状态，减少初始化时间</li>
-</ul>
-<p><strong>性能指标</strong>：</p>
-<ul>
-<li><strong>冷启动时间</strong>：&lt; 200ms（目标）</li>
-<li><strong>热启动时间</strong>：&lt; 50ms（目标）</li>
-<li><strong>预热池大小</strong>：根据负载动态调整</li>
-</ul>
-<h4 id="6-2-2-执行效率优化"><a href="#6-2-2-执行效率优化" class="headerlink" title="6.2.2 执行效率优化"></a>6.2.2 执行效率优化</h4><p><strong>并行执行</strong>：</p>
-<ul>
-<li><strong>工具并行调用</strong>：同时调用多个独立的工具</li>
-<li><strong>批处理优化</strong>：批量处理请求，减少网络开销</li>
-<li><strong>异步执行</strong>：使用异步 I&#x2F;O，提高并发能力</li>
-</ul>
-<p><strong>缓存策略</strong>：</p>
-<ul>
-<li><strong>结果缓存</strong>：缓存工具调用结果，避免重复计算</li>
-<li><strong>资源缓存</strong>：缓存常用资源，减少加载时间</li>
-<li><strong>智能缓存</strong>：基于访问模式智能缓存</li>
-</ul>
-<p><strong>代码优化</strong>：</p>
-<ul>
-<li><strong>代码预编译</strong>：预编译常用代码片段</li>
-<li><strong>JIT 编译</strong>：使用即时编译优化执行</li>
-<li><strong>代码分析</strong>：静态分析优化代码执行路径</li>
-</ul>
-<h4 id="6-2-3-资源利用率优化"><a href="#6-2-3-资源利用率优化" class="headerlink" title="6.2.3 资源利用率优化"></a>6.2.3 资源利用率优化</h4><p><strong>资源调度</strong>：</p>
-<ul>
-<li><strong>智能调度</strong>：根据任务类型智能调度资源</li>
-<li><strong>资源池化</strong>：共享资源池，提高利用率</li>
-<li><strong>弹性扩缩容</strong>：根据负载自动扩缩容</li>
-</ul>
-<p><strong>资源复用</strong>：</p>
-<ul>
-<li><strong>连接池</strong>：复用数据库、网络连接</li>
-<li><strong>对象池</strong>：复用对象实例，减少创建开销</li>
-<li><strong>内存池</strong>：复用内存分配，减少内存碎片</li>
-</ul>
-<h4 id="6-2-4-网络性能优化"><a href="#6-2-4-网络性能优化" class="headerlink" title="6.2.4 网络性能优化"></a>6.2.4 网络性能优化</h4><p><strong>协议优化</strong>：</p>
-<ul>
-<li><strong>HTTP&#x2F;2</strong>：使用 HTTP&#x2F;2 多路复用</li>
-<li><strong>gRPC</strong>：高性能场景使用 gRPC</li>
-<li><strong>压缩</strong>：启用请求&#x2F;响应压缩</li>
-</ul>
-<p><strong>连接优化</strong>：</p>
-<ul>
-<li><strong>连接复用</strong>：复用 TCP 连接</li>
-<li><strong>连接池</strong>：维护连接池，减少连接建立时间</li>
-<li><strong>Keep-Alive</strong>：保持长连接，减少握手开销</li>
-</ul>
-<h4 id="6-2-5-监控与调优"><a href="#6-2-5-监控与调优" class="headerlink" title="6.2.5 监控与调优"></a>6.2.5 监控与调优</h4><p><strong>性能监控</strong>：</p>
-<ul>
-<li><strong>延迟监控</strong>：监控请求延迟（P50、P95、P99）</li>
-<li><strong>吞吐量监控</strong>：监控系统吞吐量</li>
-<li><strong>资源监控</strong>：监控 CPU、内存、网络使用率</li>
-</ul>
-<p><strong>性能分析</strong>：</p>
-<ul>
-<li><strong>性能剖析</strong>：使用 profiling 工具分析性能瓶颈</li>
-<li><strong>分布式追踪</strong>：使用分布式追踪系统（如 Jaeger、Zipkin）</li>
-<li><strong>日志分析</strong>：分析日志找出性能问题</li>
-</ul>
-<p><strong>持续优化</strong>：</p>
-<ul>
-<li><strong>A&#x2F;B 测试</strong>：测试不同优化方案的效果</li>
-<li><strong>性能基准测试</strong>：建立性能基准，持续改进</li>
-<li><strong>容量规划</strong>：根据性能指标进行容量规划</li>
-</ul>
-<h4 id="6-2-6-性能优化最佳实践"><a href="#6-2-6-性能优化最佳实践" class="headerlink" title="6.2.6 性能优化最佳实践"></a>6.2.6 性能优化最佳实践</h4><p><strong>分层优化策略</strong>：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">应用层优化：</span><br><span class="line">  - 代码优化、算法优化</span><br><span class="line">  - 并行执行、异步处理</span><br><span class="line">  </span><br><span class="line">沙箱层优化：</span><br><span class="line">  - 快速启动、资源复用</span><br><span class="line">  - 连接池、缓存策略</span><br><span class="line">  </span><br><span class="line">基础设施层优化：</span><br><span class="line">  - 资源调度、负载均衡</span><br><span class="line">  - 网络优化、存储优化</span><br></pre></td></tr></table></figure>
-
-<p><strong>性能目标</strong>：</p>
-<ul>
-<li><strong>启动时间</strong>：冷启动 &lt; 200ms，热启动 &lt; 50ms</li>
-<li><strong>执行延迟</strong>：P95 延迟 &lt; 100ms</li>
-<li><strong>吞吐量</strong>：支持每秒数千次工具调用</li>
-<li><strong>资源利用率</strong>：CPU 利用率 &gt; 70%，内存利用率 &gt; 80%</li>
-</ul>
+<hr>
 
     </article>
     <!-- license -->
@@ -1206,7 +896,7 @@
             <p>Author：<a href="https://edison-a-n.github.io">Edison</a>
             <p>Link：<a href="https://edison-a-n.github.io/2025/12/28/code-execution-sandbox-mcp/">https://edison-a-n.github.io/2025/12/28/code-execution-sandbox-mcp/</a>
             <p>Publish date：<a href="https://edison-a-n.github.io/2025/12/28/code-execution-sandbox-mcp/">December 28th 2025, 4:03:30 pm</a>
-            <p>Update date：<a href="https://edison-a-n.github.io/2025/12/28/code-execution-sandbox-mcp/">December 28th 2025, 4:21:26 pm</a>
+            <p>Update date：<a href="https://edison-a-n.github.io/2025/12/28/code-execution-sandbox-mcp/">December 28th 2025, 4:57:42 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     <!-- paginator -->
@@ -1268,7 +958,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E8%83%8C%E6%99%AF%E4%B8%8E%E9%97%AE%E9%A2%98%E5%AE%9A%E4%B9%89"><span class="toc-number">1.</span> <span class="toc-text">1. 背景与问题定义</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E6%8C%91%E6%88%98"><span class="toc-number">1.1.</span> <span class="toc-text">核心挑战</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BE%E8%AE%A1%E7%9B%AE%E6%A0%87"><span class="toc-number">1.2.</span> <span class="toc-text">设计目标</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E6%A0%B8%E5%BF%83%E6%9E%B6%E6%9E%84%E6%A6%82%E8%BF%B0"><span class="toc-number">2.</span> <span class="toc-text">2. 核心架构概述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84%E7%BB%84%E4%BB%B6"><span class="toc-number">2.1.</span> <span class="toc-text">架构组件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-number">2.2.</span> <span class="toc-text">工作流程</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84%E8%AF%B4%E6%98%8E"><span class="toc-number">2.2.1.</span> <span class="toc-text">架构说明</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E7%89%B9%E6%80%A7"><span class="toc-number">2.3.</span> <span class="toc-text">关键特性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99"><span class="toc-number">2.4.</span> <span class="toc-text">设计原则</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A7%E5%88%B6%E4%BB%A3%E7%A0%81%E4%B8%8E%E5%8A%9F%E8%83%BD%E4%BB%A3%E7%A0%81%E7%9A%84%E8%81%8C%E8%B4%A3%E8%BE%B9%E7%95%8C"><span class="toc-number">2.4.1.</span> <span class="toc-text">控制代码与功能代码的职责边界</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E"><span class="toc-number">3.</span> <span class="toc-text">3. 架构设计说明</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%8E%A7%E5%88%B6%E5%B9%B3%E9%9D%A2%EF%BC%88Control-Plane%EF%BC%89"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 控制平面（Control Plane）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-1-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E7%AE%A1%E7%90%86"><span class="toc-number">3.1.1.</span> <span class="toc-text">3.1.1 生命周期管理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-2-MCP-%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0%E4%B8%8E%E5%8F%AF%E6%89%A9%E5%B1%95%E6%80%A7"><span class="toc-number">3.1.2.</span> <span class="toc-text">3.1.2 MCP 服务发现与可扩展性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-3-%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE%E8%AE%BE%E8%AE%A1"><span class="toc-number">3.1.3.</span> <span class="toc-text">3.1.3 通信协议设计</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E6%95%B0%E6%8D%AE%E5%B9%B3%E9%9D%A2%EF%BC%88Data-Plane%EF%BC%89"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 数据平面（Data Plane）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-1-%E7%8A%B6%E6%80%81%E7%AE%A1%E7%90%86%E4%B8%8E%E6%95%B0%E6%8D%AE%E6%B5%81"><span class="toc-number">3.2.1.</span> <span class="toc-text">3.2.1 状态管理与数据流</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-2-%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8%E6%9E%B6%E6%9E%84"><span class="toc-number">3.2.2.</span> <span class="toc-text">3.2.2 数据存储架构</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E5%9F%BA%E7%A1%80%E8%AE%BE%E6%96%BD%E5%B9%B3%E9%9D%A2%EF%BC%88Infrastructure-Plane%EF%BC%89"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 基础设施平面（Infrastructure Plane）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-1-%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E8%AE%A1"><span class="toc-number">3.3.1.</span> <span class="toc-text">3.3.1 网络访问设计</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E5%8F%AF%E9%9D%A0%E6%80%A7%E5%B7%A5%E7%A8%8B%EF%BC%88Reliability-amp-Operations%EF%BC%89"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 可靠性工程（Reliability &amp; Operations）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-1-%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86%E4%B8%8E%E5%AE%B9%E9%94%99%E6%9C%BA%E5%88%B6"><span class="toc-number">3.4.1.</span> <span class="toc-text">3.4.1 错误处理与容错机制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-2-%E7%9B%91%E6%8E%A7%E4%B8%8E%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7"><span class="toc-number">3.4.2.</span> <span class="toc-text">3.4.2 监控与可观测性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-3-%E6%88%90%E6%9C%AC%E6%8E%A7%E5%88%B6%E4%B8%8E%E8%B5%84%E6%BA%90%E4%BC%98%E5%8C%96"><span class="toc-number">3.4.3.</span> <span class="toc-text">3.4.3 成本控制与资源优化</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E5%9C%BA%E6%99%AF%E6%BC%94%E7%BB%83"><span class="toc-number">4.</span> <span class="toc-text">4. 场景演练</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B8%E5%9E%8B%E6%A1%88%E4%BE%8B%EF%BC%9A%E8%8D%AF%E7%89%A9%E7%A0%94%E5%8F%91-Agent"><span class="toc-number">4.1.</span> <span class="toc-text">典型案例：药物研发 Agent</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%9A%E5%8A%A1%E8%83%8C%E6%99%AF"><span class="toc-number">4.1.1.</span> <span class="toc-text">业务背景</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84%E6%98%A0%E5%B0%84%EF%BC%9A%E5%85%A8%E9%93%BE%E8%B7%AF%E6%89%A7%E8%A1%8C%E8%A7%86%E5%9B%BE"><span class="toc-number">4.1.2.</span> <span class="toc-text">架构映射：全链路执行视图</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84%E9%AA%8C%E8%AF%81"><span class="toc-number">4.1.3.</span> <span class="toc-text">架构验证</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E6%B2%99%E7%AE%B1%E5%AE%9E%E7%8E%B0%E6%96%B9%E6%A1%88%E8%B0%83%E7%A0%94-draft"><span class="toc-number">5.</span> <span class="toc-text">5. 沙箱实现方案调研 ( draft )</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-AWS-Firecracker"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 AWS Firecracker</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-E2B"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 E2B</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E9%98%BF%E9%87%8C%E5%B7%B4%E5%B7%B4%E4%BA%91%E6%96%B9%E6%A1%88"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 阿里巴巴云方案</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#5-3-1-%E9%98%BF%E9%87%8C%E4%BA%91%E5%87%BD%E6%95%B0%E8%AE%A1%E7%AE%97%EF%BC%88Function-Compute%EF%BC%89"><span class="toc-number">5.3.1.</span> <span class="toc-text">5.3.1 阿里云函数计算（Function Compute）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-3-2-%E9%98%BF%E9%87%8C%E4%BA%91%E5%AE%89%E5%85%A8%E5%AE%B9%E5%99%A8%E6%9C%8D%E5%8A%A1"><span class="toc-number">5.3.2.</span> <span class="toc-text">5.3.2 阿里云安全容器服务</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-%E5%AD%97%E8%8A%82%E8%B7%B3%E5%8A%A8%E6%96%B9%E6%A1%88"><span class="toc-number">5.4.</span> <span class="toc-text">5.4 字节跳动方案</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#5-4-1-SandboxFusion"><span class="toc-number">5.4.1.</span> <span class="toc-text">5.4.1 SandboxFusion</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-4-2-FunLess"><span class="toc-number">5.4.2.</span> <span class="toc-text">5.4.2 FunLess</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-4-3-%E7%81%AB%E5%B1%B1%E5%BC%95%E6%93%8E-AI-%E5%AF%86%E6%80%81%E8%AE%A1%E7%AE%97%EF%BC%88AICC%EF%BC%89"><span class="toc-number">5.4.3.</span> <span class="toc-text">5.4.3 火山引擎 AI 密态计算（AICC）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-5-%E6%96%B9%E6%A1%88%E5%AF%B9%E6%AF%94%E6%80%BB%E7%BB%93"><span class="toc-number">5.5.</span> <span class="toc-text">5.5 方案对比总结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E5%AE%89%E5%85%A8%E4%B8%8E%E6%80%A7%E8%83%BD"><span class="toc-number">6.</span> <span class="toc-text">6. 安全与性能</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E9%98%B2%E6%AD%A2%E6%8E%A7%E5%88%B6%E4%BB%A3%E7%A0%81%E6%BB%A5%E7%94%A8-MCP-%E6%9C%8D%E5%8A%A1"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 防止控制代码滥用 MCP 服务</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#6-1-1-%E8%AE%A4%E8%AF%81%E4%B8%8E%E6%8E%88%E6%9D%83"><span class="toc-number">6.1.1.</span> <span class="toc-text">6.1.1 认证与授权</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-1-2-%E9%99%90%E6%B5%81%E4%B8%8E%E9%85%8D%E9%A2%9D"><span class="toc-number">6.1.2.</span> <span class="toc-text">6.1.2 限流与配额</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-1-3-%E8%AF%B7%E6%B1%82%E9%AA%8C%E8%AF%81%E4%B8%8E%E8%BF%87%E6%BB%A4"><span class="toc-number">6.1.3.</span> <span class="toc-text">6.1.3 请求验证与过滤</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-1-4-%E7%9B%91%E6%8E%A7%E4%B8%8E%E5%AE%A1%E8%AE%A1"><span class="toc-number">6.1.4.</span> <span class="toc-text">6.1.4 监控与审计</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-1-5-%E9%98%B2%E6%8A%A4%E7%AD%96%E7%95%A5%E7%A4%BA%E4%BE%8B"><span class="toc-number">6.1.5.</span> <span class="toc-text">6.1.5 防护策略示例</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E8%80%83%E8%99%91"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 性能优化考虑</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-1-%E5%86%B7%E5%90%AF%E5%8A%A8%E4%BC%98%E5%8C%96"><span class="toc-number">6.2.1.</span> <span class="toc-text">6.2.1 冷启动优化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-2-%E6%89%A7%E8%A1%8C%E6%95%88%E7%8E%87%E4%BC%98%E5%8C%96"><span class="toc-number">6.2.2.</span> <span class="toc-text">6.2.2 执行效率优化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-3-%E8%B5%84%E6%BA%90%E5%88%A9%E7%94%A8%E7%8E%87%E4%BC%98%E5%8C%96"><span class="toc-number">6.2.3.</span> <span class="toc-text">6.2.3 资源利用率优化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-4-%E7%BD%91%E7%BB%9C%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96"><span class="toc-number">6.2.4.</span> <span class="toc-text">6.2.4 网络性能优化</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-5-%E7%9B%91%E6%8E%A7%E4%B8%8E%E8%B0%83%E4%BC%98"><span class="toc-number">6.2.5.</span> <span class="toc-text">6.2.5 监控与调优</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-6-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5"><span class="toc-number">6.2.6.</span> <span class="toc-text">6.2.6 性能优化最佳实践</span></a></li></ol></li></ol></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E8%83%8C%E6%99%AF%E4%B8%8E%E9%97%AE%E9%A2%98%E5%AE%9A%E4%B9%89"><span class="toc-number">1.</span> <span class="toc-text">1. 背景与问题定义</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E6%8C%91%E6%88%98"><span class="toc-number">1.1.</span> <span class="toc-text">核心挑战</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BE%E8%AE%A1%E7%9B%AE%E6%A0%87"><span class="toc-number">1.2.</span> <span class="toc-text">设计目标</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E6%A0%B8%E5%BF%83%E6%9E%B6%E6%9E%84%E6%A6%82%E8%BF%B0"><span class="toc-number">2.</span> <span class="toc-text">2. 核心架构概述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84%E7%BB%84%E4%BB%B6"><span class="toc-number">2.1.</span> <span class="toc-text">架构组件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-number">2.2.</span> <span class="toc-text">工作流程</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84%E8%AF%B4%E6%98%8E"><span class="toc-number">2.2.1.</span> <span class="toc-text">架构说明</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E7%89%B9%E6%80%A7"><span class="toc-number">2.3.</span> <span class="toc-text">关键特性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99"><span class="toc-number">2.4.</span> <span class="toc-text">设计原则</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A7%E5%88%B6%E4%BB%A3%E7%A0%81%E4%B8%8E%E5%8A%9F%E8%83%BD%E4%BB%A3%E7%A0%81%E7%9A%84%E8%81%8C%E8%B4%A3%E8%BE%B9%E7%95%8C"><span class="toc-number">2.4.1.</span> <span class="toc-text">控制代码与功能代码的职责边界</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E"><span class="toc-number">3.</span> <span class="toc-text">3. 架构设计说明</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%8E%A7%E5%88%B6%E5%B9%B3%E9%9D%A2%EF%BC%88Control-Plane%EF%BC%89"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 控制平面（Control Plane）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-1-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E7%AE%A1%E7%90%86"><span class="toc-number">3.1.1.</span> <span class="toc-text">3.1.1 生命周期管理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-2-MCP-%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0%E4%B8%8E%E5%8F%AF%E6%89%A9%E5%B1%95%E6%80%A7"><span class="toc-number">3.1.2.</span> <span class="toc-text">3.1.2 MCP 服务发现与可扩展性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-3-%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE%E8%AE%BE%E8%AE%A1"><span class="toc-number">3.1.3.</span> <span class="toc-text">3.1.3 通信协议设计</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E6%95%B0%E6%8D%AE%E5%B9%B3%E9%9D%A2%EF%BC%88Data-Plane%EF%BC%89"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 数据平面（Data Plane）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-1-%E7%8A%B6%E6%80%81%E7%AE%A1%E7%90%86%E4%B8%8E%E6%95%B0%E6%8D%AE%E6%B5%81"><span class="toc-number">3.2.1.</span> <span class="toc-text">3.2.1 状态管理与数据流</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-2-%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8%E6%9E%B6%E6%9E%84"><span class="toc-number">3.2.2.</span> <span class="toc-text">3.2.2 数据存储架构</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E5%9F%BA%E7%A1%80%E8%AE%BE%E6%96%BD%E5%B9%B3%E9%9D%A2%EF%BC%88Infrastructure-Plane%EF%BC%89"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 基础设施平面（Infrastructure Plane）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-1-%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E8%AE%A1"><span class="toc-number">3.3.1.</span> <span class="toc-text">3.3.1 网络访问设计</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E5%8F%AF%E9%9D%A0%E6%80%A7%E5%B7%A5%E7%A8%8B%EF%BC%88Reliability-amp-Operations%EF%BC%89"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 可靠性工程（Reliability &amp; Operations）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-1-%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86%E4%B8%8E%E5%AE%B9%E9%94%99%E6%9C%BA%E5%88%B6"><span class="toc-number">3.4.1.</span> <span class="toc-text">3.4.1 错误处理与容错机制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-2-%E7%9B%91%E6%8E%A7%E4%B8%8E%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7"><span class="toc-number">3.4.2.</span> <span class="toc-text">3.4.2 监控与可观测性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-3-%E6%88%90%E6%9C%AC%E6%8E%A7%E5%88%B6%E4%B8%8E%E8%B5%84%E6%BA%90%E4%BC%98%E5%8C%96"><span class="toc-number">3.4.3.</span> <span class="toc-text">3.4.3 成本控制与资源优化</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E5%9C%BA%E6%99%AF%E6%BC%94%E7%BB%83"><span class="toc-number">4.</span> <span class="toc-text">4. 场景演练</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B8%E5%9E%8B%E6%A1%88%E4%BE%8B%EF%BC%9A%E8%8D%AF%E7%89%A9%E7%A0%94%E5%8F%91-Agent"><span class="toc-number">4.1.</span> <span class="toc-text">典型案例：药物研发 Agent</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%9A%E5%8A%A1%E8%83%8C%E6%99%AF"><span class="toc-number">4.1.1.</span> <span class="toc-text">业务背景</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84%E6%98%A0%E5%B0%84%EF%BC%9A%E5%85%A8%E9%93%BE%E8%B7%AF%E6%89%A7%E8%A1%8C%E8%A7%86%E5%9B%BE"><span class="toc-number">4.1.2.</span> <span class="toc-text">架构映射：全链路执行视图</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84%E9%AA%8C%E8%AF%81"><span class="toc-number">4.1.3.</span> <span class="toc-text">架构验证</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E6%B2%99%E7%AE%B1%E5%AE%9E%E7%8E%B0%E6%96%B9%E6%A1%88%E8%B0%83%E7%A0%94-draft"><span class="toc-number">5.</span> <span class="toc-text">5. 沙箱实现方案调研 ( draft )</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-AWS-Firecracker"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 AWS Firecracker</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-E2B"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 E2B</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E9%98%BF%E9%87%8C%E4%BA%91%E5%87%BD%E6%95%B0%E8%AE%A1%E7%AE%97"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 阿里云函数计算</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-%E5%AD%97%E8%8A%82%E8%B7%B3%E5%8A%A8-SandboxFusion"><span class="toc-number">5.4.</span> <span class="toc-text">5.4 字节跳动 SandboxFusion</span></a></li></ol></li></ol>
             </div>
         <!-- sidebar -->
         <div class="sidebar sidebar-hide">
