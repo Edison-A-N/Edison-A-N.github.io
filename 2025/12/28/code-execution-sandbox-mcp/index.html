@@ -18,7 +18,7 @@
 <meta property="og:description" content="本文提出了一种 LLM 驱动的 Agent 架构，通过代码执行沙箱和 MCP 服务集成，解决复杂工具编排和管理的挑战。架构将控制代码与功能代码分离，LLM 生成的控制代码在轻量级沙箱中执行，通过 MCP 协议调用功能代码服务，实现安全、高效、可扩展的工具调用能力。">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2025-12-28T08:03:30.000Z">
-<meta property="article:modified_time" content="2025-12-29T03:22:22.786Z">
+<meta property="article:modified_time" content="2025-12-29T07:09:59.174Z">
 <meta property="article:author" content="Edison">
 <meta property="article:tag" content="LLM">
 <meta property="article:tag" content="Architecture">
@@ -313,7 +313,7 @@
 
                 <!-- 文章字数统计 -->
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">6.4k</span>Reading time: <span class="post-count reading-time">23 min</span></span>
+                        <span>Word count: <span class="post-count word-count">6.1k</span>Reading time: <span class="post-count reading-time">23 min</span></span>
                     </div>
                 <div class="post-intro-meta">
                     <!-- 撰写日期 -->
@@ -470,7 +470,8 @@
             <div class="container container-unloaded">
                 <main class="main post-page">
     <article class="article-entry">
-        <h2 id="1-背景与问题定义"><a href="#1-背景与问题定义" class="headerlink" title="1. 背景与问题定义"></a>1. 背景与问题定义</h2><h3 id="核心挑战"><a href="#核心挑战" class="headerlink" title="核心挑战"></a>核心挑战</h3><p>Agent 具备广泛的工具能力，可解决多样化的领域问题。**<span style="color: red;">当 Agent 解决领域问题需要大量工具的组合编排，且编排逻辑由 LLM 动态规划时</span>**，系统需要具备强大的工具管理能力和复杂的工具调用组织能力。</p>
+        <h2 id="1-引言：从函数调用到代码执行的演进"><a href="#1-引言：从函数调用到代码执行的演进" class="headerlink" title="1. 引言：从函数调用到代码执行的演进"></a>1. 引言：从函数调用到代码执行的演进</h2><p>随着 LLM Agent 能力的不断提升，<strong>Code Agents</strong>（代码执行 Agent）正成为 Agent 架构的重要演进方向。与传统的基于 JSON 的工具调用不同，Code Agents 让 LLM 生成可执行的代码，从而获得更强的表达能力、组合性和灵活性。本文提出了一种结合代码执行沙箱和 MCP（Model Context Protocol）服务的架构设计，解决复杂工具编排场景中的安全、效率和可扩展性挑战。</p>
+<h3 id="1-1-核心挑战"><a href="#1-1-核心挑战" class="headerlink" title="1.1 核心挑战"></a>1.1 核心挑战</h3><p>当 Agent 解决领域问题涉及<strong>大量的工具的拼接组装，且拼接组装的 workflow 是由 LLM 理解和规划的</strong>时，我们需要有工具的管理能力和复杂的工具调用组织能力。</p>
 <p><strong>关键挑战</strong>：</p>
 <ul>
 <li><strong>工具数量庞大</strong>：领域问题往往需要调用数十甚至上百个不同的工具</li>
@@ -478,104 +479,92 @@
 <li><strong>Workflow 动态生成</strong>：LLM 需要根据问题理解动态生成执行计划</li>
 <li><strong>工具管理复杂</strong>：不同工具有不同的执行环境、依赖、版本等</li>
 </ul>
-<h3 id="设计目标"><a href="#设计目标" class="headerlink" title="设计目标"></a>设计目标</h3><p>本架构旨在解决以上挑战，提供：</p>
+<h3 id="1-2-传统-Function-Calling-的局限性"><a href="#1-2-传统-Function-Calling-的局限性" class="headerlink" title="1.2 传统 Function Calling 的局限性"></a>1.2 传统 Function Calling 的局限性</h3><p>当 LLM 通过 Function Calling 逐个调用工具时，存在明显局限：</p>
+<p><strong>串行执行效率低</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">传统模式：LLM → Call Tool A → Wait → Call Tool B → Wait → Call Tool C</span><br><span class="line">总耗时 = Tool A 耗时 + Tool B 耗时 + Tool C 耗时</span><br></pre></td></tr></table></figure>
+
+<p><strong>上下文窗口浪费</strong>：</p>
 <ul>
-<li><strong>灵活的工具编排</strong>：支持 LLM 动态生成和执行复杂的工具调用序列</li>
-<li><strong>高效的资源管理</strong>：通过沙箱隔离和生命周期管理，优化资源使用</li>
-<li><strong>可靠的执行环境</strong>：提供安全隔离的代码执行环境</li>
-<li><strong>可扩展的服务架构</strong>：通过 MCP 协议实现功能代码的服务化</li>
+<li>每次工具调用都需要将完整上下文传递给 LLM</li>
+<li>Token 消耗巨大，特别是处理大量数据时</li>
+<li>无法有效利用并行执行能力</li>
+</ul>
+<p><strong>错误恢复困难</strong>：</p>
+<ul>
+<li>单个工具失败后，需要 LLM 重新理解整个流程</li>
+<li>难以局部修复，往往需要重新规划整个 workflow</li>
+</ul>
+<p><strong>安全性与灵活性矛盾</strong>：</p>
+<ul>
+<li>要么牺牲安全性（允许代码直接访问资源）</li>
+<li>要么牺牲灵活性（限制为简单的函数调用）</li>
+</ul>
+<h3 id="1-3-破局：为什么-LLM-应该写代码而不是发-JSON？"><a href="#1-3-破局：为什么-LLM-应该写代码而不是发-JSON？" class="headerlink" title="1.3 破局：为什么 LLM 应该写代码而不是发 JSON？"></a>1.3 破局：为什么 LLM 应该写代码而不是发 JSON？</h3><p><strong>核心洞察</strong>：让 LLM 生成可执行的代码，而非逐条发送 JSON 函数调用。</p>
+<p><strong>研究支持</strong>：多项研究（如 <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2401.13848">Executable Code Actions Elicit Better LLM Agents</a>）表明，使用代码而非 JSON 来表达工具调用具有显著优势。正如 <a target="_blank" rel="noopener" href="https://huggingface.co/blog/smolagents#code-agents">Hugging Face 的 smolagents</a> 文章所指出的：”<em>我们专门设计了代码语言，使其成为表达计算机执行操作的最佳方式。如果 JSON 片段是更好的表达方式，JSON 就会成为顶级编程语言，编程就会成为人间地狱。</em>“</p>
+<p><strong>对比示例</strong>：</p>
+<p>**Before (Function Calling loop)**：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">用户：&quot;分析上个月销售数据并生成报告&quot;</span><br><span class="line"></span><br><span class="line">LLM: Call get_sales_data(month=&quot;last_month&quot;) → Stop</span><br><span class="line">System: Result [...大量数据...]</span><br><span class="line">LLM: Call analyze_data(data=[...]) → Stop  </span><br><span class="line">System: Result &#123;...&#125;</span><br><span class="line">LLM: Call generate_report(analysis=&#123;...&#125;) → Stop</span><br><span class="line">System: Result &#123;...&#125;</span><br><span class="line"></span><br><span class="line">问题：多次往返，延迟高，Context 累积，无法并行</span><br></pre></td></tr></table></figure>
+
+<p>**After (Code Execution)**：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># LLM 直接生成完整逻辑</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">analyze_sales_data</span>():</span><br><span class="line">    <span class="comment"># 一次性获取数据</span></span><br><span class="line">    data = mcp.sales.get_data(month=<span class="string">&quot;last_month&quot;</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 并行执行多个分析</span></span><br><span class="line">    results = parallel_execute([</span><br><span class="line">        <span class="keyword">lambda</span>: mcp.analysis.anomaly_detection(data),</span><br><span class="line">        <span class="keyword">lambda</span>: mcp.analysis.statistical_analysis(data),</span><br><span class="line">        <span class="keyword">lambda</span>: mcp.analysis.trend_analysis(data)</span><br><span class="line">    ])</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 综合结果并生成报告</span></span><br><span class="line">    insights = combine_results(results)</span><br><span class="line">    report = mcp.report.generate(insights)</span><br><span class="line">    <span class="keyword">return</span> report</span><br><span class="line"></span><br><span class="line"><span class="comment"># 一次生成，沙箱内闭环，低延迟，支持并行</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>关键优势</strong>（基于 <a target="_blank" rel="noopener" href="https://huggingface.co/blog/smolagents#code-agents">Code Agents 研究</a>）：</p>
+<ul>
+<li>✅ <strong>组合性（Composability）</strong>：可以嵌套代码操作，定义函数复用逻辑，而 JSON 难以表达这种结构</li>
+<li>✅ <strong>对象管理（Object Management）</strong>：代码可以自然地存储和管理操作结果（如 <code>image = generate_image()</code>），而 JSON 难以处理对象引用</li>
+<li>✅ <strong>通用性（Generality）</strong>：代码语言设计用于表达任何计算机操作，表达能力远超 JSON</li>
+<li>✅ <strong>训练数据优势</strong>：LLM 的训练数据中包含大量高质量代码，模型已经熟悉代码表达方式</li>
+<li>✅ <strong>一次生成，批量执行</strong>：LLM 生成完整代码，减少交互次数</li>
+<li>✅ <strong>降低 Token 消耗</strong>：数据在沙箱内处理，无需传回 LLM</li>
+<li>✅ <strong>错误自愈</strong>：代码执行错误可直接反馈给 LLM 修复</li>
 </ul>
 <hr>
-<h2 id="2-核心架构概述"><a href="#2-核心架构概述" class="headerlink" title="2. 核心架构概述"></a>2. 核心架构概述</h2><h3 id="架构组件"><a href="#架构组件" class="headerlink" title="架构组件"></a>架构组件</h3><ol>
-<li><p><strong>LLM 控制层</strong></p>
+<h2 id="2-核心范式：控制流与功能流的分离"><a href="#2-核心范式：控制流与功能流的分离" class="headerlink" title="2. 核心范式：控制流与功能流的分离"></a>2. 核心范式：控制流与功能流的分离</h2><h3 id="2-1-为什么需要分离？"><a href="#2-1-为什么需要分离？" class="headerlink" title="2.1 为什么需要分离？"></a>2.1 为什么需要分离？</h3><p><strong>问题根源</strong>：LLM 生成的代码具有<strong>不可预测性</strong>和<strong>不可信性</strong>。</p>
 <ul>
-<li>生成控制代码（Control Code）</li>
-<li>负责动态组织 tool 的执行流程</li>
-<li>实现 LLM 单步可以执行一批 tool</li>
+<li><strong>不可预测性</strong>：LLM 可能生成错误的代码、死循环、资源耗尽等</li>
+<li><strong>不可信性</strong>：即使代码逻辑正确，也不能信任它访问敏感资源</li>
 </ul>
+<p><strong>传统方案的局限性</strong>：</p>
+<ol>
+<li><p><strong>直接执行 LLM 代码</strong>（危险）：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># LLM 生成的代码 - 危险！</span></span><br><span class="line"><span class="keyword">import</span> pymysql</span><br><span class="line">conn = pymysql.connect(host=<span class="string">&#x27;db.internal&#x27;</span>, user=<span class="string">&#x27;root&#x27;</span>, password=<span class="string">&#x27;xxx&#x27;</span>)</span><br><span class="line">conn.execute(<span class="string">&quot;DROP TABLE users&quot;</span>)  <span class="comment"># 灾难性后果</span></span><br></pre></td></tr></table></figure>
 </li>
-<li><p><strong>代码执行沙箱</strong></p>
+<li><p><strong>限制为函数调用</strong>（不灵活）：</p>
 <ul>
-<li>轻量级执行环境</li>
-<li>支持特定网络访问能力</li>
-<li>隔离执行环境，确保安全性</li>
-<li>快速唤起和代码执行，降低延迟</li>
-</ul>
-</li>
-<li><p><strong>MCP 服务层</strong></p>
-<ul>
-<li>将功能代码（Functional Code）服务化</li>
-<li>提供标准化的服务接口</li>
-<li>控制代码通过 MCP 协议调用功能代码服务</li>
-<li>功能代码一次编写多次执行，支持独立更新发布</li>
-<li>功能代码有复杂的执行环境需求，不适合在轻量级沙箱中部署和执行</li>
-</ul>
-</li>
-<li><p><strong>数据存储层</strong></p>
-<ul>
-<li>提供数据持久化能力</li>
-<li>支持数据的读写访问</li>
-<li>为沙箱和 MCP 服务提供数据支持</li>
+<li>无法支持复杂的编排逻辑（并行执行、条件分支、循环）</li>
+<li>每次调用都需要 LLM 参与，效率低下</li>
 </ul>
 </li>
 </ol>
-<h3 id="工作流程"><a href="#工作流程" class="headerlink" title="工作流程"></a>工作流程</h3><pre class="mermaid">graph LR
-    subgraph "LLM 控制层"
-        LLM[LLM 模型]
-        CC[生成控制代码<br/>Control Code]
-    end
-    
-    subgraph "代码执行沙箱"
-        SB[轻量级沙箱环境<br/>Lightweight Sandbox]
-        NET[网络访问控制<br/>Network Access Control]
-    end
-    
-    subgraph "数据存储层"
-        STORAGE[数据存储<br/>Storage]
-    end
-    
-    subgraph "MCP 服务层"
-        MCP[MCP 服务<br/>MCP Service]
-    end
-    
-    LLM -->|生成| CC
-    CC -->|执行| SB
-    SB -->|调用| MCP
-    SB -.->|受限网络访问| NET
-    MCP -.->|返回结果| SB
-    SB -.->|执行结果| CC
-    STORAGE ~~~ MCP
-    
-    style LLM fill:#e1f5ff
-    style CC fill:#b3e5fc
-    style SB fill:#fff9c4
-    style NET fill:#fff9c4
-    style MCP fill:#c8e6c9
-    style STORAGE fill:#f3e5f5</pre>
-
-<h4 id="架构说明"><a href="#架构说明" class="headerlink" title="架构说明"></a>架构说明</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LLM → 生成控制代码 → 沙箱执行控制代码 → 调用 MCP 服务 → 执行功能代码</span><br></pre></td></tr></table></figure>
-
-<p>架构通过职责分离实现安全、高效的工具编排：LLM 生成控制代码在轻量级沙箱中执行，通过 MCP 协议调用功能代码服务，实现复杂工具的组合编排。</p>
-<h3 id="关键特性"><a href="#关键特性" class="headerlink" title="关键特性"></a>关键特性</h3><ul>
-<li><strong>职责分离</strong>：控制逻辑与功能实现分离</li>
-<li><strong>安全隔离</strong>：沙箱环境限制执行权限</li>
-<li><strong>网络访问控制</strong>：支持特定网络访问需求</li>
-<li><strong>服务化架构</strong>：功能代码通过 MCP 协议提供服务</li>
-</ul>
-<h3 id="设计原则"><a href="#设计原则" class="headerlink" title="设计原则"></a>设计原则</h3><h4 id="控制代码与功能代码的职责边界"><a href="#控制代码与功能代码的职责边界" class="headerlink" title="控制代码与功能代码的职责边界"></a>控制代码与功能代码的职责边界</h4><p>架构的核心设计原则，决定 LLM 生成的代码能做什么、不能做什么。</p>
+<h3 id="2-2-分离的设计原则"><a href="#2-2-分离的设计原则" class="headerlink" title="2.2 分离的设计原则"></a>2.2 分离的设计原则</h3><p><strong>核心思想</strong>：LLM 充当程序员（生成控制代码），MCP 充当标准库（提供功能代码）。</p>
 <p><strong>控制代码的职责</strong>（由 LLM 生成）：</p>
 <ul>
-<li>动态组织 tool 的执行流程</li>
-<li>实现 LLM 单步可以执行一批 tool</li>
-<li>负责编排和决策逻辑（if-else、循环、参数提取）</li>
-<li><strong>仅允许</strong>：调用预定义的 MCP 工具、基本数据处理、流程控制</li>
+<li>✅ 动态组织工具的执行流程（if-else、循环、并行执行）</li>
+<li>✅ 基本数据处理（变量赋值、列表操作、字符串处理）</li>
+<li>✅ 流程控制（条件判断、循环、异常处理）</li>
+<li>❌ <strong>禁止</strong>：直接访问敏感资源（数据库、文件系统、网络）</li>
+<li>❌ <strong>禁止</strong>：调用未注册的工具</li>
 </ul>
 <p><strong>功能代码的职责</strong>（预定义的 MCP 工具）：</p>
 <ul>
-<li>提供经过安全审计的功能实现</li>
-<li>处理复杂的执行环境需求（GPU、数据库、外部 API）</li>
-<li>封装敏感操作（数据库访问、文件操作、网络请求）</li>
+<li>✅ 提供经过安全审计的功能实现</li>
+<li>✅ 处理复杂的执行环境需求（GPU、数据库、外部 API）</li>
+<li>✅ 封装敏感操作（数据库访问、文件操作、网络请求）</li>
+<li>✅ 一次编写多次执行，支持独立更新发布</li>
 </ul>
+<h3 id="2-3-边界示例"><a href="#2-3-边界示例" class="headerlink" title="2.3 边界示例"></a>2.3 边界示例</h3><p>❌ <strong>错误设计</strong>（LLM 代码直接访问敏感资源）：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># LLM 生成的代码 - 危险！</span></span><br><span class="line"><span class="keyword">import</span> pymysql</span><br><span class="line">conn = pymysql.connect(host=<span class="string">&#x27;db.internal&#x27;</span>, user=<span class="string">&#x27;root&#x27;</span>, password=<span class="string">&#x27;xxx&#x27;</span>)</span><br><span class="line">conn.execute(<span class="string">&quot;DROP TABLE users&quot;</span>)  <span class="comment"># 灾难性后果</span></span><br></pre></td></tr></table></figure>
+
+<p>✅ <strong>正确设计</strong>（LLM 代码只能调用 MCP 工具）：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># LLM 生成的代码 - 安全</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">analyze_sales_data</span>():</span><br><span class="line">    <span class="comment"># 1. 查询数据（调用工具）</span></span><br><span class="line">    sales_data = mcp_call(<span class="string">&quot;query_sales_db&quot;</span>, &#123;<span class="string">&quot;month&quot;</span>: <span class="string">&quot;last_month&quot;</span>&#125;)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 2. 并行执行多个分析（编排逻辑）</span></span><br><span class="line">    results = parallel_execute([</span><br><span class="line">        <span class="keyword">lambda</span>: mcp_call(<span class="string">&quot;anomaly_detection&quot;</span>, &#123;<span class="string">&quot;data&quot;</span>: sales_data&#125;),</span><br><span class="line">        <span class="keyword">lambda</span>: mcp_call(<span class="string">&quot;statistical_analysis&quot;</span>, &#123;<span class="string">&quot;data&quot;</span>: sales_data&#125;),</span><br><span class="line">        <span class="keyword">lambda</span>: mcp_call(<span class="string">&quot;trend_analysis&quot;</span>, &#123;<span class="string">&quot;data&quot;</span>: sales_data&#125;)</span><br><span class="line">    ])</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 3. 综合结果（数据处理）</span></span><br><span class="line">    insights = combine_results(results)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 4. 生成报告（调用工具）</span></span><br><span class="line">    report = mcp_call(<span class="string">&quot;generate_report&quot;</span>, &#123;<span class="string">&quot;insights&quot;</span>: insights&#125;)</span><br><span class="line">    <span class="keyword">return</span> report</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-4-分离带来的价值"><a href="#2-4-分离带来的价值" class="headerlink" title="2.4 分离带来的价值"></a>2.4 分离带来的价值</h3><ol>
+<li><strong>安全性</strong>：控制代码无法直接访问敏感资源，所有敏感操作必须通过预定义的工具</li>
+<li><strong>灵活性</strong>：支持复杂的编排逻辑，LLM 可以生成任意控制流</li>
+<li><strong>可扩展性</strong>：工具独立部署和更新，不影响控制代码</li>
+<li><strong>效率</strong>：支持并行执行、批量调用，减少 LLM 交互次数</li>
+<li><strong>可维护性</strong>：功能代码集中管理，便于安全审计和版本控制</li>
+</ol>
 <p><strong>功能代码服务化的原因</strong>：</p>
 <ul>
 <li><strong>安全性</strong>：防止 LLM 生成的代码直接访问敏感资源</li>
@@ -584,336 +573,380 @@
 <li><strong>复杂执行环境需求</strong>：功能代码有复杂的执行环境需求，不适合在轻量级沙箱中部署</li>
 <li><strong>沙箱定位</strong>：沙箱更适合轻量级环境，支持快速唤起和代码执行，降低延迟</li>
 </ul>
-<p><strong>边界示例</strong>：</p>
-<p>❌ <strong>错误设计</strong>（LLM 代码直接访问敏感资源）：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># LLM 生成的代码 - 危险！</span></span><br><span class="line"><span class="keyword">import</span> pymysql</span><br><span class="line">conn = pymysql.connect(host=<span class="string">&#x27;db.internal&#x27;</span>, user=<span class="string">&#x27;root&#x27;</span>, password=<span class="string">&#x27;xxx&#x27;</span>)</span><br><span class="line">conn.execute(<span class="string">&quot;DROP TABLE users&quot;</span>)  <span class="comment"># 灾难性后果</span></span><br></pre></td></tr></table></figure>
-
-<p>✅ <strong>正确设计</strong>（LLM 代码只能调用 MCP 工具）：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># LLM 生成的代码 - 安全</span></span><br><span class="line">user_id = context.get(<span class="string">&quot;user_id&quot;</span>)</span><br><span class="line"><span class="comment"># 只能调用注册过的安全工具，权限已被限制</span></span><br><span class="line">result = mcp_call(<span class="string">&quot;db_query_tool&quot;</span>, &#123;<span class="string">&quot;user_id&quot;</span>: user_id&#125;)</span><br></pre></td></tr></table></figure>
-
 <hr>
-<h2 id="3-架构设计说明"><a href="#3-架构设计说明" class="headerlink" title="3. 架构设计说明"></a>3. 架构设计说明</h2><h3 id="3-1-控制平面（Control-Plane）"><a href="#3-1-控制平面（Control-Plane）" class="headerlink" title="3.1 控制平面（Control Plane）"></a>3.1 控制平面（Control Plane）</h3><p>控制平面负责两个层面的协调：<strong>Agent 编排</strong>（LLM 驱动的任务规划和工具选择）和<strong>系统编排</strong>（资源分配和基础设施管理）。两者职责不同，需明确区分。</p>
-<h4 id="3-1-1-Agent-编排器（Agent-Orchestrator）"><a href="#3-1-1-Agent-编排器（Agent-Orchestrator）" class="headerlink" title="3.1.1 Agent 编排器（Agent Orchestrator）"></a>3.1.1 Agent 编排器（Agent Orchestrator）</h4><p><strong>职责定位</strong>：负责 LLM 驱动的任务规划、工具选择、代码生成和推理循环，作为架构的”认知层”，处理业务逻辑和决策。</p>
-<p>采用 <strong>Loop-based Re-Act 模式</strong>实现任务编排，维护一个 <code>Think -&gt; Generate Code -&gt; Execute -&gt; Observe</code> 的循环：</p>
-<ol>
-<li><strong>Think</strong>：LLM 分析用户意图和当前上下文，规划执行步骤</li>
-<li><strong>Generate Code</strong>：LLM 生成控制代码（Python），动态组织工具调用序列</li>
-<li><strong>Execute</strong>：将生成的代码提交给系统调度器执行</li>
-<li><strong>Observe</strong>：收集执行结果和错误信息，反馈给 LLM 进行下一轮决策</li>
-</ol>
-<p><strong>工具选择与发现</strong>：</p>
+<h2 id="3-系统架构设计"><a href="#3-系统架构设计" class="headerlink" title="3. 系统架构设计"></a>3. 系统架构设计</h2><h3 id="3-1-架构概览"><a href="#3-1-架构概览" class="headerlink" title="3.1 架构概览"></a>3.1 架构概览</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LLM → 生成控制代码 → 沙箱执行控制代码 → 调用 MCP 服务 → 执行功能代码</span><br></pre></td></tr></table></figure>
+
+<p>架构通过职责分离实现安全、高效的工具编排：LLM 生成控制代码在轻量级沙箱中执行，通过 MCP 协议调用功能代码服务，实现复杂工具的组合编排。</p>
+<h3 id="3-2-数据流向图"><a href="#3-2-数据流向图" class="headerlink" title="3.2 数据流向图"></a>3.2 数据流向图</h3><pre class="mermaid">sequenceDiagram
+    participant User
+    participant LLM as Agent (Planner)
+    participant Sandbox as Code Sandbox
+    participant MCP as MCP Client
+    participant Tool as MCP Server
+
+    User->>LLM: "分析上个月销售数据并画图"
+    LLM->>LLM: 思考并生成 Python 代码
+    Note right of LLM: 代码中调用 mcp.sales.get_data()
+    LLM->>Sandbox: 发送 Python 代码
+    activate Sandbox
+    Sandbox->>Sandbox: 执行代码
+    Sandbox->>MCP: 拦截函数调用 (mcp.sales.get_data)
+    MCP->>Tool: JSON-RPC Request
+    Tool-->>MCP: JSON-RPC Response
+    MCP-->>Sandbox: 返回数据对象
+    Sandbox->>Sandbox: 继续执行 (matplotlib绘图)
+    Sandbox-->>LLM: 返回执行结果(文本+图片)
+    deactivate Sandbox
+    LLM-->>User: 最终回复</pre>
+
+<h3 id="3-3-核心组件"><a href="#3-3-核心组件" class="headerlink" title="3.3 核心组件"></a>3.3 核心组件</h3><h4 id="3-3-1-LLM-控制层（Brain）"><a href="#3-3-1-LLM-控制层（Brain）" class="headerlink" title="3.3.1 LLM 控制层（Brain）"></a>3.3.1 LLM 控制层（Brain）</h4><p><strong>职责</strong>：生成控制代码，实现 <code>Think -&gt; Generate Code -&gt; Execute -&gt; Observe</code> 循环。</p>
+<p><strong>核心机制</strong>：</p>
 <ul>
-<li><strong>工具检索（Tool Retrieval）</strong>：当 MCP 服务数量庞大时，通过语义检索动态筛选相关工具，仅将当前任务需要的工具描述注入到上下文</li>
-<li><strong>工具调用决策</strong>：LLM 根据任务需求决定调用哪些工具、以什么顺序调用</li>
+<li><strong>工具发现</strong>：当工具数量庞大时，通过语义检索动态筛选相关工具</li>
+<li><strong>代码生成</strong>：根据任务需求生成控制代码，组织工具调用序列</li>
+<li><strong>错误处理</strong>：当代码执行失败时，将错误信息反馈给 LLM，触发自愈循环</li>
 </ul>
-<p><strong>与系统调度器的交互</strong>：</p>
+<p><strong>示例</strong>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># LLM 生成的控制代码</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">analyze_data</span>():</span><br><span class="line">    data = mcp_call(<span class="string">&quot;query_db&quot;</span>, &#123;<span class="string">&quot;table&quot;</span>: <span class="string">&quot;sales&quot;</span>&#125;)</span><br><span class="line">    <span class="keyword">if</span> data <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        <span class="keyword">return</span> &#123;<span class="string">&quot;error&quot;</span>: <span class="string">&quot;数据查询失败&quot;</span>&#125;</span><br><span class="line">    </span><br><span class="line">    results = []</span><br><span class="line">    <span class="keyword">for</span> item <span class="keyword">in</span> data:</span><br><span class="line">        result = mcp_call(<span class="string">&quot;process_item&quot;</span>, &#123;<span class="string">&quot;item&quot;</span>: item&#125;)</span><br><span class="line">        results.append(result)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> mcp_call(<span class="string">&quot;generate_report&quot;</span>, &#123;<span class="string">&quot;results&quot;</span>: results&#125;)</span><br></pre></td></tr></table></figure>
+
+<h4 id="3-3-2-代码执行沙箱（Runtime）"><a href="#3-3-2-代码执行沙箱（Runtime）" class="headerlink" title="3.3.2 代码执行沙箱（Runtime）"></a>3.3.2 代码执行沙箱（Runtime）</h4><p><strong>职责</strong>：提供安全隔离的执行环境，执行控制代码。</p>
+<p><strong>核心要求</strong>：</p>
 <ul>
-<li>Agent 编排器<strong>不直接管理</strong>沙箱资源，而是通过系统调度器获取执行环境</li>
-<li>Agent 编排器负责<strong>业务决策</strong>（”调用哪些工具”），系统调度器负责<strong>资源分配</strong>（”在哪个沙箱执行”）</li>
+<li><strong>安全隔离</strong>：防止代码逃逸和资源泄露</li>
+<li><strong>快速启动</strong>：支持快速创建和销毁，降低延迟</li>
+<li><strong>资源限制</strong>：限制 CPU、内存、网络使用，防止资源耗尽</li>
 </ul>
-<h4 id="3-1-2-系统调度器（System-Scheduler）"><a href="#3-1-2-系统调度器（System-Scheduler）" class="headerlink" title="3.1.2 系统调度器（System Scheduler）"></a>3.1.2 系统调度器（System Scheduler）</h4><p><strong>职责定位</strong>：负责基础设施层面的资源分配和执行环境调度，作为架构的”基础设施层”，处理任务分发、优先级队列和资源路由。</p>
-<p><strong>资源分配策略</strong>：</p>
+<p><strong>技术选择</strong>：可采用容器、MicroVM 等技术实现，具体选择取决于安全性和性能的权衡。</p>
+<p><strong>实践参考</strong>：</p>
 <ul>
-<li><p><strong>分层预热池设计</strong>：</p>
-<ul>
-<li><strong>L1 池（内存级挂起）</strong>：维护已启动但挂起的沙箱实例，用于毫秒级响应（&lt; 200ms）</li>
-<li><strong>L2 池（已启动容器）</strong>：维护已启动的容器实例，用于秒级扩容（&lt; 2s）</li>
-<li><strong>L3 池（按需创建）</strong>：当预热池耗尽时，动态创建新实例</li>
+<li><a target="_blank" rel="noopener" href="https://huggingface.co/blog/smolagents#code-agents">smolagents</a> 使用 E2B 提供沙箱执行环境，支持安全的代码执行</li>
+<li><a target="_blank" rel="noopener" href="https://www.anthropic.com/engineering/code-execution-with-mcp">Anthropic 的 MCP 代码执行</a> 展示了如何通过 MCP 协议实现安全的代码执行能力</li>
 </ul>
-</li>
-<li><p><strong>亲和性调度（Affinity）</strong>：</p>
+<h4 id="3-3-3-MCP-服务层（Connector）"><a href="#3-3-3-MCP-服务层（Connector）" class="headerlink" title="3.3.3 MCP 服务层（Connector）"></a>3.3.3 MCP 服务层（Connector）</h4><p><strong>职责</strong>：提供功能代码服务，封装工具实现。</p>
+<p><strong>MCP 的独特价值</strong>：</p>
 <ul>
-<li>对于连续的多轮对话，尝试路由到同一沙箱实例</li>
-<li>复用本地缓存（如 <code>pip install</code> 的包），降低延迟</li>
+<li><strong>标准化协议</strong>：统一的工具调用接口，降低集成复杂度（参考 <a target="_blank" rel="noopener" href="https://www.anthropic.com/engineering/code-execution-with-mcp">MCP 协议规范</a>）</li>
+<li><strong>服务发现</strong>：支持工具注册和发现，动态更新工具列表</li>
+<li><strong>负载均衡</strong>：支持多实例部署，实现高可用和扩展性</li>
+<li><strong>代码执行集成</strong>：MCP 协议原生支持代码执行能力，可以安全地执行 LLM 生成的代码</li>
 </ul>
-</li>
-</ul>
-<p><strong>资源隔离与熔断（Isolation &amp; Circuit Breaking）</strong>：</p>
-<p>当沙箱内代码出现死循环（如 <code>while(true)</code>）导致 CPU 100% 时，调度器需终止执行并保护宿主机。架构通过以下机制实现资源隔离：</p>
+<p><strong>示例</strong>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># MCP 服务提供的工具</span></span><br><span class="line"><span class="meta">@mcp_tool(<span class="params"><span class="string">&quot;query_sales_db&quot;</span></span>)</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">query_sales_db</span>(<span class="params">params</span>):</span><br><span class="line">    <span class="comment"># 预定义的功能代码，经过安全审计</span></span><br><span class="line">    conn = get_db_connection()</span><br><span class="line">    result = conn.execute(<span class="string">f&quot;SELECT * FROM sales WHERE month = <span class="subst">&#123;params[<span class="string">&#x27;month&#x27;</span>]&#125;</span>&quot;</span>)</span><br><span class="line">    <span class="keyword">return</span> result.to_dict()</span><br></pre></td></tr></table></figure>
+
+<h4 id="3-3-4-数据存储层"><a href="#3-3-4-数据存储层" class="headerlink" title="3.3.4 数据存储层"></a>3.3.4 数据存储层</h4><p><strong>职责</strong>：提供数据持久化和工具注册能力。</p>
+<p><strong>核心机制</strong>：</p>
 <ul>
-<li><strong>硬超时保护</strong>：设置严格的 <code>hard_timeout</code>（如 30s），防止死循环代码占用资源</li>
-<li><strong>资源上限</strong>：设置全局沙箱数量上限，达到上限时优先回收空闲实例</li>
-<li><strong>自动终止</strong>：当检测到异常（如资源耗尽、死循环）时，自动终止执行并回收资源</li>
+<li><strong>引用传递</strong>：大数据采用引用传递，避免在控制代码中传输大文件</li>
+<li><strong>工具注册</strong>：维护工具元数据和语义索引，支持工具发现</li>
+<li><strong>状态管理</strong>：支持会话状态持久化，实现多轮对话</li>
 </ul>
-<p><strong>执行环境管理</strong>：</p>
-<ul>
-<li><strong>代码执行接口</strong>：接收 Agent 编排器提交的代码，在分配的沙箱中执行</li>
-<li><strong>执行状态追踪</strong>：追踪代码执行状态（运行中、成功、失败、超时）</li>
-</ul>
-<h4 id="3-1-3-MCP-服务发现与可扩展性"><a href="#3-1-3-MCP-服务发现与可扩展性" class="headerlink" title="3.1.3 MCP 服务发现与可扩展性"></a>3.1.3 MCP 服务发现与可扩展性</h4><p>MCP 服务发现涉及两个层面的职责：<strong>工具能力发现</strong>（Agent 编排器）和<strong>服务实例路由</strong>（系统调度器）。</p>
-<p><strong>MCP Capability Aggregator（能力聚合器）</strong> - 属于 Agent 编排器职责：</p>
-<ul>
-<li><strong>能力收集</strong>：当 Agent 启动时，聚合器向所有注册的 MCP Servers 发送 <code>initialize</code> 请求</li>
-<li><strong>工具列表合并</strong>：收集所有 <code>tools</code>、<code>resources</code>、<code>prompts</code> 列表，合并后注入到 LLM 的 System Prompt</li>
-<li><strong>动态更新</strong>：当新的 MCP Server 上线时，自动更新工具列表，无需重启 Agent</li>
-<li><strong>版本管理</strong>：支持同一服务的多个版本，通过版本号区分工具能力</li>
-<li><strong>工具筛选与过滤</strong>：当 MCP 服务数量庞大（如数百个工具）时，采用工具检索（Tool Retrieval）或技能筛选（Skills）策略，根据当前上下文和任务需求动态筛选相关工具，避免工具描述占满 Token 窗口。筛选可基于语义相似度、历史使用模式、任务类型等维度</li>
-</ul>
-<p><strong>服务版本管理</strong>：</p>
-<ul>
-<li><strong>语义化版本</strong>：MCP 服务使用语义化版本号（如 v1.2.3）</li>
-<li><strong>多版本共存</strong>：支持同一服务的多个版本同时运行，通过版本号区分</li>
-<li><strong>向后兼容</strong>：新版本必须保证向后兼容，不兼容变更需要升级主版本号</li>
-</ul>
-<p><strong>服务注册与发现</strong> - 属于系统调度器职责：</p>
-<p>采用<strong>服务注册中心</strong>模式：</p>
-<ul>
-<li><strong>服务注册</strong>：MCP 服务启动时向注册中心（如 Consul、etcd）注册服务信息（服务名、版本、端点、健康状态）</li>
-<li><strong>服务发现</strong>：沙箱通过注册中心查询可用的 MCP 服务列表</li>
-<li><strong>动态更新</strong>：服务上线&#x2F;下线时，注册中心自动更新服务列表，沙箱实时感知</li>
-</ul>
-<p><strong>负载均衡与扩展</strong> - 属于系统调度器职责：</p>
-<ul>
-<li><strong>客户端负载均衡</strong>：沙箱端实现负载均衡（如轮询、最少连接），选择最优服务实例</li>
-<li><strong>健康检查</strong>：定期检查服务健康状态，自动剔除不健康的实例</li>
-<li><strong>水平扩展</strong>：MCP 服务支持水平扩展，新实例自动注册到服务发现系统</li>
-</ul>
-<h4 id="3-1-4-安全围栏（Security-Fence）"><a href="#3-1-4-安全围栏（Security-Fence）" class="headerlink" title="3.1.4 安全围栏（Security Fence）"></a>3.1.4 安全围栏（Security Fence）</h4><p><strong>请求级别拦截</strong>：控制平面在请求进入沙箱前进行安全策略检查：</p>
-<ul>
-<li><strong>代码静态分析</strong>：检查控制代码是否包含危险操作（如文件系统访问、网络请求）</li>
-<li><strong>工具调用白名单</strong>：验证代码中调用的 MCP 工具是否在授权列表中</li>
-<li><strong>资源配额检查</strong>：验证请求是否超出资源配额限制</li>
-</ul>
-<p><strong>运行时监控</strong>：沙箱执行过程中，控制平面持续监控：</p>
-<ul>
-<li><strong>资源使用监控</strong>：CPU、内存、网络使用情况</li>
-<li><strong>异常行为检测</strong>：检测死循环、资源耗尽等异常情况</li>
-<li><strong>自动终止</strong>：当检测到异常时，自动终止执行并回收资源</li>
-</ul>
-<p><strong>LLM 输出验证层</strong>：</p>
-<p>在 LLM 生成代码后、提交沙箱执行前，增加专门的验证层：</p>
-<ul>
-<li><strong>静态代码分析</strong>：使用 AST（抽象语法树）分析，检测危险操作模式</li>
-<li><strong>工具调用验证</strong>：验证代码中调用的 MCP 工具是否存在、参数类型是否正确</li>
+<h3 id="3-4-关键特性"><a href="#3-4-关键特性" class="headerlink" title="3.4 关键特性"></a>3.4 关键特性</h3><ul>
+<li><strong>职责分离</strong>：控制逻辑与功能实现分离</li>
+<li><strong>安全隔离</strong>：沙箱环境限制执行权限</li>
+<li><strong>网络访问控制</strong>：支持特定网络访问需求</li>
+<li><strong>服务化架构</strong>：功能代码通过 MCP 协议提供服务</li>
 </ul>
 <hr>
-<h3 id="3-2-数据平面（Data-Plane）"><a href="#3-2-数据平面（Data-Plane）" class="headerlink" title="3.2 数据平面（Data Plane）"></a>3.2 数据平面（Data Plane）</h3><h4 id="3-2-1-引用传递机制与数据流（Reference-Passing-Mechanism-amp-Data-Flow）"><a href="#3-2-1-引用传递机制与数据流（Reference-Passing-Mechanism-amp-Data-Flow）" class="headerlink" title="3.2.1 引用传递机制与数据流（Reference Passing Mechanism &amp; Data Flow）"></a>3.2.1 引用传递机制与数据流（Reference Passing Mechanism &amp; Data Flow）</h4><p><strong>核心设计原则：控制流与数据流分离</strong></p>
-<p>工具编排架构的关键设计原则：<strong>LLM 只处理控制流（代码、逻辑、引用），数据平面处理实际的数据流（文件、大数据对象）</strong>。</p>
-<p><strong>引用传递机制（Reference Passing Mechanism）</strong>：</p>
-<p>采用<strong>引用传递 + 共享存储</strong>模式，实现控制流与数据流的解耦：</p>
-<ul>
-<li><strong>小数据（&lt; 1MB）</strong>：直接通过 MCP 协议参数传递（JSON），LLM 生成的代码可以直接处理</li>
-<li><strong>大数据（≥ 1MB）</strong>：采用<strong>引用传递</strong>模式<ul>
-<li>大数据对象存储到对象存储（S3&#x2F;MinIO），生成唯一引用 ID（如 <code>artifact://id-123</code>）</li>
-<li>LLM 生成的代码只传递引用 ID，而不是实际数据</li>
-<li>后续工具通过引用 ID 从对象存储中获取实际数据</li>
-<li><strong>优势</strong>：避免在控制代码中传输大文件，降低 Token 消耗和网络开销</li>
-</ul>
-</li>
-</ul>
-<p><strong>引用管理（Reference Management）</strong>：</p>
-<p>数据平面维护 <code>ID -&gt; S3 Path</code> 的映射关系：</p>
-<ul>
-<li><strong>引用生成</strong>：工具 A 运行后返回 <code>&#123;&quot;status&quot;: &quot;success&quot;, &quot;data_ref&quot;: &quot;artifact://id-123&quot;&#125;</code></li>
-<li><strong>引用传递</strong>：LLM 生成的代码将这个引用传递给工具 B：<code>mcp_call(&quot;tool_b&quot;, &#123;&quot;input_ref&quot;: &quot;artifact://id-123&quot;&#125;)</code></li>
-<li><strong>引用解析</strong>：工具 B 通过引用 ID 从对象存储中获取实际数据</li>
-<li><strong>生命周期管理</strong>：引用关联的数据在 workflow 完成后自动清理，或根据保留策略保留</li>
-</ul>
-<p><strong>控制代码的状态管理</strong>：</p>
-<p>采用<strong>沙箱内存 + 外部持久化</strong>的混合模式：</p>
-<ul>
-<li><strong>运行时状态</strong>：控制代码执行过程中的临时变量、中间结果存储在沙箱内存中，支持快速访问</li>
-<li><strong>持久化状态</strong>：关键状态（如 workflow 进度、检查点）持久化到 Redis，支持会话恢复</li>
-</ul>
-<p><strong>数据一致性</strong>：</p>
-<ul>
-<li><strong>单沙箱单线程</strong>：每个沙箱会话单线程执行控制代码，避免并发冲突</li>
-<li><strong>工具调用原子性</strong>：单个工具调用保证原子性，失败时回滚</li>
-</ul>
-<h4 id="3-2-2-工具注册中心（Tool-Registry）"><a href="#3-2-2-工具注册中心（Tool-Registry）" class="headerlink" title="3.2.2 工具注册中心（Tool Registry）"></a>3.2.2 工具注册中心（Tool Registry）</h4><p>解决工具发现问题。当工具数量庞大（100+）时，无法将所有工具的详细 API 定义全部放入 LLM Context Window，需通过注册中心进行工具发现和检索。</p>
-<p><strong>工具注册中心（Tool Registry）</strong>：</p>
-<ul>
-<li><p><strong>工具元数据存储</strong>：</p>
-<ul>
-<li>工具名称、版本、工具 Schema（OpenAPI&#x2F;JSON Schema）：用于生成准确的调用代码</li>
-<li>工具健康状态：服务可用性、版本信息</li>
-</ul>
-</li>
-<li><p><strong>工具语义索引（Vector Index）</strong>：</p>
-<ul>
-<li>存储工具的语义描述（Vector Embedding）：用于 RAG-based Tool Selection</li>
-<li><strong>场景</strong>：当 LLM 面对用户请求”分析上个月的销售数据异常”时，通过语义检索找到相关工具</li>
-<li><strong>必要性</strong>：解决工具数量庞大的问题</li>
-</ul>
-</li>
-</ul>
-<h4 id="3-2-3-结果处理（Result-Processing）"><a href="#3-2-3-结果处理（Result-Processing）" class="headerlink" title="3.2.3 结果处理（Result Processing）"></a>3.2.3 结果处理（Result Processing）</h4><p>MCP 服务返回结果后、进入 LLM Context 前，需进行数据清洗和处理：</p>
-<ul>
-<li><strong>自动截断</strong>：当结果超过 Token 限制时，自动截断并保留关键信息</li>
-<li><strong>数据摘要</strong>：对复杂数据结构进行语义摘要，保留关键信息</li>
-<li><strong>引用传递</strong>：大数据（≥ 1MB）采用引用传递模式，避免在控制代码中传输大文件</li>
-</ul>
-<hr>
-<h3 id="3-3-执行环境与互联平面（Execution-amp-Interconnect-Plane）"><a href="#3-3-执行环境与互联平面（Execution-amp-Interconnect-Plane）" class="headerlink" title="3.3 执行环境与互联平面（Execution &amp; Interconnect Plane）"></a>3.3 执行环境与互联平面（Execution &amp; Interconnect Plane）</h3><p>本层负责提供安全、短暂且受控的计算环境，解决隔离环境与外部 MCP 服务之间的通信问题。它是”控制代码与功能代码分离”原则的物理载体，定义架构的安全边界和连通性能力。</p>
-<h4 id="3-3-1-沙箱运行时架构（Sandbox-Runtime-Architecture）"><a href="#3-3-1-沙箱运行时架构（Sandbox-Runtime-Architecture）" class="headerlink" title="3.3.1 沙箱运行时架构（Sandbox Runtime Architecture）"></a>3.3.1 沙箱运行时架构（Sandbox Runtime Architecture）</h4><p><strong>设计原则</strong>：</p>
+<h2 id="4-关键技术实现（按生命周期拆解）"><a href="#4-关键技术实现（按生命周期拆解）" class="headerlink" title="4. 关键技术实现（按生命周期拆解）"></a>4. 关键技术实现（按生命周期拆解）</h2><h3 id="4-1-阶段一：工具发现与上下文注入"><a href="#4-1-阶段一：工具发现与上下文注入" class="headerlink" title="4.1 阶段一：工具发现与上下文注入"></a>4.1 阶段一：工具发现与上下文注入</h3><p><strong>问题</strong>：MCP 服务可能有很多工具，将所有工具的 schema 放入 Prompt 会撑爆 Context。</p>
+<p><strong>解决方案</strong>：</p>
 <ol>
-<li><strong>零信任隔离（Zero-Trust Isolation）</strong>：假设所有 LLM 生成的代码均包含潜在安全风险，必须采用基于 Hypervisor 的硬件级隔离，而非仅依赖容器命名空间（Namespace）。这是架构安全性的基石。</li>
-<li><strong>极致弹性（Extreme Elasticity）</strong>：Agent 任务通常短时运行（Ephemeral），需快速启动和销毁。运行时环境需支持毫秒级（&lt; 200ms）冷启动，保证 Agent 交互的实时性。</li>
-<li><strong>资源效率（Resource Efficiency）</strong>：在保证安全隔离的前提下，最小化资源开销，支持高密度部署和成本优化。</li>
-</ol>
-<p><strong>沙箱运行时接口（Sandbox Runtime Interface）</strong>：</p>
-<p>架构定义了沙箱运行时的能力标准，而非绑定具体技术实现：</p>
-<ul>
-<li><strong>隔离级别标准</strong>：必须提供硬件级隔离（Hypervisor-based），防止代码逃逸和资源泄露</li>
-<li><strong>冷启动延迟预算</strong>：从创建到就绪的时间必须 &lt; 200ms，以满足 Agent 交互的实时性要求</li>
-<li><strong>资源限制能力</strong>：支持 CPU、内存、网络带宽的细粒度限制，防止资源耗尽</li>
-<li><strong>生命周期管理</strong>：支持快速创建、挂起、恢复、销毁，支持池化预热策略</li>
-</ul>
-<p><strong>技术决策（ADR）</strong>：</p>
-<p>基于上述能力标准，当前参考实现采用 <strong>MicroVM（如 Firecracker）</strong>：</p>
-<ul>
-<li><strong>架构考量</strong>：<ul>
-<li>Docker 等容器技术虽然启动快，但共享内核存在逃逸风险，不符合零信任隔离原则</li>
-<li>传统 VM 启动时间过长（&gt; 1s），无法满足毫秒级响应要求</li>
-<li>MicroVM 提供了最佳的安全&#x2F;速度平衡点：硬件级隔离 + 快速启动（~125ms）</li>
-</ul>
+<li><p><strong>动态工具加载</strong>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 根据任务语义检索相关工具</span></span><br><span class="line">relevant_tools = semantic_search(user_query, all_tools)</span><br><span class="line"><span class="comment"># 只将相关工具的定义注入 Prompt</span></span><br><span class="line">tool_definitions = [tool.schema <span class="keyword">for</span> tool <span class="keyword">in</span> relevant_tools]</span><br></pre></td></tr></table></figure>
 </li>
-<li><strong>生命周期优化</strong>：采用 <strong>Pool-based Warmup（池化预热）</strong> 策略，维护一个小型的热沙箱池（L1&#x2F;L2 池），以抵消 MicroVM 的初始化开销，实现毫秒级响应</li>
-</ul>
-<p><strong>安全边界（Security Boundary）</strong>：</p>
+<li><p><strong>MCP 协议支持</strong>：</p>
 <ul>
-<li><strong>系统调用过滤</strong>：在沙箱层面拦截危险系统调用（如网络相关系统调用），使用 seccomp 等机制实现</li>
-<li><strong>文件系统隔离</strong>：沙箱文件系统只读，临时文件写入到挂载的卷，防止持久化污染</li>
-<li><strong>网络命名空间隔离</strong>：使用 Linux Network Namespace 隔离沙箱网络，默认断网</li>
-<li><strong>资源上限保护</strong>：通过 cgroups 限制 CPU、内存、网络带宽，防止资源耗尽攻击</li>
-<li><strong>审计日志</strong>：记录所有系统调用和执行行为，支持安全审计和问题诊断</li>
-</ul>
-<h4 id="3-3-2-MCP-互联拓扑（MCP-Interconnect-Topology）"><a href="#3-3-2-MCP-互联拓扑（MCP-Interconnect-Topology）" class="headerlink" title="3.3.2 MCP 互联拓扑（MCP Interconnect Topology）"></a>3.3.2 MCP 互联拓扑（MCP Interconnect Topology）</h4><p><strong>核心挑战</strong>：</p>
-<p>如何在默认断网的沙箱与分布式的 MCP 工具服务之间建立安全的数据通道？这涉及跨信任域（Cross-Trust-Zone）的协议适配和权限控制。</p>
-<p><strong>架构模式：MCP Sidecar Proxy</strong></p>
-<p>架构采用 <strong>Sidecar 代理模式</strong>实现协议隧道，而非直接网络路由。原因如下：</p>
-<ul>
-<li><strong>故障隔离</strong>：每个沙箱配备独立的 Sidecar，单个沙箱故障不影响其他实例</li>
-<li><strong>网络跳数减少</strong>：Sidecar 与沙箱通过本地 Socket 通信，延迟最低</li>
-<li><strong>安全边界清晰</strong>：所有外部通信必须通过 Sidecar，形成明确的信任边界</li>
-</ul>
-<p><strong>架构视图</strong>：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[ Untrusted Zone (MicroVM) ]             [ Trusted Zone (Host/Cluster) ]</span><br><span class="line">+-------------------------+              +---------------------------+</span><br><span class="line">|  LLM Generated Code     |   Stdio/     |  MCP Gateway (Sidecar)    |      HTTP/SSE</span><br><span class="line">|  (Python/JS Runtime)    | &lt;----------&gt; |  - Protocol Translation   | &lt;--&gt; [MCP Server A]</span><br><span class="line">|                         |   Socket     |  - Tool Whitelisting      |      [MCP Server B]</span><br><span class="line">|  &gt; client.call_tool()   |              |  - Auth Injection         |</span><br><span class="line">+-------------------------+              +---------------------------+</span><br></pre></td></tr></table></figure>
-
-<p><strong>组件职责</strong>：</p>
-<ol>
-<li><p><strong>沙箱内代理（In-Sandbox Stub）</strong>：</p>
-<ul>
-<li>拦截代码中的工具调用（如 <code>client.call_tool()</code>），序列化为 MCP JSON-RPC 消息</li>
-<li>通过本地 Socket（Unix Socket 或本地 HTTP）与 Sidecar 通信</li>
-<li>不持有任何外部网络访问权限，完全依赖 Sidecar 进行外部通信</li>
-</ul>
-</li>
-<li><p><strong>MCP 网关（Sidecar）</strong>：</p>
-<ul>
-<li><strong>协议转换</strong>：将基于 Stdio&#x2F;Socket 的内部通信转换为基于 HTTP&#x2F;SSE 的外部服务调用<ul>
-<li>支持多种传输方式：Stdio（本地部署）、SSE（Web 环境）、HTTP（分布式部署）</li>
-<li>协议适配：将沙箱内的 Python&#x2F;JavaScript 调用转换为标准 MCP JSON-RPC 消息</li>
-</ul>
-</li>
-<li><strong>安全熔断（Security Fence）</strong>：在流量出沙箱前，强制校验调用目标是否在当前 Agent 的 <code>AllowedTools</code> 白名单中，构成架构的最后一道防线，防止 LLM 生成代码调用未授权工具</li>
-<li><strong>上下文注入（Context Injection）</strong>：Agent 不应该持有 API Keys 等敏感凭证。网关负责从安全存储中获取凭证并注入到请求中，实现权限的集中管理</li>
-<li><strong>服务路由与负载均衡</strong>：根据工具名称和服务发现信息，路由到正确的 MCP Server 实例，实现客户端负载均衡和健康检查</li>
+<li>使用 MCP 的 <code>list_tools</code> 分页&#x2F;搜索机制</li>
+<li>支持按功能分类、按标签筛选</li>
+<li>工具定义按需加载，而非全量加载</li>
 </ul>
 </li>
 </ol>
-<p><strong>网络隔离策略</strong>：</p>
+<p><strong>实现要点</strong>：</p>
 <ul>
-<li><strong>最小权限原则</strong>：沙箱只能访问 MCP 网关（Sidecar），禁止直接访问外部网络</li>
-<li><strong>白名单机制</strong>：基于白名单的访问控制，只允许访问预定义的 MCP 服务</li>
-<li><strong>传输加密</strong>：Sidecar 与 MCP Server 之间的通信使用 mTLS 加密，确保数据安全</li>
-<li><strong>网络策略</strong>：使用 Kubernetes Network Policies 或 iptables&#x2F;nftables 限制出站流量，仅允许访问 MCP 服务端点</li>
+<li>建立工具语义索引，支持快速检索</li>
+<li>工具定义缓存，避免重复查询</li>
+<li>上下文窗口管理，优先加载高频工具</li>
 </ul>
-<p><strong>替代方案说明</strong>：</p>
-<ul>
-<li><strong>集中式网关模式</strong>：所有沙箱通过统一 MCP 网关访问 MCP 服务。虽便于集中管理和监控，但存在单点故障风险和网络跳数增加。架构优先采用 Sidecar 模式，仅在资源受限等特定场景考虑集中式网关。</li>
-</ul>
-<hr>
-<h3 id="3-4-可靠性工程（Reliability-amp-Operations）"><a href="#3-4-可靠性工程（Reliability-amp-Operations）" class="headerlink" title="3.4 可靠性工程（Reliability &amp; Operations）"></a>3.4 可靠性工程（Reliability &amp; Operations）</h3><p>架构采用<strong>基础设施层</strong>与<strong>认知层</strong>双重容错机制，应对 MCP 工具调用失败及代码执行错误。</p>
-<h4 id="3-4-1-认知层自愈（Cognitive-Self-Healing）"><a href="#3-4-1-认知层自愈（Cognitive-Self-Healing）" class="headerlink" title="3.4.1 认知层自愈（Cognitive Self-Healing）"></a>3.4.1 认知层自愈（Cognitive Self-Healing）</h4><p>当沙箱执行返回 <code>stderr</code> 或异常退出码时，控制平面不直接向用户报错，而是将错误堆栈（Stack Trace）作为新的 Observation 回传给 LLM，触发自愈循环：</p>
+<h3 id="4-2-阶段二：代码生成与规划"><a href="#4-2-阶段二：代码生成与规划" class="headerlink" title="4.2 阶段二：代码生成与规划"></a>4.2 阶段二：代码生成与规划</h3><p><strong>核心机制</strong>：如何让 LLM 生成正确的控制代码？</p>
+<p><strong>Prompt 设计要点</strong>：</p>
 <ol>
-<li><strong>错误捕获</strong>：沙箱执行失败时，捕获完整的错误信息（包括 stderr、异常类型、堆栈跟踪）</li>
-<li><strong>错误分析</strong>：将错误信息注入到 LLM 的上下文中，要求 LLM 分析错误原因</li>
-<li><strong>代码修复</strong>：LLM 基于错误分析，生成修正后的控制代码</li>
-<li><strong>重试执行</strong>：在沙箱中执行修复后的代码</li>
+<li><p><strong>工具调用规范</strong>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 在 Prompt 中明确工具调用方式</span></span><br><span class="line"><span class="comment"># 可用工具：</span></span><br><span class="line"><span class="comment"># - mcp_call(&quot;tool_name&quot;, &#123;&quot;param&quot;: value&#125;)</span></span><br><span class="line"><span class="comment"># - 禁止直接 import 敏感模块</span></span><br><span class="line"><span class="comment"># - 禁止直接访问数据库/文件系统</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>代码模板</strong>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 提供代码模板，引导 LLM 生成正确结构</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">solve_task</span>():</span><br><span class="line">    <span class="comment"># Step 1: 获取数据</span></span><br><span class="line">    data = mcp_call(<span class="string">&quot;get_data&quot;</span>, &#123;...&#125;)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># Step 2: 处理数据</span></span><br><span class="line">    result = process(data)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># Step 3: 返回结果</span></span><br><span class="line">    <span class="keyword">return</span> result</span><br></pre></td></tr></table></figure></li>
 </ol>
-<p><strong>重试策略</strong>：</p>
+<p><strong>关键挑战</strong>：</p>
 <ul>
-<li><strong>最大重试次数</strong>：设定 <code>max_repair_attempts=3</code>，避免无限循环</li>
-<li><strong>错误分类</strong>：区分可修复错误（如参数错误、逻辑错误、类型错误）和不可修复错误（如权限错误、资源不足）</li>
-<li><strong>渐进式修复</strong>：每次重试时，LLM 可以访问之前的错误历史，逐步改进修复方案</li>
-<li><strong>错误上下文保留</strong>：保留完整的错误链，帮助 LLM 理解错误的根本原因</li>
+<li>如何确保 LLM 生成的代码符合安全规范？</li>
+<li>如何处理工具调用失败的情况？</li>
+<li>如何支持并行执行和异步操作？</li>
 </ul>
-<p><strong>实现示例</strong>：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">execute_with_healing</span>(<span class="params">code, context, attempt=<span class="number">0</span>, max_attempts=<span class="number">3</span></span>):</span><br><span class="line">    <span class="keyword">if</span> attempt &gt; max_attempts:</span><br><span class="line">        <span class="keyword">raise</span> ExecutionFailedException(<span class="string">&quot;无法自动修复错误，已达到最大重试次数&quot;</span>)</span><br><span class="line">    </span><br><span class="line">    result = sandbox.run(code)</span><br><span class="line">    <span class="keyword">if</span> result.status == <span class="string">&#x27;error&#x27;</span>:</span><br><span class="line">        <span class="comment"># 将错误反馈给 LLM 进行反思</span></span><br><span class="line">        correction_prompt = <span class="string">f&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">        代码执行失败: <span class="subst">&#123;result.stderr&#125;</span></span></span><br><span class="line"><span class="string">        错误类型: <span class="subst">&#123;result.error_type&#125;</span></span></span><br><span class="line"><span class="string">        堆栈跟踪: <span class="subst">&#123;result.stack_trace&#125;</span></span></span><br><span class="line"><span class="string">        之前的错误历史: <span class="subst">&#123;context.get(<span class="string">&#x27;error_history&#x27;</span>, [])&#125;</span></span></span><br><span class="line"><span class="string">        </span></span><br><span class="line"><span class="string">        请分析错误原因并生成修复后的代码。</span></span><br><span class="line"><span class="string">        &quot;&quot;&quot;</span></span><br><span class="line">        new_code = llm.generate(context + correction_prompt)</span><br><span class="line">        <span class="comment"># 记录错误历史</span></span><br><span class="line">        context[<span class="string">&#x27;error_history&#x27;</span>].append(&#123;</span><br><span class="line">            <span class="string">&#x27;attempt&#x27;</span>: attempt,</span><br><span class="line">            <span class="string">&#x27;error&#x27;</span>: result.stderr,</span><br><span class="line">            <span class="string">&#x27;fixed_code&#x27;</span>: new_code</span><br><span class="line">        &#125;)</span><br><span class="line">        <span class="keyword">return</span> execute_with_healing(new_code, context, attempt + <span class="number">1</span>, max_attempts)</span><br><span class="line">    <span class="keyword">return</span> result</span><br></pre></td></tr></table></figure>
+<h3 id="4-3-阶段三：沙箱执行与通信"><a href="#4-3-阶段三：沙箱执行与通信" class="headerlink" title="4.3 阶段三：沙箱执行与通信"></a>4.3 阶段三：沙箱执行与通信</h3><p><strong>核心实现</strong>：如何安全地执行代码并调用 MCP 服务？</p>
+<p><strong>MCP Bridge 实现</strong>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">MCPBridge</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;在沙箱内注入的 MCP 桥接对象&quot;&quot;&quot;</span></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, mcp_client</span>):</span><br><span class="line">        self.client = mcp_client</span><br><span class="line">        self.allowed_tools = <span class="built_in">set</span>()  <span class="comment"># 白名单工具列表</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__getattr__</span>(<span class="params">self, tool_name</span>):</span><br><span class="line">        <span class="comment"># 动态拦截工具调用，转换为 MCP 协议消息</span></span><br><span class="line">        <span class="keyword">if</span> tool_name <span class="keyword">not</span> <span class="keyword">in</span> self.allowed_tools:</span><br><span class="line">            <span class="keyword">raise</span> SecurityError(<span class="string">f&quot;Tool <span class="subst">&#123;tool_name&#125;</span> not allowed&quot;</span>)</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">def</span> <span class="title function_">proxy</span>(<span class="params">*args, **kwargs</span>):</span><br><span class="line">            <span class="comment"># 序列化参数</span></span><br><span class="line">            payload = serialize(args, kwargs)</span><br><span class="line">            <span class="comment"># 通过 socket/stdio 与宿主机 MCP Client 通信</span></span><br><span class="line">            response = self.client.call_tool(tool_name, payload)</span><br><span class="line">            <span class="keyword">return</span> deserialize(response)</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">return</span> proxy</span><br><span class="line"></span><br><span class="line"><span class="comment"># 注入到沙箱全局命名空间</span></span><br><span class="line"><span class="built_in">globals</span>()[<span class="string">&#x27;mcp&#x27;</span>] = MCPBridge(mcp_client)</span><br></pre></td></tr></table></figure>
 
-<h4 id="3-4-2-MCP-服务熔断与降级"><a href="#3-4-2-MCP-服务熔断与降级" class="headerlink" title="3.4.2 MCP 服务熔断与降级"></a>3.4.2 MCP 服务熔断与降级</h4><p><strong>断路器（Circuit Breaker）</strong>：</p>
-<p>对每个 MCP Server 维护断路器状态机（Closed → Open → Half-Open）：</p>
+<p><strong>安全机制</strong>：</p>
+<ol>
+<li><p><strong>白名单验证</strong>：</p>
 <ul>
-<li><strong>Closed（正常）</strong>：服务正常，请求正常通过</li>
-<li><strong>Open（熔断）</strong>：服务连续失败超过阈值（如 5 次），进入熔断状态，直接拒绝请求</li>
-<li><strong>Half-Open（半开）</strong>：熔断后等待恢复时间（如 30s），尝试放行少量请求测试服务是否恢复</li>
-</ul>
-<p><strong>降级策略</strong>：</p>
-<p>当关键 MCP 服务不可用时，系统自动在 Prompt 中注入降级提示：</p>
-<ul>
-<li><strong>工具不可用提示</strong>：当前搜索工具不可用，请尝试使用已知知识回答</li>
-<li><strong>替代方案引导</strong>：引导 LLM 使用其他可用工具或简化任务目标</li>
-<li><strong>部分功能降级</strong>：允许 workflow 在部分工具失败时继续执行，跳过不可用的步骤</li>
-</ul>
-<p><strong>重试策略</strong>：</p>
-<ul>
-<li><strong>指数退避重试</strong>：采用带抖动的指数退避策略处理网络抖动<ul>
-<li>初始延迟：100ms</li>
-<li>最大延迟：5s</li>
-<li>抖动范围：±20%</li>
+<li>沙箱内只能调用注册过的工具</li>
+<li>Sidecar 进程校验每个工具调用</li>
+<li>拒绝未授权的工具调用</li>
 </ul>
 </li>
-<li><strong>超时设置</strong>：为不同类型的工具设置不同的超时时间<ul>
-<li>快速工具（如数据库查询）：5s</li>
-<li>计算密集型工具（如分子对接）：60s</li>
-<li>硬超时保护：所有工具调用设置硬超时（如 120s），防止无限等待</li>
+<li><p><strong>资源限制</strong>：</p>
+<ul>
+<li>CPU、内存、网络配额</li>
+<li>执行超时控制</li>
+<li>防止资源耗尽攻击</li>
 </ul>
 </li>
+<li><p><strong>网络隔离</strong>：</p>
+<ul>
+<li>沙箱默认无网络访问</li>
+<li>仅允许访问 MCP 服务端点</li>
+<li>禁止访问其他外部服务</li>
+</ul>
+</li>
+</ol>
+<h3 id="4-4-阶段四：结果回传与修正"><a href="#4-4-阶段四：结果回传与修正" class="headerlink" title="4.4 阶段四：结果回传与修正"></a>4.4 阶段四：结果回传与修正</h3><p><strong>错误恢复机制</strong>：如果生成的代码在沙箱运行报错，如何自动修复？</p>
+<p><strong>自愈循环</strong>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 错误处理流程</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">execute_with_retry</span>(<span class="params">code, max_retries=<span class="number">3</span></span>):</span><br><span class="line">    <span class="keyword">for</span> attempt <span class="keyword">in</span> <span class="built_in">range</span>(max_retries):</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            result = sandbox.execute(code)</span><br><span class="line">            <span class="keyword">return</span> result</span><br><span class="line">        <span class="keyword">except</span> ExecutionError <span class="keyword">as</span> e:</span><br><span class="line">            <span class="keyword">if</span> attempt &lt; max_retries - <span class="number">1</span>:</span><br><span class="line">                <span class="comment"># 将错误信息反馈给 LLM</span></span><br><span class="line">                error_context = &#123;</span><br><span class="line">                    <span class="string">&quot;error&quot;</span>: <span class="built_in">str</span>(e),</span><br><span class="line">                    <span class="string">&quot;stack_trace&quot;</span>: e.stack_trace,</span><br><span class="line">                    <span class="string">&quot;code&quot;</span>: code</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment"># LLM 基于错误信息重新生成代码</span></span><br><span class="line">                code = llm.regenerate_code(error_context)</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                <span class="keyword">raise</span> MaxRetriesExceeded()</span><br></pre></td></tr></table></figure>
+
+<p><strong>关键能力</strong>：</p>
+<ul>
+<li><strong>错误捕获</strong>：捕获代码执行错误、工具调用错误</li>
+<li><strong>上下文增强</strong>：提供错误堆栈、变量状态等调试信息</li>
+<li><strong>智能修复</strong>：LLM 基于错误信息自动修复代码</li>
+<li><strong>人工介入</strong>：识别无法自动修复的错误，及时上报</li>
+</ul>
+<p><strong>局限性</strong>：</p>
+<ul>
+<li>某些错误需要领域知识才能修复（如数据库死锁）</li>
+<li>某些错误需要系统状态理解（如资源竞争）</li>
+<li>某些错误需要业务上下文（如数据不一致）</li>
 </ul>
 <hr>
-<h2 id="4-场景演练"><a href="#4-场景演练" class="headerlink" title="4. 场景演练"></a>4. 场景演练</h2><h3 id="典型案例：多工具协同场景"><a href="#典型案例：多工具协同场景" class="headerlink" title="典型案例：多工具协同场景"></a>典型案例：多工具协同场景</h3><p>本节通过一个典型案例，展示架构如何支持复杂的多工具协同场景，演示各组件在实际业务中的协同工作。</p>
-<h4 id="场景：数据分析与报告生成"><a href="#场景：数据分析与报告生成" class="headerlink" title="场景：数据分析与报告生成"></a>场景：数据分析与报告生成</h4><p><strong>用户请求</strong>：分析上个月的销售数据，识别异常并生成可视化报告</p>
-<p><strong>架构执行流程</strong>：</p>
-<ol>
-<li><p><strong>LLM 生成控制代码</strong>：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># LLM 生成的动态 workflow</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">analyze_sales_data</span>():</span><br><span class="line">    <span class="comment"># 1. 查询销售数据</span></span><br><span class="line">    sales_data = query_sales_db(month=<span class="string">&quot;last_month&quot;</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 2. 并行执行多个分析任务</span></span><br><span class="line">    results = parallel_execute([</span><br><span class="line">        <span class="keyword">lambda</span>: anomaly_detection(sales_data),</span><br><span class="line">        <span class="keyword">lambda</span>: statistical_analysis(sales_data),</span><br><span class="line">        <span class="keyword">lambda</span>: trend_analysis(sales_data)</span><br><span class="line">    ])</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 3. 综合分析结果</span></span><br><span class="line">    insights = combine_insights(results)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 4. 生成可视化报告</span></span><br><span class="line">    report = generate_visualization_report(insights)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> report</span><br></pre></td></tr></table></figure>
-</li>
-<li><p><strong>沙箱执行控制代码</strong>：</p>
-<ul>
-<li>从预热池中获取沙箱实例，启动时间 &lt; 200ms</li>
-<li>控制代码动态调用多个 MCP 服务（<code>query_sales_db</code>、<code>anomaly_detection</code>、<code>generate_visualization_report</code>）</li>
+<h2 id="5-场景演练：复杂数据分析-Agent"><a href="#5-场景演练：复杂数据分析-Agent" class="headerlink" title="5. 场景演练：复杂数据分析 Agent"></a>5. 场景演练：复杂数据分析 Agent</h2><h3 id="5-1-场景描述"><a href="#5-1-场景描述" class="headerlink" title="5.1 场景描述"></a>5.1 场景描述</h3><p><strong>用户请求</strong>：分析上个月的销售数据，识别异常并生成可视化报告</p>
+<h3 id="5-2-执行流程"><a href="#5-2-执行流程" class="headerlink" title="5.2 执行流程"></a>5.2 执行流程</h3><h4 id="5-2-1-LLM-生成控制代码"><a href="#5-2-1-LLM-生成控制代码" class="headerlink" title="5.2.1 LLM 生成控制代码"></a>5.2.1 LLM 生成控制代码</h4>   <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">analyze_sales_data</span>():</span><br><span class="line">    <span class="comment"># 查询数据</span></span><br><span class="line">    sales_data = mcp_call(<span class="string">&quot;query_sales_db&quot;</span>, &#123;<span class="string">&quot;month&quot;</span>: <span class="string">&quot;last_month&quot;</span>&#125;)</span><br><span class="line">    </span><br><span class="line"> <span class="keyword">if</span> <span class="keyword">not</span> sales_data:</span><br><span class="line">     <span class="keyword">return</span> &#123;<span class="string">&quot;error&quot;</span>: <span class="string">&quot;数据查询失败&quot;</span>&#125;</span><br><span class="line"> </span><br><span class="line">    <span class="comment"># 并行执行多个分析</span></span><br><span class="line">    results = parallel_execute([</span><br><span class="line">        <span class="keyword">lambda</span>: mcp_call(<span class="string">&quot;anomaly_detection&quot;</span>, &#123;<span class="string">&quot;data&quot;</span>: sales_data&#125;),</span><br><span class="line">        <span class="keyword">lambda</span>: mcp_call(<span class="string">&quot;statistical_analysis&quot;</span>, &#123;<span class="string">&quot;data&quot;</span>: sales_data&#125;),</span><br><span class="line">        <span class="keyword">lambda</span>: mcp_call(<span class="string">&quot;trend_analysis&quot;</span>, &#123;<span class="string">&quot;data&quot;</span>: sales_data&#125;)</span><br><span class="line">    ])</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 综合结果</span></span><br><span class="line">    insights = combine_results(results)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 生成报告</span></span><br><span class="line">    report = mcp_call(<span class="string">&quot;generate_report&quot;</span>, &#123;<span class="string">&quot;insights&quot;</span>: insights&#125;)</span><br><span class="line">    <span class="keyword">return</span> report</span><br></pre></td></tr></table></figure>
+
+<h4 id="5-2-2-沙箱执行控制代码"><a href="#5-2-2-沙箱执行控制代码" class="headerlink" title="5.2.2 沙箱执行控制代码"></a>5.2.2 沙箱执行控制代码</h4><ul>
+<li>从预热池获取沙箱实例</li>
+<li>执行控制代码，动态调用多个 MCP 服务</li>
 <li>支持并行调用、条件分支等复杂逻辑</li>
 </ul>
-</li>
-<li><p><strong>MCP 服务提供功能代码</strong>：</p>
-<ul>
-<li><code>query_sales_db</code> 服务：连接数据库，需要数据库访问权限</li>
-<li><code>anomaly_detection</code> 服务：运行在机器学习推理集群</li>
-<li><code>generate_visualization_report</code> 服务：需要图表生成库</li>
+<h4 id="5-2-3-MCP-服务提供功能代码"><a href="#5-2-3-MCP-服务提供功能代码" class="headerlink" title="5.2.3 MCP 服务提供功能代码"></a>5.2.3 MCP 服务提供功能代码</h4><ul>
+<li><code>query_sales_db</code>：连接数据库，查询销售数据</li>
+<li><code>anomaly_detection</code>：运行在 ML 推理集群，检测异常</li>
+<li><code>statistical_analysis</code>：运行在数据分析服务，进行统计分析</li>
+<li><code>trend_analysis</code>：运行在时间序列分析服务，进行趋势分析<ul>
+<li><code>generate_report</code>：生成可视化报告</li>
 </ul>
 </li>
-<li><p><strong>数据传递</strong>：</p>
-<ul>
-<li>小数据（查询结果）直接通过 MCP 协议传递</li>
-<li>大数据（完整数据集）采用引用传递，存储在对象存储中</li>
 </ul>
-</li>
-<li><p><strong>错误处理</strong>：</p>
-<ul>
+<h4 id="5-2-4-错误处理"><a href="#5-2-4-错误处理" class="headerlink" title="5.2.4 错误处理"></a>5.2.4 错误处理</h4><ul>
 <li>当某个工具调用失败时，错误信息回传给 LLM</li>
 <li>LLM 基于错误信息重新生成代码，实现自愈循环</li>
+<li>如果多次重试仍失败，上报人工处理</li>
 </ul>
-</li>
-</ol>
-<h4 id="架构验证"><a href="#架构验证" class="headerlink" title="架构验证"></a>架构验证</h4><p>该案例验证了架构设计的核心能力：</p>
+<h3 id="5-3-架构验证"><a href="#5-3-架构验证" class="headerlink" title="5.3 架构验证"></a>5.3 架构验证</h3><p>该案例验证了架构设计的核心能力：</p>
 <ul>
 <li>✅ <strong>灵活的工具组合</strong>：LLM 可根据问题动态生成工具调用序列</li>
 <li>✅ <strong>并行执行</strong>：支持同时调用多个工具，提高效率</li>
 <li>✅ <strong>环境隔离</strong>：不同工具运行在各自适合的环境中</li>
-<li>✅ <strong>快速迭代</strong>：沙箱快速启动（&lt;200ms），支持快速试错和迭代</li>
-<li>✅ <strong>工具复用</strong>：功能代码一次编写，多次复用</li>
+<li>✅ <strong>安全性</strong>：控制代码无法直接访问敏感资源</li>
 <li>✅ <strong>健壮性</strong>：错误处理和自愈机制确保系统可靠运行</li>
+</ul>
+<h3 id="5-4-对比：传统-ReAct-模式-vs-本架构"><a href="#5-4-对比：传统-ReAct-模式-vs-本架构" class="headerlink" title="5.4 对比：传统 ReAct 模式 vs 本架构"></a>5.4 对比：传统 ReAct 模式 vs 本架构</h3><p><strong>传统 ReAct 模式</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">用户请求 → LLM 思考 → 调用工具 A → 等待结果 → LLM 思考 → 调用工具 B → ...</span><br><span class="line">总耗时：~30秒（串行执行）</span><br><span class="line">Token 消耗：~5000 tokens（每次都要传完整上下文）</span><br></pre></td></tr></table></figure>
+
+<p><strong>本架构模式（Code Agents）</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">用户请求 → LLM 生成代码 → 沙箱执行（并行调用多个工具） → 返回结果</span><br><span class="line">总耗时：~10秒（并行执行）</span><br><span class="line">Token 消耗：~2000 tokens（代码生成一次，数据不传回）</span><br></pre></td></tr></table></figure>
+
+<p><strong>优势</strong>：</p>
+<ul>
+<li>⚡ **延迟降低 66%**：并行执行 + 减少 LLM 交互</li>
+<li>💰 **Token 节省 60%**：数据在沙箱内处理，无需传回</li>
+<li>🔒 <strong>安全性提升</strong>：控制代码无法直接访问敏感资源</li>
+</ul>
+<p><strong>研究验证</strong>：根据 <a target="_blank" rel="noopener" href="https://huggingface.co/blog/smolagents#code-agents">smolagents 的基准测试</a>，Code Agents 在多个任务上相比传统的 Tool Calling Agents 表现更好，特别是在需要复杂逻辑编排和多步骤推理的任务中。</p>
+<hr>
+<h2 id="6-生产级挑战：安全与性能"><a href="#6-生产级挑战：安全与性能" class="headerlink" title="6. 生产级挑战：安全与性能"></a>6. 生产级挑战：安全与性能</h2><h3 id="6-1-安全设计（架构的一等公民）"><a href="#6-1-安全设计（架构的一等公民）" class="headerlink" title="6.1 安全设计（架构的一等公民）"></a>6.1 安全设计（架构的一等公民）</h3><h4 id="6-1-1-多层防护体系"><a href="#6-1-1-多层防护体系" class="headerlink" title="6.1.1 多层防护体系"></a>6.1.1 多层防护体系</h4><p><strong>不依赖单一安全机制</strong>，建立多层防护：</p>
+<ol>
+<li><p><strong>静态分析层</strong>：</p>
+<ul>
+<li>AST 分析检测危险操作</li>
+<li>白名单机制限制可用模块</li>
+<li><strong>局限性</strong>：动态语言难以完全检测，需配合其他机制</li>
+</ul>
+</li>
+<li><p><strong>运行时监控层</strong>：</p>
+<ul>
+<li>监控代码执行行为</li>
+<li>检测异常模式（资源耗尽、无限循环）</li>
+<li>记录所有敏感操作</li>
+</ul>
+</li>
+<li><p><strong>沙箱隔离层</strong>：</p>
+<ul>
+<li>容器&#x2F;MicroVM 隔离</li>
+<li>资源限制（CPU、内存、网络）</li>
+<li>防止代码逃逸</li>
+</ul>
+</li>
+<li><p><strong>工具白名单层</strong>：</p>
+<ul>
+<li>Sidecar 进程校验每个工具调用</li>
+<li>拒绝未授权的工具调用</li>
+<li>记录所有工具调用日志</li>
+</ul>
+</li>
+</ol>
+<h4 id="6-1-2-安全威胁与缓解措施"><a href="#6-1-2-安全威胁与缓解措施" class="headerlink" title="6.1.2 安全威胁与缓解措施"></a>6.1.2 安全威胁与缓解措施</h4><p><strong>威胁 1：容器逃逸</strong></p>
+<ul>
+<li><strong>风险</strong>：MicroVM 隔离失效</li>
+<li><strong>缓解</strong>：使用成熟的容器技术（Firecracker、gVisor），定期安全审计</li>
+</ul>
+<p><strong>威胁 2：权限提升</strong></p>
+<ul>
+<li><strong>风险</strong>：通过工具组合实现越权操作</li>
+<li><strong>缓解</strong>：最小权限原则，调用链分析，检测异常组合模式</li>
+</ul>
+<p><strong>威胁 3：数据泄露</strong></p>
+<ul>
+<li><strong>风险</strong>：通过合法工具组合泄露敏感信息</li>
+<li><strong>缓解</strong>：数据脱敏，访问控制，审计日志</li>
+</ul>
+<p><strong>威胁 4：拒绝服务</strong></p>
+<ul>
+<li><strong>风险</strong>：资源耗尽导致系统不可用</li>
+<li><strong>缓解</strong>：资源配额，请求限流，超时控制</li>
+</ul>
+<h4 id="6-1-3-Prompt-防护"><a href="#6-1-3-Prompt-防护" class="headerlink" title="6.1.3 Prompt 防护"></a>6.1.3 Prompt 防护</h4><p><strong>问题</strong>：依赖”多模型共识”防范提示词注入存在成本与延迟问题。</p>
+<p><strong>务实方案</strong>：</p>
+<ol>
+<li><strong>输入验证</strong>：严格的输入格式验证和清理</li>
+<li><strong>输出过滤</strong>：对 LLM 生成的代码进行后处理</li>
+<li><strong>沙箱隔离</strong>：即使代码被注入，沙箱环境限制其危害</li>
+<li><strong>行为监控</strong>：监控代码执行行为，而非仅依赖输入检测</li>
+</ol>
+<h3 id="6-2-性能优化"><a href="#6-2-性能优化" class="headerlink" title="6.2 性能优化"></a>6.2 性能优化</h3><h4 id="6-2-1-沙箱预热池"><a href="#6-2-1-沙箱预热池" class="headerlink" title="6.2.1 沙箱预热池"></a>6.2.1 沙箱预热池</h4><p><strong>问题</strong>：冷启动延迟影响用户体验。</p>
+<p><strong>解决方案</strong>：</p>
+<ul>
+<li>维护预热池，保持一定数量的沙箱实例就绪</li>
+<li>动态调整预热池大小，基于负载模式</li>
+</ul>
+<p><strong>负载模型</strong>：<br>   <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">合理阈值 = f(请求到达率, 平均处理时间, 实例启动时间, SLA 要求)</span><br></pre></td></tr></table></figure></p>
+<p><strong>多维度监控</strong>：</p>
+<ul>
+<li>请求队列长度</li>
+<li>实例利用率</li>
+<li>冷启动频率</li>
+<li>用户等待时间</li>
+</ul>
+<h4 id="6-2-2-Token-成本管理"><a href="#6-2-2-Token-成本管理" class="headerlink" title="6.2.2 Token 成本管理"></a>6.2.2 Token 成本管理</h4><p><strong>问题</strong>：”$0.50&#x2F;任务”的固定阈值不合理，未考虑任务类型差异。</p>
+<p><strong>解决方案</strong>：</p>
+<ol>
+<li><p><strong>分类阈值</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">简单任务：$0.10/任务</span><br><span class="line">中等任务：$1.00/任务</span><br><span class="line">复杂任务：$10.00/任务</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>成本分解</strong>：</p>
+<ul>
+<li>分别监控各组件成本（LLM、沙箱、MCP 服务）</li>
+<li>识别成本优化机会</li>
+<li>支持细粒度成本控制</li>
+</ul>
+</li>
+<li><p><strong>价值评估</strong>：</p>
+<ul>
+<li>建立任务价值评估模型</li>
+<li>成本阈值与任务价值关联</li>
+<li>支持 ROI 分析</li>
+</ul>
+</li>
+</ol>
+<h4 id="6-2-3-上下文窗口管理"><a href="#6-2-3-上下文窗口管理" class="headerlink" title="6.2.3 上下文窗口管理"></a>6.2.3 上下文窗口管理</h4><p><strong>关键优化</strong>：</p>
+<ul>
+<li>数据在沙箱内处理，无需传回 LLM</li>
+<li>LLM 只看摘要（Summary），而非原始数据</li>
+<li>这是企业级应用的关键，保护数据隐私同时降低 Token 消耗</li>
+</ul>
+<h3 id="6-3-可靠性机制"><a href="#6-3-可靠性机制" class="headerlink" title="6.3 可靠性机制"></a>6.3 可靠性机制</h3><h4 id="6-3-1-错误处理策略"><a href="#6-3-1-错误处理策略" class="headerlink" title="6.3.1 错误处理策略"></a>6.3.1 错误处理策略</h4><p><strong>分层错误处理</strong>：</p>
+<ol>
+<li><p><strong>技术错误</strong>（可自愈）：</p>
+<ul>
+<li>语法错误、类型错误 → LLM 自动修复</li>
+<li>工具调用超时 → 重试机制</li>
+</ul>
+</li>
+<li><p><strong>业务错误</strong>（需人工介入）：</p>
+<ul>
+<li>数据库死锁 → 需要领域知识</li>
+<li>数据不一致 → 需要业务上下文</li>
+</ul>
+</li>
+</ol>
+<p><strong>改进方向</strong>：</p>
+<ul>
+<li>增强错误上下文：提供更多业务信息和系统状态</li>
+<li>错误分类：区分可自愈错误和需要人工处理的错误</li>
+<li>人工介入机制：识别无法自动修复的错误，及时上报</li>
+</ul>
+<h4 id="6-2-2-重试策略"><a href="#6-2-2-重试策略" class="headerlink" title="6.2.2 重试策略"></a>6.2.2 重试策略</h4><p><strong>分离策略</strong>：</p>
+<ul>
+<li><strong>短期重试</strong>：基于规则的快速重试（3 次）</li>
+<li><strong>长期优化</strong>：基于历史数据的策略优化（跨任务学习）</li>
+</ul>
+<p><strong>明确学习目标</strong>：</p>
+<ul>
+<li>定义清晰的优化指标</li>
+<li>建立评估机制验证学习效果</li>
+<li>渐进式学习：初期使用保守策略，随着数据积累逐步优化</li>
+</ul>
+<h4 id="6-3-3-分布式事务"><a href="#6-3-3-分布式事务" class="headerlink" title="6.3.3 分布式事务"></a>6.3.3 分布式事务</h4><p><strong>挑战</strong>：在 LLM 生成的动态 workflow 中实现补偿操作几乎不可能。</p>
+<p><strong>务实方案</strong>：</p>
+<ol>
+<li><strong>最终一致性</strong>：接受短期不一致，通过后台任务最终一致</li>
+<li><strong>幂等性设计</strong>：所有工具操作设计为幂等，支持安全重试</li>
+<li><strong>业务补偿</strong>：在业务层面设计补偿流程，而非技术层面</li>
+</ol>
+<hr>
+<h2 id="7-总结与展望"><a href="#7-总结与展望" class="headerlink" title="7. 总结与展望"></a>7. 总结与展望</h2><h3 id="7-1-核心创新"><a href="#7-1-核心创新" class="headerlink" title="7.1 核心创新"></a>7.1 核心创新</h3><p>本架构的核心创新在于<strong>控制代码与功能代码的分离</strong>：</p>
+<ul>
+<li><strong>控制代码</strong>：由 LLM 生成，负责编排逻辑，在轻量级沙箱中执行</li>
+<li><strong>功能代码</strong>：预定义的工具实现，封装敏感操作，通过服务化接口提供</li>
+</ul>
+<p>这种分离解决了 LLM Agent 在复杂工具编排场景中的三个根本性挑战：</p>
+<ol>
+<li><strong>工具编排的复杂性</strong>：支持复杂的编排逻辑，提高执行效率</li>
+<li><strong>代码执行的安全性与灵活性矛盾</strong>：既保证安全性，又支持灵活性</li>
+<li><strong>工具管理的复杂性</strong>：工具独立部署和更新，支持大规模工具生态</li>
+</ol>
+<h3 id="7-2-关键价值"><a href="#7-2-关键价值" class="headerlink" title="7.2 关键价值"></a>7.2 关键价值</h3><p>沙箱和 MCP 只是实现手段，核心价值在于<strong>职责分离带来的安全性、灵活性和可扩展性</strong>：</p>
+<ul>
+<li>✅ <strong>安全性</strong>：控制代码无法直接访问敏感资源</li>
+<li>✅ <strong>灵活性</strong>：支持复杂的编排逻辑，LLM 可以生成任意控制流</li>
+<li>✅ <strong>可扩展性</strong>：工具独立部署和更新，不影响控制代码</li>
+<li>✅ <strong>效率</strong>：支持并行执行、批量调用，减少 LLM 交互次数</li>
+<li>✅ <strong>可维护性</strong>：功能代码集中管理，便于安全审计和版本控制</li>
+</ul>
+<h3 id="7-3-未来方向"><a href="#7-3-未来方向" class="headerlink" title="7.3 未来方向"></a>7.3 未来方向</h3><ol>
+<li><strong>更智能的工具发现</strong>：基于任务语义自动推荐相关工具</li>
+<li><strong>更强大的错误恢复</strong>：结合领域知识库，提升自愈能力</li>
+<li><strong>更细粒度的安全控制</strong>：基于工具调用链的动态权限管理</li>
+<li><strong>更高效的资源利用</strong>：智能预热池管理，降低资源浪费</li>
+</ol>
+<h3 id="7-4-设计原则"><a href="#7-4-设计原则" class="headerlink" title="7.4 设计原则"></a>7.4 设计原则</h3><ul>
+<li><strong>安全第一</strong>：宁可过度防护，不可存在安全漏洞</li>
+<li><strong>务实可行</strong>：设计要考虑实际可行性和成本</li>
+<li><strong>数据驱动</strong>：决策要基于数据，而非假设</li>
+<li><strong>持续改进</strong>：系统设计要支持迭代优化</li>
+</ul>
+<h3 id="7-5-相关资源"><a href="#7-5-相关资源" class="headerlink" title="7.5 相关资源"></a>7.5 相关资源</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://huggingface.co/blog/smolagents#code-agents">Hugging Face smolagents</a>：开源的 Code Agent 实现，展示了代码执行 Agent 的最佳实践</li>
+<li><a target="_blank" rel="noopener" href="https://www.anthropic.com/engineering/code-execution-with-mcp">Anthropic MCP 代码执行</a>：MCP 协议在代码执行场景中的应用</li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2401.13848">Executable Code Actions Elicit Better LLM Agents</a>：研究论文，论证了代码执行相比 JSON 工具调用的优势</li>
 </ul>
 <hr>
 
@@ -923,7 +956,7 @@
             <p>Author：<a href="https://edison-a-n.github.io">Edison</a>
             <p>Link：<a href="https://edison-a-n.github.io/2025/12/28/code-execution-sandbox-mcp/">https://edison-a-n.github.io/2025/12/28/code-execution-sandbox-mcp/</a>
             <p>Publish date：<a href="https://edison-a-n.github.io/2025/12/28/code-execution-sandbox-mcp/">December 28th 2025, 4:03:30 pm</a>
-            <p>Update date：<a href="https://edison-a-n.github.io/2025/12/28/code-execution-sandbox-mcp/">December 29th 2025, 11:22:22 am</a>
+            <p>Update date：<a href="https://edison-a-n.github.io/2025/12/28/code-execution-sandbox-mcp/">December 29th 2025, 3:09:59 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     <!-- paginator -->
@@ -985,7 +1018,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E8%83%8C%E6%99%AF%E4%B8%8E%E9%97%AE%E9%A2%98%E5%AE%9A%E4%B9%89"><span class="toc-number">1.</span> <span class="toc-text">1. 背景与问题定义</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E6%8C%91%E6%88%98"><span class="toc-number">1.1.</span> <span class="toc-text">核心挑战</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BE%E8%AE%A1%E7%9B%AE%E6%A0%87"><span class="toc-number">1.2.</span> <span class="toc-text">设计目标</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E6%A0%B8%E5%BF%83%E6%9E%B6%E6%9E%84%E6%A6%82%E8%BF%B0"><span class="toc-number">2.</span> <span class="toc-text">2. 核心架构概述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84%E7%BB%84%E4%BB%B6"><span class="toc-number">2.1.</span> <span class="toc-text">架构组件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-number">2.2.</span> <span class="toc-text">工作流程</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84%E8%AF%B4%E6%98%8E"><span class="toc-number">2.2.1.</span> <span class="toc-text">架构说明</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E7%89%B9%E6%80%A7"><span class="toc-number">2.3.</span> <span class="toc-text">关键特性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99"><span class="toc-number">2.4.</span> <span class="toc-text">设计原则</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A7%E5%88%B6%E4%BB%A3%E7%A0%81%E4%B8%8E%E5%8A%9F%E8%83%BD%E4%BB%A3%E7%A0%81%E7%9A%84%E8%81%8C%E8%B4%A3%E8%BE%B9%E7%95%8C"><span class="toc-number">2.4.1.</span> <span class="toc-text">控制代码与功能代码的职责边界</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E8%AF%B4%E6%98%8E"><span class="toc-number">3.</span> <span class="toc-text">3. 架构设计说明</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%8E%A7%E5%88%B6%E5%B9%B3%E9%9D%A2%EF%BC%88Control-Plane%EF%BC%89"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 控制平面（Control Plane）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-1-Agent-%E7%BC%96%E6%8E%92%E5%99%A8%EF%BC%88Agent-Orchestrator%EF%BC%89"><span class="toc-number">3.1.1.</span> <span class="toc-text">3.1.1 Agent 编排器（Agent Orchestrator）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-2-%E7%B3%BB%E7%BB%9F%E8%B0%83%E5%BA%A6%E5%99%A8%EF%BC%88System-Scheduler%EF%BC%89"><span class="toc-number">3.1.2.</span> <span class="toc-text">3.1.2 系统调度器（System Scheduler）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-3-MCP-%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0%E4%B8%8E%E5%8F%AF%E6%89%A9%E5%B1%95%E6%80%A7"><span class="toc-number">3.1.3.</span> <span class="toc-text">3.1.3 MCP 服务发现与可扩展性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-1-4-%E5%AE%89%E5%85%A8%E5%9B%B4%E6%A0%8F%EF%BC%88Security-Fence%EF%BC%89"><span class="toc-number">3.1.4.</span> <span class="toc-text">3.1.4 安全围栏（Security Fence）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E6%95%B0%E6%8D%AE%E5%B9%B3%E9%9D%A2%EF%BC%88Data-Plane%EF%BC%89"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 数据平面（Data Plane）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-1-%E5%BC%95%E7%94%A8%E4%BC%A0%E9%80%92%E6%9C%BA%E5%88%B6%E4%B8%8E%E6%95%B0%E6%8D%AE%E6%B5%81%EF%BC%88Reference-Passing-Mechanism-amp-Data-Flow%EF%BC%89"><span class="toc-number">3.2.1.</span> <span class="toc-text">3.2.1 引用传递机制与数据流（Reference Passing Mechanism &amp; Data Flow）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-2-%E5%B7%A5%E5%85%B7%E6%B3%A8%E5%86%8C%E4%B8%AD%E5%BF%83%EF%BC%88Tool-Registry%EF%BC%89"><span class="toc-number">3.2.2.</span> <span class="toc-text">3.2.2 工具注册中心（Tool Registry）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-2-3-%E7%BB%93%E6%9E%9C%E5%A4%84%E7%90%86%EF%BC%88Result-Processing%EF%BC%89"><span class="toc-number">3.2.3.</span> <span class="toc-text">3.2.3 结果处理（Result Processing）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E6%89%A7%E8%A1%8C%E7%8E%AF%E5%A2%83%E4%B8%8E%E4%BA%92%E8%81%94%E5%B9%B3%E9%9D%A2%EF%BC%88Execution-amp-Interconnect-Plane%EF%BC%89"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 执行环境与互联平面（Execution &amp; Interconnect Plane）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-1-%E6%B2%99%E7%AE%B1%E8%BF%90%E8%A1%8C%E6%97%B6%E6%9E%B6%E6%9E%84%EF%BC%88Sandbox-Runtime-Architecture%EF%BC%89"><span class="toc-number">3.3.1.</span> <span class="toc-text">3.3.1 沙箱运行时架构（Sandbox Runtime Architecture）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-2-MCP-%E4%BA%92%E8%81%94%E6%8B%93%E6%89%91%EF%BC%88MCP-Interconnect-Topology%EF%BC%89"><span class="toc-number">3.3.2.</span> <span class="toc-text">3.3.2 MCP 互联拓扑（MCP Interconnect Topology）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E5%8F%AF%E9%9D%A0%E6%80%A7%E5%B7%A5%E7%A8%8B%EF%BC%88Reliability-amp-Operations%EF%BC%89"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 可靠性工程（Reliability &amp; Operations）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-1-%E8%AE%A4%E7%9F%A5%E5%B1%82%E8%87%AA%E6%84%88%EF%BC%88Cognitive-Self-Healing%EF%BC%89"><span class="toc-number">3.4.1.</span> <span class="toc-text">3.4.1 认知层自愈（Cognitive Self-Healing）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-4-2-MCP-%E6%9C%8D%E5%8A%A1%E7%86%94%E6%96%AD%E4%B8%8E%E9%99%8D%E7%BA%A7"><span class="toc-number">3.4.2.</span> <span class="toc-text">3.4.2 MCP 服务熔断与降级</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E5%9C%BA%E6%99%AF%E6%BC%94%E7%BB%83"><span class="toc-number">4.</span> <span class="toc-text">4. 场景演练</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B8%E5%9E%8B%E6%A1%88%E4%BE%8B%EF%BC%9A%E5%A4%9A%E5%B7%A5%E5%85%B7%E5%8D%8F%E5%90%8C%E5%9C%BA%E6%99%AF"><span class="toc-number">4.1.</span> <span class="toc-text">典型案例：多工具协同场景</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9C%BA%E6%99%AF%EF%BC%9A%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90%E4%B8%8E%E6%8A%A5%E5%91%8A%E7%94%9F%E6%88%90"><span class="toc-number">4.1.1.</span> <span class="toc-text">场景：数据分析与报告生成</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84%E9%AA%8C%E8%AF%81"><span class="toc-number">4.1.2.</span> <span class="toc-text">架构验证</span></a></li></ol></li></ol></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E5%BC%95%E8%A8%80%EF%BC%9A%E4%BB%8E%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E5%88%B0%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E7%9A%84%E6%BC%94%E8%BF%9B"><span class="toc-number">1.</span> <span class="toc-text">1. 引言：从函数调用到代码执行的演进</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E6%A0%B8%E5%BF%83%E6%8C%91%E6%88%98"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 核心挑战</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E4%BC%A0%E7%BB%9F-Function-Calling-%E7%9A%84%E5%B1%80%E9%99%90%E6%80%A7"><span class="toc-number">1.2.</span> <span class="toc-text">1.2 传统 Function Calling 的局限性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E7%A0%B4%E5%B1%80%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88-LLM-%E5%BA%94%E8%AF%A5%E5%86%99%E4%BB%A3%E7%A0%81%E8%80%8C%E4%B8%8D%E6%98%AF%E5%8F%91-JSON%EF%BC%9F"><span class="toc-number">1.3.</span> <span class="toc-text">1.3 破局：为什么 LLM 应该写代码而不是发 JSON？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E6%A0%B8%E5%BF%83%E8%8C%83%E5%BC%8F%EF%BC%9A%E6%8E%A7%E5%88%B6%E6%B5%81%E4%B8%8E%E5%8A%9F%E8%83%BD%E6%B5%81%E7%9A%84%E5%88%86%E7%A6%BB"><span class="toc-number">2.</span> <span class="toc-text">2. 核心范式：控制流与功能流的分离</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E5%88%86%E7%A6%BB%EF%BC%9F"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 为什么需要分离？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E5%88%86%E7%A6%BB%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 分离的设计原则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E8%BE%B9%E7%95%8C%E7%A4%BA%E4%BE%8B"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 边界示例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E5%88%86%E7%A6%BB%E5%B8%A6%E6%9D%A5%E7%9A%84%E4%BB%B7%E5%80%BC"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 分离带来的价值</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1"><span class="toc-number">3.</span> <span class="toc-text">3. 系统架构设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E6%9E%B6%E6%9E%84%E6%A6%82%E8%A7%88"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 架构概览</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E6%95%B0%E6%8D%AE%E6%B5%81%E5%90%91%E5%9B%BE"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 数据流向图</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 核心组件</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-1-LLM-%E6%8E%A7%E5%88%B6%E5%B1%82%EF%BC%88Brain%EF%BC%89"><span class="toc-number">3.3.1.</span> <span class="toc-text">3.3.1 LLM 控制层（Brain）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-2-%E4%BB%A3%E7%A0%81%E6%89%A7%E8%A1%8C%E6%B2%99%E7%AE%B1%EF%BC%88Runtime%EF%BC%89"><span class="toc-number">3.3.2.</span> <span class="toc-text">3.3.2 代码执行沙箱（Runtime）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-3-MCP-%E6%9C%8D%E5%8A%A1%E5%B1%82%EF%BC%88Connector%EF%BC%89"><span class="toc-number">3.3.3.</span> <span class="toc-text">3.3.3 MCP 服务层（Connector）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-3-4-%E6%95%B0%E6%8D%AE%E5%AD%98%E5%82%A8%E5%B1%82"><span class="toc-number">3.3.4.</span> <span class="toc-text">3.3.4 数据存储层</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E5%85%B3%E9%94%AE%E7%89%B9%E6%80%A7"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 关键特性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E5%85%B3%E9%94%AE%E6%8A%80%E6%9C%AF%E5%AE%9E%E7%8E%B0%EF%BC%88%E6%8C%89%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E6%8B%86%E8%A7%A3%EF%BC%89"><span class="toc-number">4.</span> <span class="toc-text">4. 关键技术实现（按生命周期拆解）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E9%98%B6%E6%AE%B5%E4%B8%80%EF%BC%9A%E5%B7%A5%E5%85%B7%E5%8F%91%E7%8E%B0%E4%B8%8E%E4%B8%8A%E4%B8%8B%E6%96%87%E6%B3%A8%E5%85%A5"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 阶段一：工具发现与上下文注入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E9%98%B6%E6%AE%B5%E4%BA%8C%EF%BC%9A%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90%E4%B8%8E%E8%A7%84%E5%88%92"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 阶段二：代码生成与规划</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E9%98%B6%E6%AE%B5%E4%B8%89%EF%BC%9A%E6%B2%99%E7%AE%B1%E6%89%A7%E8%A1%8C%E4%B8%8E%E9%80%9A%E4%BF%A1"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 阶段三：沙箱执行与通信</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E9%98%B6%E6%AE%B5%E5%9B%9B%EF%BC%9A%E7%BB%93%E6%9E%9C%E5%9B%9E%E4%BC%A0%E4%B8%8E%E4%BF%AE%E6%AD%A3"><span class="toc-number">4.4.</span> <span class="toc-text">4.4 阶段四：结果回传与修正</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E5%9C%BA%E6%99%AF%E6%BC%94%E7%BB%83%EF%BC%9A%E5%A4%8D%E6%9D%82%E6%95%B0%E6%8D%AE%E5%88%86%E6%9E%90-Agent"><span class="toc-number">5.</span> <span class="toc-text">5. 场景演练：复杂数据分析 Agent</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E5%9C%BA%E6%99%AF%E6%8F%8F%E8%BF%B0"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 场景描述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 执行流程</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#5-2-1-LLM-%E7%94%9F%E6%88%90%E6%8E%A7%E5%88%B6%E4%BB%A3%E7%A0%81"><span class="toc-number">5.2.1.</span> <span class="toc-text">5.2.1 LLM 生成控制代码</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-2-2-%E6%B2%99%E7%AE%B1%E6%89%A7%E8%A1%8C%E6%8E%A7%E5%88%B6%E4%BB%A3%E7%A0%81"><span class="toc-number">5.2.2.</span> <span class="toc-text">5.2.2 沙箱执行控制代码</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-2-3-MCP-%E6%9C%8D%E5%8A%A1%E6%8F%90%E4%BE%9B%E5%8A%9F%E8%83%BD%E4%BB%A3%E7%A0%81"><span class="toc-number">5.2.3.</span> <span class="toc-text">5.2.3 MCP 服务提供功能代码</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#5-2-4-%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86"><span class="toc-number">5.2.4.</span> <span class="toc-text">5.2.4 错误处理</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E6%9E%B6%E6%9E%84%E9%AA%8C%E8%AF%81"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 架构验证</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-%E5%AF%B9%E6%AF%94%EF%BC%9A%E4%BC%A0%E7%BB%9F-ReAct-%E6%A8%A1%E5%BC%8F-vs-%E6%9C%AC%E6%9E%B6%E6%9E%84"><span class="toc-number">5.4.</span> <span class="toc-text">5.4 对比：传统 ReAct 模式 vs 本架构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E7%94%9F%E4%BA%A7%E7%BA%A7%E6%8C%91%E6%88%98%EF%BC%9A%E5%AE%89%E5%85%A8%E4%B8%8E%E6%80%A7%E8%83%BD"><span class="toc-number">6.</span> <span class="toc-text">6. 生产级挑战：安全与性能</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E5%AE%89%E5%85%A8%E8%AE%BE%E8%AE%A1%EF%BC%88%E6%9E%B6%E6%9E%84%E7%9A%84%E4%B8%80%E7%AD%89%E5%85%AC%E6%B0%91%EF%BC%89"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 安全设计（架构的一等公民）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#6-1-1-%E5%A4%9A%E5%B1%82%E9%98%B2%E6%8A%A4%E4%BD%93%E7%B3%BB"><span class="toc-number">6.1.1.</span> <span class="toc-text">6.1.1 多层防护体系</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-1-2-%E5%AE%89%E5%85%A8%E5%A8%81%E8%83%81%E4%B8%8E%E7%BC%93%E8%A7%A3%E6%8E%AA%E6%96%BD"><span class="toc-number">6.1.2.</span> <span class="toc-text">6.1.2 安全威胁与缓解措施</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-1-3-Prompt-%E9%98%B2%E6%8A%A4"><span class="toc-number">6.1.3.</span> <span class="toc-text">6.1.3 Prompt 防护</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 性能优化</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-1-%E6%B2%99%E7%AE%B1%E9%A2%84%E7%83%AD%E6%B1%A0"><span class="toc-number">6.2.1.</span> <span class="toc-text">6.2.1 沙箱预热池</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-2-Token-%E6%88%90%E6%9C%AC%E7%AE%A1%E7%90%86"><span class="toc-number">6.2.2.</span> <span class="toc-text">6.2.2 Token 成本管理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-3-%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AA%97%E5%8F%A3%E7%AE%A1%E7%90%86"><span class="toc-number">6.2.3.</span> <span class="toc-text">6.2.3 上下文窗口管理</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E5%8F%AF%E9%9D%A0%E6%80%A7%E6%9C%BA%E5%88%B6"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 可靠性机制</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#6-3-1-%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86%E7%AD%96%E7%95%A5"><span class="toc-number">6.3.1.</span> <span class="toc-text">6.3.1 错误处理策略</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-2-2-%E9%87%8D%E8%AF%95%E7%AD%96%E7%95%A5"><span class="toc-number">6.3.2.</span> <span class="toc-text">6.2.2 重试策略</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#6-3-3-%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1"><span class="toc-number">6.3.3.</span> <span class="toc-text">6.3.3 分布式事务</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E6%80%BB%E7%BB%93%E4%B8%8E%E5%B1%95%E6%9C%9B"><span class="toc-number">7.</span> <span class="toc-text">7. 总结与展望</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E6%A0%B8%E5%BF%83%E5%88%9B%E6%96%B0"><span class="toc-number">7.1.</span> <span class="toc-text">7.1 核心创新</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E5%85%B3%E9%94%AE%E4%BB%B7%E5%80%BC"><span class="toc-number">7.2.</span> <span class="toc-text">7.2 关键价值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-%E6%9C%AA%E6%9D%A5%E6%96%B9%E5%90%91"><span class="toc-number">7.3.</span> <span class="toc-text">7.3 未来方向</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-4-%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99"><span class="toc-number">7.4.</span> <span class="toc-text">7.4 设计原则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-5-%E7%9B%B8%E5%85%B3%E8%B5%84%E6%BA%90"><span class="toc-number">7.5.</span> <span class="toc-text">7.5 相关资源</span></a></li></ol></li></ol>
             </div>
         <!-- sidebar -->
         <div class="sidebar sidebar-hide">
