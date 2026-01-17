@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+<!-- keywords -->
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Edison">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Edison">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,Edison,DDD">
+    <meta name="description" content="Thinking, writing and sharing''">
+    <meta name="description" content="本文详细介绍了ASGI Lifespan协议的规范、Uvicorn实现、Starlette集成机制，并提供了实际应用示例和最佳实践。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ASGI Lifespan 完整指南">
+<meta property="og:url" content="https://edison-a-n.github.io/2025/10/27/asgi_lifespan_complete_guide/index.html">
+<meta property="og:site_name" content="Edison">
+<meta property="og:description" content="本文详细介绍了ASGI Lifespan协议的规范、Uvicorn实现、Starlette集成机制，并提供了实际应用示例和最佳实践。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2025-10-26T16:00:00.000Z">
+<meta property="article:modified_time" content="2025-11-03T14:51:35.152Z">
+<meta property="article:author" content="Edison">
+<meta property="article:tag" content="ASGI, Python, FastAPI">
+<meta name="twitter:card" content="summary">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/avatar/avatar.jpg">
+    <title>ASGI Lifespan 完整指南 · Edison&#39;s Blog</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .footer-fixed-btn,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(
+            -45deg,
+            #444 0,
+            #444 80px,
+            #333 80px,
+            #333 160px
+        );
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link id="stylesheet-fancybox" rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link id="stylesheet-base" rel="preload" href="/css/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link id="stylesheet-mobile" rel="preload" href="/css/mobile.css" as="style" onload="this.onload=null;this.rel='stylesheet';this.media='screen and (max-width: 960px)'">
+    <link id="stylesheet-theme-dark" rel="preload" href="/css/dark.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    <!-- 百度统计  -->
+    <!-- 谷歌统计  -->
+        <script>
+            var cnzz_s_tag = document.createElement('script');
+            cnzz_s_tag.type = 'text/javascript';
+            cnzz_s_tag.async = true;
+            cnzz_s_tag.charset = 'utf-8';
+            cnzz_s_tag.src = 'https://w.cnzz.com/c.php?id=&async=1';
+            var root_s = document.getElementsByTagName('script')[0];
+            root_s.parentNode.insertBefore(cnzz_s_tag, root_s);
+        </script>
+    <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-188648772-3"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-188648772-3');
+        </script>
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Edison" type="application/atom+xml">
+</head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+        <body class="post-body">
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        <div class="header-sidebar-menu">
+            <div style="padding-left: 1px;">&#xe775;</div>
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href="/">Edison's Studio.</a>
+        </span>
+    </div>
+    <!-- toggle banner -->
+    <div class="banner">
+        <div class="blog-title header-element">
+            <a href="/">Edison&#39;s Studio.</a>
+        </div>
+        <div class="post-title header-element">
+            <a href="#" class="post-name">ASGI Lifespan 完整指南</a>
+        </div>
+    </div>
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- donate button -->
+
+    <!-- back to top button -->
+    <div class="footer-fixed-btn footer-fixed-btn--hidden back-top">
+        <div>&#xe639;</div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="    height:50vh;
+">
+    <!-- 主页  -->
+    <!-- 404页  -->
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+                ASGI Lifespan 完整指南
+            <!-- 404 -->
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            <!-- 404 -->
+        </p>
+        <!-- 文章页 meta -->
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                    <div class="post-intro-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="ASGI, Python, FastAPI">ASGI, Python, FastAPI</a>
+</div>
+
+                <!-- 文章字数统计 -->
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">2.6k</span>Reading time: <span class="post-count reading-time">13 min</span></span>
+                    </div>
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2025/10/27</span>
+                    <!-- busuanzi -->
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" alt="loading">
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <h2 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h2><ol>
+<li><a href="#asgi-lifespan-%E5%8D%8F%E8%AE%AE%E6%A6%82%E8%BF%B0">ASGI Lifespan 协议概述</a></li>
+<li><a href="#%E5%8D%8F%E8%AE%AE%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3">协议规范详解</a></li>
+<li><a href="#uvicorn-%E5%AE%9E%E7%8E%B0%E5%88%86%E6%9E%90">Uvicorn 实现分析</a></li>
+<li><a href="#starlette-%E9%9B%86%E6%88%90%E6%9C%BA%E5%88%B6">Starlette 集成机制</a></li>
+<li><a href="#%E5%AE%9E%E9%99%85%E5%BA%94%E7%94%A8%E7%A4%BA%E4%BE%8B">实际应用示例</a></li>
+<li><a href="#%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5">最佳实践</a></li>
+</ol>
+<h2 id="ASGI-Lifespan-协议概述"><a href="#ASGI-Lifespan-协议概述" class="headerlink" title="ASGI Lifespan 协议概述"></a>ASGI Lifespan 协议概述</h2><h3 id="什么是-Lifespan-协议？"><a href="#什么是-Lifespan-协议？" class="headerlink" title="什么是 Lifespan 协议？"></a>什么是 Lifespan 协议？</h3><p>ASGI Lifespan 协议是 ASGI 规范的一个子协议，用于管理应用程序的启动和关闭生命周期。它允许应用程序在服务器启动时执行初始化操作（如连接数据库），在服务器关闭时执行清理操作（如关闭连接）。</p>
+<h3 id="核心设计原则"><a href="#核心设计原则" class="headerlink" title="核心设计原则"></a>核心设计原则</h3><p>根据 <a target="_blank" rel="noopener" href="https://asgi.readthedocs.io/en/latest/specs/lifespan.html#scope">ASGI 官方文档</a>：</p>
+<ol>
+<li><p><strong>单一连接模式</strong>：整个应用生命周期使用一个持久的连接</p>
+<blockquote>
+<p>Lifespans should be executed once per event loop that will be processing requests</p>
+<p>来源：<a target="_blank" rel="noopener" href="https://asgi.readthedocs.io/en/latest/specs/lifespan.html">ASGI Lifespan Protocol</a></p>
+</blockquote>
+</li>
+<li><p><strong>事件驱动</strong>：通过特定事件类型触发启动和关闭逻辑</p>
+</li>
+<li><p><strong>状态管理</strong>：支持在应用状态中持久化数据</p>
+<blockquote>
+<p>The <code>scope[&quot;state&quot;]</code> namespace provides a place to store these sorts of things. The server will ensure that a <em>shallow copy</em> of the namespace is passed into each subsequent request&#x2F;response call into the application.</p>
+<p>来源：<a target="_blank" rel="noopener" href="https://asgi.readthedocs.io/en/latest/specs/lifespan.html#lifespan-state">ASGI Lifespan State</a></p>
+</blockquote>
+</li>
+<li><p><strong>异常安全</strong>：提供完整的错误处理机制</p>
+<blockquote>
+<p>If an exception is raised when calling the application callable with a <code>lifespan.startup</code> message or a <code>scope</code> with type <code>lifespan</code>, the server must continue but not send any lifespan events.</p>
+<p>来源：<a target="_blank" rel="noopener" href="https://asgi.readthedocs.io/en/latest/specs/lifespan.html#scope">ASGI Lifespan Scope</a></p>
+</blockquote>
+</li>
+</ol>
+<h2 id="协议规范详解"><a href="#协议规范详解" class="headerlink" title="协议规范详解"></a>协议规范详解</h2><h3 id="Scope-结构"><a href="#Scope-结构" class="headerlink" title="Scope 结构"></a>Scope 结构</h3><p>根据 <a target="_blank" rel="noopener" href="https://asgi.readthedocs.io/en/latest/specs/lifespan.html#scope">ASGI Lifespan Scope 规范</a>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># ASGI Lifespan Scope 结构</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;type&quot;</span>: <span class="string">&quot;lifespan&quot;</span>,                    <span class="comment"># 固定值</span></span><br><span class="line">    <span class="string">&quot;asgi&quot;</span>: &#123;</span><br><span class="line">        <span class="string">&quot;version&quot;</span>: <span class="string">&quot;3.0&quot;</span>,                 <span class="comment"># ASGI 版本</span></span><br><span class="line">        <span class="string">&quot;spec_version&quot;</span>: <span class="string">&quot;2.0&quot;</span>             <span class="comment"># Lifespan 协议版本</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="string">&quot;state&quot;</span>: &#123;&#125;                           <span class="comment"># 应用状态字典（可选）</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>The lifespan scope exists for the duration of the event loop. The scope information passed in <code>scope</code> contains basic metadata:</p>
+<ul>
+<li><code>type</code> (<em>Unicode string</em>) – <code>&quot;lifespan&quot;</code></li>
+<li><code>asgi[&quot;version&quot;]</code> (<em>Unicode string</em>) – The version of the ASGI spec</li>
+<li><code>asgi[&quot;spec_version&quot;]</code> (<em>Unicode string</em>) – The version of this spec being used. Optional; if missing defaults to <code>&quot;1.0&quot;</code></li>
+<li><code>state</code> Optional(<em>dict[Unicode string, Any]</em>) – An empty namespace where the application can persist state to be used when handling subsequent requests</li>
+</ul>
+<p>来源：<a target="_blank" rel="noopener" href="https://asgi.readthedocs.io/en/latest/specs/lifespan.html#scope">ASGI Lifespan Scope</a></p>
+</blockquote>
+<h3 id="事件类型"><a href="#事件类型" class="headerlink" title="事件类型"></a>事件类型</h3><p>根据 <a target="_blank" rel="noopener" href="https://asgi.readthedocs.io/en/latest/specs/lifespan.html">ASGI Lifespan 事件规范</a>：</p>
+<h4 id="接收事件（receive）"><a href="#接收事件（receive）" class="headerlink" title="接收事件（receive）"></a>接收事件（receive）</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 启动事件</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;type&quot;</span>: <span class="string">&quot;lifespan.startup&quot;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 关闭事件</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;type&quot;</span>: <span class="string">&quot;lifespan.shutdown&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>Startup - receive event</strong>: Sent to the application when the server is ready to startup and receive connections, but before it has started to do so.</p>
+<p><strong>Shutdown - receive event</strong>: Sent to the application when the server has stopped accepting connections and closed all active connections.</p>
+<p>来源：<a target="_blank" rel="noopener" href="https://asgi.readthedocs.io/en/latest/specs/lifespan.html">ASGI Lifespan Events</a></p>
+</blockquote>
+<h4 id="发送事件（send）"><a href="#发送事件（send）" class="headerlink" title="发送事件（send）"></a>发送事件（send）</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 启动完成</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;type&quot;</span>: <span class="string">&quot;lifespan.startup.complete&quot;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启动失败</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;type&quot;</span>: <span class="string">&quot;lifespan.startup.failed&quot;</span>,</span><br><span class="line">    <span class="string">&quot;message&quot;</span>: <span class="string">&quot;错误信息&quot;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 关闭完成</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;type&quot;</span>: <span class="string">&quot;lifespan.shutdown.complete&quot;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 关闭失败</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="string">&quot;type&quot;</span>: <span class="string">&quot;lifespan.shutdown.failed&quot;</span>,</span><br><span class="line">    <span class="string">&quot;message&quot;</span>: <span class="string">&quot;错误信息&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p><strong>Startup Complete - send event</strong>: Sent by the application when it has completed its startup. A server must wait for this message before it starts processing connections.</p>
+<p><strong>Startup Failed - send event</strong>: Sent by the application when it has failed to complete its startup. If a server sees this it should log&#x2F;print the message provided and then exit.</p>
+<p><strong>Shutdown Complete - send event</strong>: Sent by the application when it has completed its cleanup. A server must wait for this message before terminating.</p>
+<p><strong>Shutdown Failed - send event</strong>: Sent by the application when it has failed to complete its cleanup. If a server sees this it should log&#x2F;print the message provided and then terminate.</p>
+<p>来源：<a target="_blank" rel="noopener" href="https://asgi.readthedocs.io/en/latest/specs/lifespan.html">ASGI Lifespan Events</a></p>
+</blockquote>
+<h3 id="标准应用实现"><a href="#标准应用实现" class="headerlink" title="标准应用实现"></a>标准应用实现</h3><p>根据 <a target="_blank" rel="noopener" href="https://asgi.readthedocs.io/en/latest/specs/lifespan.html">ASGI Lifespan 协议示例</a>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">app</span>(<span class="params">scope, receive, send</span>):</span><br><span class="line">    <span class="keyword">if</span> scope[<span class="string">&#x27;type&#x27;</span>] == <span class="string">&#x27;lifespan&#x27;</span>:</span><br><span class="line">        <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">            message = <span class="keyword">await</span> receive()</span><br><span class="line">            <span class="keyword">if</span> message[<span class="string">&#x27;type&#x27;</span>] == <span class="string">&#x27;lifespan.startup&#x27;</span>:</span><br><span class="line">                <span class="comment"># 执行启动逻辑</span></span><br><span class="line">                <span class="keyword">await</span> send(&#123;<span class="string">&#x27;type&#x27;</span>: <span class="string">&#x27;lifespan.startup.complete&#x27;</span>&#125;)</span><br><span class="line">            <span class="keyword">elif</span> message[<span class="string">&#x27;type&#x27;</span>] == <span class="string">&#x27;lifespan.shutdown&#x27;</span>:</span><br><span class="line">                <span class="comment"># 执行关闭逻辑</span></span><br><span class="line">                <span class="keyword">await</span> send(&#123;<span class="string">&#x27;type&#x27;</span>: <span class="string">&#x27;lifespan.shutdown.complete&#x27;</span>&#125;)</span><br><span class="line">                <span class="keyword">return</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="comment"># 处理其他类型的请求</span></span><br><span class="line">        <span class="keyword">pass</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>A possible implementation of this protocol is given below:</p>
+<p>来源：<a target="_blank" rel="noopener" href="https://asgi.readthedocs.io/en/latest/specs/lifespan.html">ASGI Lifespan Protocol</a></p>
+</blockquote>
+<h2 id="Uvicorn-实现分析"><a href="#Uvicorn-实现分析" class="headerlink" title="Uvicorn 实现分析"></a>Uvicorn 实现分析</h2><p>基于 <a target="_blank" rel="noopener" href="https://github.com/encode/uvicorn">Uvicorn 源码</a> 的分析：</p>
+<h3 id="核心实现类"><a href="#核心实现类" class="headerlink" title="核心实现类"></a>核心实现类</h3><h4 id="LifespanOn-类"><a href="#LifespanOn-类" class="headerlink" title="LifespanOn 类"></a>LifespanOn 类</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># uvicorn/lifespan/on.py</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">LifespanOn</span>:</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self, config: Config</span>) -&gt; <span class="literal">None</span>:</span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> config.loaded:</span><br><span class="line">            config.load()</span><br><span class="line">        </span><br><span class="line">        self.config = config</span><br><span class="line">        self.logger = logging.getLogger(<span class="string">&quot;uvicorn.error&quot;</span>)</span><br><span class="line">        self.startup_event = asyncio.Event()</span><br><span class="line">        self.shutdown_event = asyncio.Event()</span><br><span class="line">        self.receive_queue: Queue[LifespanReceiveMessage] = asyncio.Queue()</span><br><span class="line">        self.error_occured = <span class="literal">False</span></span><br><span class="line">        self.startup_failed = <span class="literal">False</span></span><br><span class="line">        self.shutdown_failed = <span class="literal">False</span></span><br><span class="line">        self.should_exit = <span class="literal">False</span></span><br><span class="line">        self.state: <span class="built_in">dict</span>[<span class="built_in">str</span>, <span class="type">Any</span>] = &#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="启动流程"><a href="#启动流程" class="headerlink" title="启动流程"></a>启动流程</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">startup</span>(<span class="params">self</span>) -&gt; <span class="literal">None</span>:</span><br><span class="line">    self.logger.info(<span class="string">&quot;Waiting for application startup.&quot;</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 创建 lifespan 主任务</span></span><br><span class="line">    loop = asyncio.get_event_loop()</span><br><span class="line">    main_lifespan_task = loop.create_task(self.main())</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 发送 startup 事件</span></span><br><span class="line">    startup_event: LifespanStartupEvent = &#123;<span class="string">&quot;type&quot;</span>: <span class="string">&quot;lifespan.startup&quot;</span>&#125;</span><br><span class="line">    <span class="keyword">await</span> self.receive_queue.put(startup_event)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 等待应用完成启动</span></span><br><span class="line">    <span class="keyword">await</span> self.startup_event.wait()</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 检查启动结果</span></span><br><span class="line">    <span class="keyword">if</span> self.startup_failed <span class="keyword">or</span> (self.error_occured <span class="keyword">and</span> self.config.lifespan == <span class="string">&quot;on&quot;</span>):</span><br><span class="line">        self.logger.error(<span class="string">&quot;Application startup failed. Exiting.&quot;</span>)</span><br><span class="line">        self.should_exit = <span class="literal">True</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        self.logger.info(<span class="string">&quot;Application startup complete.&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h4 id="关闭流程"><a href="#关闭流程" class="headerlink" title="关闭流程"></a>关闭流程</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">shutdown</span>(<span class="params">self</span>) -&gt; <span class="literal">None</span>:</span><br><span class="line">    <span class="keyword">if</span> self.error_occured:</span><br><span class="line">        <span class="keyword">return</span></span><br><span class="line">    self.logger.info(<span class="string">&quot;Waiting for application shutdown.&quot;</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 发送 shutdown 事件</span></span><br><span class="line">    shutdown_event: LifespanShutdownEvent = &#123;<span class="string">&quot;type&quot;</span>: <span class="string">&quot;lifespan.shutdown&quot;</span>&#125;</span><br><span class="line">    <span class="keyword">await</span> self.receive_queue.put(shutdown_event)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 等待应用完成关闭</span></span><br><span class="line">    <span class="keyword">await</span> self.shutdown_event.wait()</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 检查关闭结果</span></span><br><span class="line">    <span class="keyword">if</span> self.shutdown_failed <span class="keyword">or</span> (self.error_occured <span class="keyword">and</span> self.config.lifespan == <span class="string">&quot;on&quot;</span>):</span><br><span class="line">        self.logger.error(<span class="string">&quot;Application shutdown failed. Exiting.&quot;</span>)</span><br><span class="line">        self.should_exit = <span class="literal">True</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        self.logger.info(<span class="string">&quot;Application shutdown complete.&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h4 id="核心通信机制"><a href="#核心通信机制" class="headerlink" title="核心通信机制"></a>核心通信机制</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">main</span>(<span class="params">self</span>) -&gt; <span class="literal">None</span>:</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        app = self.config.loaded_app</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 创建 lifespan scope</span></span><br><span class="line">        scope: LifespanScope = &#123;</span><br><span class="line">            <span class="string">&quot;type&quot;</span>: <span class="string">&quot;lifespan&quot;</span>,</span><br><span class="line">            <span class="string">&quot;asgi&quot;</span>: &#123;<span class="string">&quot;version&quot;</span>: self.config.asgi_version, <span class="string">&quot;spec_version&quot;</span>: <span class="string">&quot;2.0&quot;</span>&#125;,</span><br><span class="line">            <span class="string">&quot;state&quot;</span>: self.state,</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 调用应用的 lifespan 处理器</span></span><br><span class="line">        <span class="keyword">await</span> app(scope, self.receive, self.send)</span><br><span class="line">        </span><br><span class="line">    <span class="keyword">except</span> BaseException <span class="keyword">as</span> exc:</span><br><span class="line">        self.asgi = <span class="literal">None</span></span><br><span class="line">        self.error_occured = <span class="literal">True</span></span><br><span class="line">        <span class="keyword">if</span> self.startup_failed <span class="keyword">or</span> self.shutdown_failed:</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        <span class="keyword">if</span> self.config.lifespan == <span class="string">&quot;auto&quot;</span>:</span><br><span class="line">            msg = <span class="string">&quot;ASGI &#x27;lifespan&#x27; protocol appears unsupported.&quot;</span></span><br><span class="line">            self.logger.info(msg)</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            msg = <span class="string">&quot;Exception in &#x27;lifespan&#x27; protocol\n&quot;</span></span><br><span class="line">            self.logger.error(msg, exc_info=exc)</span><br><span class="line">    <span class="keyword">finally</span>:</span><br><span class="line">        self.startup_event.<span class="built_in">set</span>()</span><br><span class="line">        self.shutdown_event.<span class="built_in">set</span>()</span><br></pre></td></tr></table></figure>
+
+<h4 id="事件处理"><a href="#事件处理" class="headerlink" title="事件处理"></a>事件处理</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">send</span>(<span class="params">self, message: LifespanSendMessage</span>) -&gt; <span class="literal">None</span>:</span><br><span class="line">    <span class="keyword">assert</span> message[<span class="string">&quot;type&quot;</span>] <span class="keyword">in</span> (</span><br><span class="line">        <span class="string">&quot;lifespan.startup.complete&quot;</span>,</span><br><span class="line">        <span class="string">&quot;lifespan.startup.failed&quot;</span>,</span><br><span class="line">        <span class="string">&quot;lifespan.shutdown.complete&quot;</span>,</span><br><span class="line">        <span class="string">&quot;lifespan.shutdown.failed&quot;</span>,</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> message[<span class="string">&quot;type&quot;</span>] == <span class="string">&quot;lifespan.startup.complete&quot;</span>:</span><br><span class="line">        <span class="keyword">assert</span> <span class="keyword">not</span> self.startup_event.is_set(), STATE_TRANSITION_ERROR</span><br><span class="line">        <span class="keyword">assert</span> <span class="keyword">not</span> self.shutdown_event.is_set(), STATE_TRANSITION_ERROR</span><br><span class="line">        self.startup_event.<span class="built_in">set</span>()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">elif</span> message[<span class="string">&quot;type&quot;</span>] == <span class="string">&quot;lifespan.startup.failed&quot;</span>:</span><br><span class="line">        <span class="keyword">assert</span> <span class="keyword">not</span> self.startup_event.is_set(), STATE_TRANSITION_ERROR</span><br><span class="line">        <span class="keyword">assert</span> <span class="keyword">not</span> self.shutdown_event.is_set(), STATE_TRANSITION_ERROR</span><br><span class="line">        self.startup_event.<span class="built_in">set</span>()</span><br><span class="line">        self.startup_failed = <span class="literal">True</span></span><br><span class="line">        <span class="keyword">if</span> message.get(<span class="string">&quot;message&quot;</span>):</span><br><span class="line">            self.logger.error(message[<span class="string">&quot;message&quot;</span>])</span><br><span class="line"></span><br><span class="line">    <span class="keyword">elif</span> message[<span class="string">&quot;type&quot;</span>] == <span class="string">&quot;lifespan.shutdown.complete&quot;</span>:</span><br><span class="line">        <span class="keyword">assert</span> self.startup_event.is_set(), STATE_TRANSITION_ERROR</span><br><span class="line">        <span class="keyword">assert</span> <span class="keyword">not</span> self.shutdown_event.is_set(), STATE_TRANSITION_ERROR</span><br><span class="line">        self.shutdown_event.<span class="built_in">set</span>()</span><br><span class="line"></span><br><span class="line">    <span class="keyword">elif</span> message[<span class="string">&quot;type&quot;</span>] == <span class="string">&quot;lifespan.shutdown.failed&quot;</span>:</span><br><span class="line">        <span class="keyword">assert</span> self.startup_event.is_set(), STATE_TRANSITION_ERROR</span><br><span class="line">        <span class="keyword">assert</span> <span class="keyword">not</span> self.shutdown_event.is_set(), STATE_TRANSITION_ERROR</span><br><span class="line">        self.shutdown_event.<span class="built_in">set</span>()</span><br><span class="line">        self.shutdown_failed = <span class="literal">True</span></span><br><span class="line">        <span class="keyword">if</span> message.get(<span class="string">&quot;message&quot;</span>):</span><br><span class="line">            self.logger.error(message[<span class="string">&quot;message&quot;</span>])</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">receive</span>(<span class="params">self</span>) -&gt; LifespanReceiveMessage:</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">await</span> self.receive_queue.get()</span><br></pre></td></tr></table></figure>
+
+<h3 id="配置选择机制"><a href="#配置选择机制" class="headerlink" title="配置选择机制"></a>配置选择机制</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># uvicorn/config.py</span></span><br><span class="line">LIFESPAN: <span class="built_in">dict</span>[<span class="built_in">str</span>, <span class="built_in">str</span>] = &#123;</span><br><span class="line">    <span class="string">&quot;auto&quot;</span>: <span class="string">&quot;uvicorn.lifespan.on:LifespanOn&quot;</span>,    <span class="comment"># 自动检测</span></span><br><span class="line">    <span class="string">&quot;on&quot;</span>: <span class="string">&quot;uvicorn.lifespan.on:LifespanOn&quot;</span>,      <span class="comment"># 强制启用</span></span><br><span class="line">    <span class="string">&quot;off&quot;</span>: <span class="string">&quot;uvicorn.lifespan.off:LifespanOff&quot;</span>,   <span class="comment"># 禁用</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Starlette-集成机制"><a href="#Starlette-集成机制" class="headerlink" title="Starlette 集成机制"></a>Starlette 集成机制</h2><p>基于 <a target="_blank" rel="noopener" href="https://github.com/encode/starlette">Starlette 源码</a> 的分析：</p>
+<h3 id="事件路由"><a href="#事件路由" class="headerlink" title="事件路由"></a>事件路由</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Starlette Application.__call__</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">__call__</span>(<span class="params">self, scope: Scope, receive: Receive, send: Send</span>) -&gt; <span class="literal">None</span>:</span><br><span class="line">    scope[<span class="string">&quot;app&quot;</span>] = self</span><br><span class="line">    <span class="keyword">if</span> self.middleware_stack <span class="keyword">is</span> <span class="literal">None</span>:</span><br><span class="line">        self.middleware_stack = self.build_middleware_stack()</span><br><span class="line">    <span class="keyword">await</span> self.middleware_stack(scope, receive, send)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Lifespan-处理"><a href="#Lifespan-处理" class="headerlink" title="Lifespan 处理"></a>Lifespan 处理</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">lifespan</span>(<span class="params">self, scope: Scope, receive: Receive, send: Send</span>) -&gt; <span class="literal">None</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    Handle ASGI lifespan messages, which allows us to manage application</span></span><br><span class="line"><span class="string">    startup and shutdown events.</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    started = <span class="literal">False</span></span><br><span class="line">    app: <span class="type">Any</span> = scope.get(<span class="string">&quot;app&quot;</span>)</span><br><span class="line">    <span class="keyword">await</span> receive()  <span class="comment"># 接收第一个 lifespan.startup 事件</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        <span class="keyword">async</span> <span class="keyword">with</span> self.lifespan_context(app) <span class="keyword">as</span> maybe_state:</span><br><span class="line">            <span class="keyword">if</span> maybe_state <span class="keyword">is</span> <span class="keyword">not</span> <span class="literal">None</span>:</span><br><span class="line">                <span class="keyword">if</span> <span class="string">&quot;state&quot;</span> <span class="keyword">not</span> <span class="keyword">in</span> scope:</span><br><span class="line">                    <span class="keyword">raise</span> RuntimeError(<span class="string">&#x27;The server does not support &quot;state&quot; in the lifespan scope.&#x27;</span>)</span><br><span class="line">                scope[<span class="string">&quot;state&quot;</span>].update(maybe_state)</span><br><span class="line">            <span class="keyword">await</span> send(&#123;<span class="string">&quot;type&quot;</span>: <span class="string">&quot;lifespan.startup.complete&quot;</span>&#125;)</span><br><span class="line">            started = <span class="literal">True</span></span><br><span class="line">            <span class="keyword">await</span> receive()  <span class="comment"># 等待 lifespan.shutdown 事件</span></span><br><span class="line">    <span class="keyword">except</span> BaseException:</span><br><span class="line">        exc_text = traceback.format_exc()</span><br><span class="line">        <span class="keyword">if</span> started:</span><br><span class="line">            <span class="keyword">await</span> send(&#123;<span class="string">&quot;type&quot;</span>: <span class="string">&quot;lifespan.shutdown.failed&quot;</span>, <span class="string">&quot;message&quot;</span>: exc_text&#125;)</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="keyword">await</span> send(&#123;<span class="string">&quot;type&quot;</span>: <span class="string">&quot;lifespan.startup.failed&quot;</span>, <span class="string">&quot;message&quot;</span>: exc_text&#125;)</span><br><span class="line">        <span class="keyword">raise</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">await</span> send(&#123;<span class="string">&quot;type&quot;</span>: <span class="string">&quot;lifespan.shutdown.complete&quot;</span>&#125;)</span><br></pre></td></tr></table></figure>
+
+<h3 id="关键设计特点"><a href="#关键设计特点" class="headerlink" title="关键设计特点"></a>关键设计特点</h3><p>根据 <a target="_blank" rel="noopener" href="https://github.com/encode/starlette/blob/master/starlette/routing.py">Starlette Lifespan 实现</a>：</p>
+<ol>
+<li><strong>一次性处理</strong>：<code>lifespan</code> 方法执行一次，处理整个应用生命周期</li>
+<li><strong>阻塞等待</strong>：通过两次 <code>await receive()</code> 分别处理 startup 和 shutdown 事件</li>
+<li><strong>异常安全</strong>：完整的错误处理和状态管理</li>
+<li><strong>状态传递</strong>：支持将 lifespan 结果传递给应用状态</li>
+</ol>
+<blockquote>
+<p>The lifespan protocol runs as a sibling task alongside your main application, allowing both to execute concurrently.</p>
+<p>来源：<a target="_blank" rel="noopener" href="https://www.starlette.io/lifespan/">Starlette Lifespan 文档</a></p>
+</blockquote>
+<h2 id="实际应用示例"><a href="#实际应用示例" class="headerlink" title="实际应用示例"></a>实际应用示例</h2><h3 id="基础应用"><a href="#基础应用" class="headerlink" title="基础应用"></a>基础应用</h3><p>基于 <a target="_blank" rel="noopener" href="https://fastapi.tiangolo.com/advanced/events/">FastAPI Lifespan 指南</a>：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> contextlib <span class="keyword">import</span> asynccontextmanager</span><br><span class="line"><span class="keyword">from</span> fastapi <span class="keyword">import</span> FastAPI</span><br><span class="line"></span><br><span class="line"><span class="comment"># 数据库连接</span></span><br><span class="line">db_connection = <span class="literal">None</span></span><br><span class="line"></span><br><span class="line"><span class="meta">@asynccontextmanager</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">lifespan</span>(<span class="params">app: FastAPI</span>):</span><br><span class="line">    <span class="comment"># 启动时执行</span></span><br><span class="line">    <span class="keyword">global</span> db_connection</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;Connecting to database...&quot;</span>)</span><br><span class="line">    db_connection = <span class="keyword">await</span> connect_database()</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">yield</span> &#123;<span class="string">&quot;database&quot;</span>: db_connection&#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 关闭时执行</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;Closing database connection...&quot;</span>)</span><br><span class="line">    <span class="keyword">await</span> db_connection.close()</span><br><span class="line"></span><br><span class="line">app = FastAPI(lifespan=lifespan)</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>You can define lifespan events (startup and shutdown) with FastAPI using a <code>lifespan</code> parameter in the <code>FastAPI</code> app.</p>
+<p>来源：<a target="_blank" rel="noopener" href="https://fastapi.tiangolo.com/advanced/events/">FastAPI Lifespan 指南</a></p>
+</blockquote>
+<h3 id="复杂资源管理"><a href="#复杂资源管理" class="headerlink" title="复杂资源管理"></a>复杂资源管理</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> contextlib <span class="keyword">import</span> AsyncExitStack</span><br><span class="line"></span><br><span class="line"><span class="meta">@asynccontextmanager</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">complex_lifespan</span>(<span class="params">app: FastAPI</span>):</span><br><span class="line">    <span class="keyword">async</span> <span class="keyword">with</span> AsyncExitStack() <span class="keyword">as</span> stack:</span><br><span class="line">        <span class="comment"># 动态管理多个资源</span></span><br><span class="line">        db = <span class="keyword">await</span> stack.enter_async_context(connect_database())</span><br><span class="line">        cache = <span class="keyword">await</span> stack.enter_async_context(connect_redis())</span><br><span class="line">        session_pool = <span class="keyword">await</span> stack.enter_async_context(create_session_pool())</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 注册清理回调</span></span><br><span class="line">        <span class="keyword">def</span> <span class="title function_">cleanup_logs</span>():</span><br><span class="line">            cleanup_log_files()</span><br><span class="line">        stack.callback(cleanup_logs)</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">yield</span> &#123;</span><br><span class="line">            <span class="string">&quot;database&quot;</span>: db,</span><br><span class="line">            <span class="string">&quot;cache&quot;</span>: cache,</span><br><span class="line">            <span class="string">&quot;sessions&quot;</span>: session_pool</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment"># 所有资源会自动按相反顺序清理</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="FastMCP-集成示例"><a href="#FastMCP-集成示例" class="headerlink" title="FastMCP 集成示例"></a>FastMCP 集成示例</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> fastmcp <span class="keyword">import</span> FastMCP</span><br><span class="line"></span><br><span class="line">mcp = FastMCP(<span class="string">&quot;MyServer&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="meta">@mcp.lifespan</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">my_lifespan</span>(<span class="params">server</span>):</span><br><span class="line">    <span class="comment"># 启动时执行</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;Initializing MCP server...&quot;</span>)</span><br><span class="line">    <span class="keyword">await</span> server.setup_tools()</span><br><span class="line">    <span class="keyword">await</span> server.connect_to_database()</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">yield</span> &#123;<span class="string">&quot;server&quot;</span>: server&#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 关闭时执行</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;Shutting down MCP server...&quot;</span>)</span><br><span class="line">    <span class="keyword">await</span> server.cleanup_tools()</span><br><span class="line">    <span class="keyword">await</span> server.close_database()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 创建应用</span></span><br><span class="line">app = mcp.create_app()</span><br></pre></td></tr></table></figure>
+
+<h2 id="最佳实践"><a href="#最佳实践" class="headerlink" title="最佳实践"></a>最佳实践</h2><h3 id="1-资源管理"><a href="#1-资源管理" class="headerlink" title="1. 资源管理"></a>1. 资源管理</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@asynccontextmanager</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">proper_lifespan</span>(<span class="params">app: FastAPI</span>):</span><br><span class="line">    resources = &#123;&#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        <span class="comment"># 初始化资源</span></span><br><span class="line">        resources[<span class="string">&quot;db&quot;</span>] = <span class="keyword">await</span> connect_database()</span><br><span class="line">        resources[<span class="string">&quot;cache&quot;</span>] = <span class="keyword">await</span> connect_redis()</span><br><span class="line">        resources[<span class="string">&quot;http_client&quot;</span>] = aiohttp.ClientSession()</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">yield</span> resources</span><br><span class="line">        </span><br><span class="line">    <span class="keyword">finally</span>:</span><br><span class="line">        <span class="comment"># 确保资源被正确清理</span></span><br><span class="line">        <span class="keyword">if</span> <span class="string">&quot;http_client&quot;</span> <span class="keyword">in</span> resources:</span><br><span class="line">            <span class="keyword">await</span> resources[<span class="string">&quot;http_client&quot;</span>].close()</span><br><span class="line">        <span class="keyword">if</span> <span class="string">&quot;cache&quot;</span> <span class="keyword">in</span> resources:</span><br><span class="line">            <span class="keyword">await</span> resources[<span class="string">&quot;cache&quot;</span>].close()</span><br><span class="line">        <span class="keyword">if</span> <span class="string">&quot;db&quot;</span> <span class="keyword">in</span> resources:</span><br><span class="line">            <span class="keyword">await</span> resources[<span class="string">&quot;db&quot;</span>].close()</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-错误处理"><a href="#2-错误处理" class="headerlink" title="2. 错误处理"></a>2. 错误处理</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@asynccontextmanager</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">robust_lifespan</span>(<span class="params">app: FastAPI</span>):</span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        <span class="comment"># 启动逻辑</span></span><br><span class="line">        db = <span class="keyword">await</span> connect_database()</span><br><span class="line">        <span class="keyword">yield</span> &#123;<span class="string">&quot;database&quot;</span>: db&#125;</span><br><span class="line">        </span><br><span class="line">    <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">        <span class="comment"># 记录错误但不阻止应用启动</span></span><br><span class="line">        logger.error(<span class="string">f&quot;Failed to initialize database: <span class="subst">&#123;e&#125;</span>&quot;</span>)</span><br><span class="line">        <span class="keyword">yield</span> &#123;&#125;</span><br><span class="line">        </span><br><span class="line">    <span class="keyword">finally</span>:</span><br><span class="line">        <span class="comment"># 清理逻辑</span></span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            <span class="keyword">if</span> <span class="string">&#x27;db&#x27;</span> <span class="keyword">in</span> <span class="built_in">locals</span>():</span><br><span class="line">                <span class="keyword">await</span> db.close()</span><br><span class="line">        <span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">            logger.error(<span class="string">f&quot;Failed to close database: <span class="subst">&#123;e&#125;</span>&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-状态管理"><a href="#3-状态管理" class="headerlink" title="3. 状态管理"></a>3. 状态管理</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@asynccontextmanager</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">stateful_lifespan</span>(<span class="params">app: FastAPI</span>):</span><br><span class="line">    <span class="comment"># 初始化应用状态</span></span><br><span class="line">    app_state = &#123;</span><br><span class="line">        <span class="string">&quot;startup_time&quot;</span>: time.time(),</span><br><span class="line">        <span class="string">&quot;version&quot;</span>: <span class="string">&quot;1.0.0&quot;</span>,</span><br><span class="line">        <span class="string">&quot;environment&quot;</span>: os.getenv(<span class="string">&quot;ENV&quot;</span>, <span class="string">&quot;development&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 连接数据库</span></span><br><span class="line">    db = <span class="keyword">await</span> connect_database()</span><br><span class="line">    app_state[<span class="string">&quot;database&quot;</span>] = db</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 设置全局配置</span></span><br><span class="line">    app.state.config = app_state</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">yield</span> app_state</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 清理</span></span><br><span class="line">    <span class="keyword">await</span> db.close()</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-性能监控"><a href="#4-性能监控" class="headerlink" title="4. 性能监控"></a>4. 性能监控</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@asynccontextmanager</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">def</span> <span class="title function_">monitored_lifespan</span>(<span class="params">app: FastAPI</span>):</span><br><span class="line">    start_time = time.time()</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">try</span>:</span><br><span class="line">        <span class="comment"># 启动监控</span></span><br><span class="line">        metrics = <span class="keyword">await</span> setup_metrics_collection()</span><br><span class="line">        <span class="keyword">yield</span> &#123;<span class="string">&quot;metrics&quot;</span>: metrics&#125;</span><br><span class="line">        </span><br><span class="line">    <span class="keyword">finally</span>:</span><br><span class="line">        <span class="comment"># 记录运行时间</span></span><br><span class="line">        runtime = time.time() - start_time</span><br><span class="line">        logger.info(<span class="string">f&quot;Application ran for <span class="subst">&#123;runtime:<span class="number">.2</span>f&#125;</span> seconds&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>ASGI Lifespan 协议是现代异步 Python Web 应用的核心组件，它提供了：</p>
+<ol>
+<li><strong>标准化的生命周期管理</strong>：统一的启动和关闭流程</li>
+<li><strong>异常安全保证</strong>：确保资源正确清理</li>
+<li><strong>状态管理</strong>：支持应用状态持久化</li>
+<li><strong>协议兼容性</strong>：与所有 ASGI 服务器兼容</li>
+</ol>
+<blockquote>
+<p>The lifespan messages allow for an application to initialise and shutdown in the context of a running event loop. An example of this would be creating a connection pool and subsequently closing the connection pool to release the connections.</p>
+<p>来源：<a target="_blank" rel="noopener" href="https://asgi.readthedocs.io/en/latest/specs/lifespan.html">ASGI Lifespan Protocol</a></p>
+</blockquote>
+<p>通过合理使用 Lifespan 协议，可以构建更加健壮和可维护的异步 Web 应用。</p>
+<h2 id="参考资源"><a href="#参考资源" class="headerlink" title="参考资源"></a>参考资源</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://asgi.readthedocs.io/en/latest/specs/lifespan.html">ASGI Lifespan 协议规范</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/encode/uvicorn">Uvicorn 源码</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.starlette.io/lifespan/">Starlette 文档</a></li>
+<li><a target="_blank" rel="noopener" href="https://fastapi.tiangolo.com/advanced/events/">FastAPI Lifespan 指南</a></li>
+</ul>
+
+    </article>
+    <!-- license -->
+        <div class="license-wrapper">
+            <p>Author：<a href="https://edison-a-n.github.io">Edison</a>
+            <p>Link：<a href="https://edison-a-n.github.io/2025/10/27/asgi_lifespan_complete_guide/">https://edison-a-n.github.io/2025/10/27/asgi_lifespan_complete_guide/</a>
+            <p>Publish date：<a href="https://edison-a-n.github.io/2025/10/27/asgi_lifespan_complete_guide/">October 27th 2025, 12:00:00 am</a>
+            <p>Update date：<a href="https://edison-a-n.github.io/2025/10/27/asgi_lifespan_complete_guide/">November 3rd 2025, 10:51:35 pm</a>
+            <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2025/10/28/args_doc_format_comparison/" title="Tool Args Documentation Format Comparison Analysis">
+                    <div class="nextTitle">Tool Args Documentation Format Comparison Analysis</div>
+                </a>
+        </li>
+        <li class="previous">
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2025/09/29/mcp-output-schema/" title="MCP Output Schema：数据验证与结构化输出的技术实现">
+                    <div class="prevTitle">MCP Output Schema：数据验证与结构化输出的技术实现</div>
+                </a>
+        </li>
+    </ul>
+    <!-- comment -->
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+            
+            
+            
+            <!-- utteranc评论 -->
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+            
+            
+            
+        </div>
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    <!-- Mathjax -->
+</main>
+
+                <!-- profile -->
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+        <div class="social">
+                            <a href="mailto:zhangn661@gmail.com" class="iconfont-archer email" title="email" ></a>
+                <a href="//github.com/Edison-A-N" class="iconfont-archer github" target="_blank" title="github"></a>
+
+        </div>
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    <!-- 不蒜子  -->
+        <div class="busuanzi-container">
+                <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+        </div>
+</footer>
+
+        </div>
+        <!-- toc -->
+            <div class="toc-wrapper toc-wrapper-loding" style=    top:50vh;
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%AE%E5%BD%95"><span class="toc-number">1.</span> <span class="toc-text">目录</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ASGI-Lifespan-%E5%8D%8F%E8%AE%AE%E6%A6%82%E8%BF%B0"><span class="toc-number">2.</span> <span class="toc-text">ASGI Lifespan 协议概述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-Lifespan-%E5%8D%8F%E8%AE%AE%EF%BC%9F"><span class="toc-number">2.1.</span> <span class="toc-text">什么是 Lifespan 协议？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99"><span class="toc-number">2.2.</span> <span class="toc-text">核心设计原则</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%8F%E8%AE%AE%E8%A7%84%E8%8C%83%E8%AF%A6%E8%A7%A3"><span class="toc-number">3.</span> <span class="toc-text">协议规范详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Scope-%E7%BB%93%E6%9E%84"><span class="toc-number">3.1.</span> <span class="toc-text">Scope 结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8B%E4%BB%B6%E7%B1%BB%E5%9E%8B"><span class="toc-number">3.2.</span> <span class="toc-text">事件类型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A5%E6%94%B6%E4%BA%8B%E4%BB%B6%EF%BC%88receive%EF%BC%89"><span class="toc-number">3.2.1.</span> <span class="toc-text">接收事件（receive）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%91%E9%80%81%E4%BA%8B%E4%BB%B6%EF%BC%88send%EF%BC%89"><span class="toc-number">3.2.2.</span> <span class="toc-text">发送事件（send）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%87%E5%87%86%E5%BA%94%E7%94%A8%E5%AE%9E%E7%8E%B0"><span class="toc-number">3.3.</span> <span class="toc-text">标准应用实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Uvicorn-%E5%AE%9E%E7%8E%B0%E5%88%86%E6%9E%90"><span class="toc-number">4.</span> <span class="toc-text">Uvicorn 实现分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%AE%9E%E7%8E%B0%E7%B1%BB"><span class="toc-number">4.1.</span> <span class="toc-text">核心实现类</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#LifespanOn-%E7%B1%BB"><span class="toc-number">4.1.1.</span> <span class="toc-text">LifespanOn 类</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B"><span class="toc-number">4.1.2.</span> <span class="toc-text">启动流程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%B3%E9%97%AD%E6%B5%81%E7%A8%8B"><span class="toc-number">4.1.3.</span> <span class="toc-text">关闭流程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E9%80%9A%E4%BF%A1%E6%9C%BA%E5%88%B6"><span class="toc-number">4.1.4.</span> <span class="toc-text">核心通信机制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BA%8B%E4%BB%B6%E5%A4%84%E7%90%86"><span class="toc-number">4.1.5.</span> <span class="toc-text">事件处理</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE%E9%80%89%E6%8B%A9%E6%9C%BA%E5%88%B6"><span class="toc-number">4.2.</span> <span class="toc-text">配置选择机制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Starlette-%E9%9B%86%E6%88%90%E6%9C%BA%E5%88%B6"><span class="toc-number">5.</span> <span class="toc-text">Starlette 集成机制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8B%E4%BB%B6%E8%B7%AF%E7%94%B1"><span class="toc-number">5.1.</span> <span class="toc-text">事件路由</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Lifespan-%E5%A4%84%E7%90%86"><span class="toc-number">5.2.</span> <span class="toc-text">Lifespan 处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E8%AE%BE%E8%AE%A1%E7%89%B9%E7%82%B9"><span class="toc-number">5.3.</span> <span class="toc-text">关键设计特点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E9%99%85%E5%BA%94%E7%94%A8%E7%A4%BA%E4%BE%8B"><span class="toc-number">6.</span> <span class="toc-text">实际应用示例</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E7%A1%80%E5%BA%94%E7%94%A8"><span class="toc-number">6.1.</span> <span class="toc-text">基础应用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%8D%E6%9D%82%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86"><span class="toc-number">6.2.</span> <span class="toc-text">复杂资源管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#FastMCP-%E9%9B%86%E6%88%90%E7%A4%BA%E4%BE%8B"><span class="toc-number">6.3.</span> <span class="toc-text">FastMCP 集成示例</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5"><span class="toc-number">7.</span> <span class="toc-text">最佳实践</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86"><span class="toc-number">7.1.</span> <span class="toc-text">1. 资源管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E9%94%99%E8%AF%AF%E5%A4%84%E7%90%86"><span class="toc-number">7.2.</span> <span class="toc-text">2. 错误处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E7%8A%B6%E6%80%81%E7%AE%A1%E7%90%86"><span class="toc-number">7.3.</span> <span class="toc-text">3. 状态管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E6%80%A7%E8%83%BD%E7%9B%91%E6%8E%A7"><span class="toc-number">7.4.</span> <span class="toc-text">4. 性能监控</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">8.</span> <span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%BA%90"><span class="toc-number">9.</span> <span class="toc-text">参考资源</span></a></li></ol>
+            </div>
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 29
+        </div>
+        <!-- search  -->
+    </div>
+    <div class="post-archive">
+            <div class="archive-year"> 2026 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/17</span>
+            <a class="archive-post-title" href="/2026/01/17/trading-drawdown-control-guide/">交易回撤控制指南：认知、守心与仓位管理</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2025 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2025/11/10/mcp-recent-sharing/">MCP 近期内容分享：从 Resources、Tools 到 Prompts 的实践探索</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span>
+            <a class="archive-post-title" href="/2025/10/28/args_doc_format_comparison/">Tool Args Documentation Format Comparison Analysis</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span>
+            <a class="archive-post-title" href="/2025/10/27/asgi_lifespan_complete_guide/">ASGI Lifespan 完整指南</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/mcp-output-schema/">MCP Output Schema：数据验证与结构化输出的技术实现</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/stop-converting-rest-api-to-mcp/">停止转换REST API到MCP：设计AI原生接口的正确方式</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span>
+            <a class="archive-post-title" href="/2025/09/20/llm-consistency-challenges-large-data-processing/">大型语言模型在处理大批量数据时的一致性挑战与解决方案</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/01</span>
+            <a class="archive-post-title" href="/2024/02/01/nextjs-pagination/">nextjs-pagination</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span>
+            <a class="archive-post-title" href="/2023/09/20/smart-contract-demo/">smart-contract-demo</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/30</span>
+            <a class="archive-post-title" href="/2023/08/30/multi-tenant/">多租户应用与架构设计关注点</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2022 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span>
+            <a class="archive-post-title" href="/2022/12/13/go-ddd/">go-ddd</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/07</span>
+            <a class="archive-post-title" href="/2022/12/07/git-rebase/">使用 `git pull --rebase`</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span>
+            <a class="archive-post-title" href="/2022/12/03/opentelemetry-jaeger/">opnetelemetry-jaeger</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/09</span>
+            <a class="archive-post-title" href="/2022/06/09/ddd-thinking/">ddd-thinking</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/23</span>
+            <a class="archive-post-title" href="/2022/05/23/mvc-and-ddd/">mvc-and-ddd</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span>
+            <a class="archive-post-title" href="/2022/02/13/commit-format-and-auto-changelog/">Git commit 规范</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/tight-lipped/">思考与交流</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/30</span>
+            <a class="archive-post-title" href="/2022/01/30/knowledge-breath-and-depth/">知识掌握的广度与深度</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2021 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/16</span>
+            <a class="archive-post-title" href="/2021/12/16/software-design-doc/">如何撰写技术设计文档</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/21</span>
+            <a class="archive-post-title" href="/2021/11/21/breaking-creation-product/">突破式创新的产品设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span>
+            <a class="archive-post-title" href="/2021/07/15/parallel-and-asynchronous-python/">DRF Exception Handle</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/17</span>
+            <a class="archive-post-title" href="/2021/06/17/DRF-Exception/">DRF Exception Handle</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span>
+            <a class="archive-post-title" href="/2021/06/15/Django-With-DDD/">Django With DDD</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/09</span>
+            <a class="archive-post-title" href="/2021/05/09/Agile-Design/">敏捷软件开发：设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span>
+            <a class="archive-post-title" href="/2021/03/30/DRF-Bussiness-Logic/">Django Restful Framework Business Logic</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2021/03/21/graphql-and-restful/">Graphql and Restful API</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/08</span>
+            <a class="archive-post-title" href="/2021/03/08/grpc-hello-world/">grpc hello world</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/03</span>
+            <a class="archive-post-title" href="/2021/01/03/New-Coding-Language/">我如何学一门新的编程语言</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2020 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/08</span>
+            <a class="archive-post-title" href="/2020/11/08/Agile-Dev/">敏捷开发辅助新项目验证与落地</a>
+        </li>
+            </ul>
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+            <span class="sidebar-tag-name" data-tags="agile">
+                <span class="iconfont-archer">&#xe606;</span>
+                agile
+            </span>
+            <span class="sidebar-tag-name" data-tags="LLM">
+                <span class="iconfont-archer">&#xe606;</span>
+                LLM
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Format">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Format
+            </span>
+            <span class="sidebar-tag-name" data-tags="ASGI, Python, FastAPI">
+                <span class="iconfont-archer">&#xe606;</span>
+                ASGI, Python, FastAPI
+            </span>
+            <span class="sidebar-tag-name" data-tags="thinking">
+                <span class="iconfont-archer">&#xe606;</span>
+                thinking
+            </span>
+            <span class="sidebar-tag-name" data-tags="DDD">
+                <span class="iconfont-archer">&#xe606;</span>
+                DDD
+            </span>
+            <span class="sidebar-tag-name" data-tags="MCP">
+                <span class="iconfont-archer">&#xe606;</span>
+                MCP
+            </span>
+            <span class="sidebar-tag-name" data-tags="multi-tenant">
+                <span class="iconfont-archer">&#xe606;</span>
+                multi-tenant
+            </span>
+            <span class="sidebar-tag-name" data-tags="可观测性">
+                <span class="iconfont-archer">&#xe606;</span>
+                可观测性
+            </span>
+            <span class="sidebar-tag-name" data-tags="opentelemetry">
+                <span class="iconfont-archer">&#xe606;</span>
+                opentelemetry
+            </span>
+            <span class="sidebar-tag-name" data-tags="API Design">
+                <span class="iconfont-archer">&#xe606;</span>
+                API Design
+            </span>
+            <span class="sidebar-tag-name" data-tags="交易">
+                <span class="iconfont-archer">&#xe606;</span>
+                交易
+            </span>
+            <span class="sidebar-tag-name" data-tags="投资">
+                <span class="iconfont-archer">&#xe606;</span>
+                投资
+            </span>
+            <span class="sidebar-tag-name" data-tags="风险管理">
+                <span class="iconfont-archer">&#xe606;</span>
+                风险管理
+            </span>
+            <span class="sidebar-tag-name" data-tags="回撤控制">
+                <span class="iconfont-archer">&#xe606;</span>
+                回撤控制
+            </span>
+            <span class="sidebar-tag-name" data-tags="仓位管理">
+                <span class="iconfont-archer">&#xe606;</span>
+                仓位管理
+            </span>
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+        <span class="sidebar-category-name" data-categories="AI Agent">
+            <span class="iconfont-archer">&#xe60a;</span>
+            AI Agent
+        </span>
+        <span class="sidebar-category-name" data-categories="交易策略">
+            <span class="iconfont-archer">&#xe60a;</span>
+            交易策略
+        </span>
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "https://edison-a-n.github.io",
+        root: siteMetaRoot,
+        author: "Edison"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+        <!-- main func -->
+        <script src="/scripts/main.js"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.umd.js" onload="window.Fancybox.bind('[data-fancybox]')" defer></script>
+        <!-- algolia -->
+        <!-- busuanzi -->
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        <!-- async load share.js -->
+            <script src="/scripts/share.js" async></script>
+        <!-- mermaid -->
+    </body>
+</html>

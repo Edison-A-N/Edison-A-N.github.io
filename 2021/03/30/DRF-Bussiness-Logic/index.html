@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+<!-- keywords -->
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Edison">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Edison">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,Edison,DDD">
+    <meta name="description" content="Thinking, writing and sharing''">
+    <meta name="description" content="Django Restful Framework Business LogicDjango Restful Framework Restful APIDjango Restful Framework 提供了非常便利的方法序列化Restful API，并且提供了统一的数据返回格式（包括错误返回）。 SerializerSerializer 提供了数据序列化反序列的操作，并承担了validation的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Django Restful Framework Business Logic">
+<meta property="og:url" content="https://edison-a-n.github.io/2021/03/30/DRF-Bussiness-Logic/index.html">
+<meta property="og:site_name" content="Edison">
+<meta property="og:description" content="Django Restful Framework Business LogicDjango Restful Framework Restful APIDjango Restful Framework 提供了非常便利的方法序列化Restful API，并且提供了统一的数据返回格式（包括错误返回）。 SerializerSerializer 提供了数据序列化反序列的操作，并承担了validation的">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2021-03-29T16:00:00.000Z">
+<meta property="article:modified_time" content="2022-06-13T15:37:38.500Z">
+<meta property="article:author" content="Edison">
+<meta name="twitter:card" content="summary">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/avatar/avatar.jpg">
+    <title>Django Restful Framework Business Logic · Edison&#39;s Blog</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .footer-fixed-btn,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(
+            -45deg,
+            #444 0,
+            #444 80px,
+            #333 80px,
+            #333 160px
+        );
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link id="stylesheet-fancybox" rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link id="stylesheet-base" rel="preload" href="/css/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link id="stylesheet-mobile" rel="preload" href="/css/mobile.css" as="style" onload="this.onload=null;this.rel='stylesheet';this.media='screen and (max-width: 960px)'">
+    <link id="stylesheet-theme-dark" rel="preload" href="/css/dark.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    <!-- 百度统计  -->
+    <!-- 谷歌统计  -->
+        <script>
+            var cnzz_s_tag = document.createElement('script');
+            cnzz_s_tag.type = 'text/javascript';
+            cnzz_s_tag.async = true;
+            cnzz_s_tag.charset = 'utf-8';
+            cnzz_s_tag.src = 'https://w.cnzz.com/c.php?id=&async=1';
+            var root_s = document.getElementsByTagName('script')[0];
+            root_s.parentNode.insertBefore(cnzz_s_tag, root_s);
+        </script>
+    <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-188648772-3"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-188648772-3');
+        </script>
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Edison" type="application/atom+xml">
+</head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+        <body class="post-body">
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        <div class="header-sidebar-menu">
+            <div style="padding-left: 1px;">&#xe775;</div>
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href="/">Edison's Studio.</a>
+        </span>
+    </div>
+    <!-- toggle banner -->
+    <div class="banner">
+        <div class="blog-title header-element">
+            <a href="/">Edison&#39;s Studio.</a>
+        </div>
+        <div class="post-title header-element">
+            <a href="#" class="post-name">Django Restful Framework Business Logic</a>
+        </div>
+    </div>
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- donate button -->
+
+    <!-- back to top button -->
+    <div class="footer-fixed-btn footer-fixed-btn--hidden back-top">
+        <div>&#xe639;</div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="    height:50vh;
+">
+    <!-- 主页  -->
+    <!-- 404页  -->
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+                Django Restful Framework Business Logic
+            <!-- 404 -->
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            <!-- 404 -->
+        </p>
+        <!-- 文章页 meta -->
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                    <div class="post-intro-tags" >
+</div>
+
+                <!-- 文章字数统计 -->
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">1.1k</span>Reading time: <span class="post-count reading-time">3 min</span></span>
+                    </div>
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2021/03/30</span>
+                    <!-- busuanzi -->
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" alt="loading">
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <h3 id="Django-Restful-Framework-Business-Logic"><a href="#Django-Restful-Framework-Business-Logic" class="headerlink" title="Django Restful Framework Business Logic"></a>Django Restful Framework Business Logic</h3><h4 id="Django-Restful-Framework"><a href="#Django-Restful-Framework" class="headerlink" title="Django Restful Framework"></a>Django Restful Framework</h4><ul>
+<li>Restful API<br>Django Restful Framework 提供了非常便利的方法序列化Restful API，并且提供了统一的数据返回格式（包括错误返回）。</li>
+<li>Serializer<br>Serializer 提供了数据序列化反序列的操作，并承担了validation的工作，validator有内置，也可以自主添加。</li>
+</ul>
+<h4 id="局限性"><a href="#局限性" class="headerlink" title="局限性"></a>局限性</h4><p>我们在使用中也发现了一些局限性。这些局限，根本上是因为框架是基于Model去设计的。当我们遇到API由多个不同的Django Model组成数据的时候，就会遇到限制。当AP</p>
+<ul>
+<li>Writtable Nested SerializerI的输入输出由多个Django Model组成时，我们无法写入nested serializer。如果是一个relation field，当指定<code>source</code>的时候，我们会发现，由于<code>set_value</code>是字典嵌套赋值操作，该field作为入参没有办法被成功<code>set_value</code>。为了在执行<code>serializer.save()</code>的时候能够顺利存储多个Django Model，我们不得不修改serializer的<code>create</code>和<code>update</code>操作。而这破坏了前述serializer所提供的能力。</li>
+</ul>
+<h4 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h4><ul>
+<li>使用宽表</li>
+</ul>
+<p>对于需要在一个<code>serializer</code>进行读写的数据，本质上也说明了该数据集很有可能属于同一个领域模型。对于一个模型，我们可以使用一张表存下它。如果模型包含的字段较多，我们可以使用宽表。</p>
+<p>宽表在OLTP场景中，可能会带来写入性能的影响。我们需要权衡的是，我们的业务量是否会因此而带来性能影响。对于小型业务，这是一个不错的考虑。</p>
+<p>使用宽表还有另一个问题，就是migration会不断在同一张表上进行，随着数据量增加，可能会对migration的性能带来不良影响。同样的，在小型业务中，这些问题仍然不会很显著。当我们遇到性能问题的时候，很可能表结构已经因为业务发展做了拆分了。</p>
+<ul>
+<li>使用service层</li>
+</ul>
+<p>使用service层，是将view与model隔离的一种好方法。将大量复杂的业务逻辑封装在service层中，在view层为业务提供适配的API，并引入各种权限校验等通用逻辑，在model层独立设计模型及其关系，由service层将两者串联起来。</p>
+<p>service层像是设计模式中的适配器，当model设计与前端的model不完全一致的时候，service充当适配器的效果，将两者串联起来。</p>
+<p>service的引入会带来代码的开发，增加开发成本，当然也相应会带来不稳定的因素。</p>
+<h4 id="框架只是解决一部分问题"><a href="#框架只是解决一部分问题" class="headerlink" title="框架只是解决一部分问题"></a>框架只是解决一部分问题</h4><p>使用DRF框架显然可以快速的开发一个restful的应用，在业务逻辑非常简单的时候（常规的CRUD居多），完成一个项目的开发可能只需要一两天的时间。而我们在实际使用中也发现框架对读取数据及其关联数据的能力非常强大，相对的写入关联数据的支持非常少。这个在官方文档中关于<code>writtable nested serializer</code>的描述就很显见了，在<code>ListSerializer</code>的<code>update</code>方法也提到需要由开发者自行编写。这其实是框架设计团队的权衡与取舍，毕竟写入的逻辑通常很复杂，由用户定义会比提供一套内置方法更加有价值。在各类社区中，有很多开发者也分享了写入场景及写入方法的代码。</p>
+<p>框架中还出现了同一个方法的输入不一致等问题。比如对于<code>ListSerializer</code>的<code>to_representation</code>方法，输入的<code>data</code>是一个<code>Database Manager</code>，而对于字段类型的<code>Serializer</code>，则是对应的<code>value</code>。</p>
+<p>这些问题都说明了，框架只能解决一部分的问题，框架也只想解决一部分的问题。框架提供了某一类非常方便的接口，其内部封装则是非常复杂的，这些封装在经过充分测试之后通常会变得稳定，尽管里面仍可能存在不好理解的地方。</p>
+<p>因此，我们使用DRF的时候，如果可以充分利用其能力，达到低代码高稳定的效果，则尽管使用。但是，我们也不需要被<code>serializer</code>的设计框住，自定义必须的service来处理业务逻辑，反而可以使整个业务逻辑更清晰，更具备可测试性与可维护性。</p>
+
+    </article>
+    <!-- license -->
+        <div class="license-wrapper">
+            <p>Author：<a href="https://edison-a-n.github.io">Edison</a>
+            <p>Link：<a href="https://edison-a-n.github.io/2021/03/30/DRF-Bussiness-Logic/">https://edison-a-n.github.io/2021/03/30/DRF-Bussiness-Logic/</a>
+            <p>Publish date：<a href="https://edison-a-n.github.io/2021/03/30/DRF-Bussiness-Logic/">March 30th 2021, 12:00:00 am</a>
+            <p>Update date：<a href="https://edison-a-n.github.io/2021/03/30/DRF-Bussiness-Logic/">June 13th 2022, 11:37:38 pm</a>
+            <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2021/05/09/Agile-Design/" title="敏捷软件开发：设计">
+                    <div class="nextTitle">敏捷软件开发：设计</div>
+                </a>
+        </li>
+        <li class="previous">
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2021/03/21/graphql-and-restful/" title="Graphql and Restful API">
+                    <div class="prevTitle">Graphql and Restful API</div>
+                </a>
+        </li>
+    </ul>
+    <!-- comment -->
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+            
+            
+            
+            <!-- utteranc评论 -->
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+            
+            
+            
+        </div>
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    <!-- Mathjax -->
+</main>
+
+                <!-- profile -->
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+        <div class="social">
+                            <a href="mailto:zhangn661@gmail.com" class="iconfont-archer email" title="email" ></a>
+                <a href="//github.com/Edison-A-N" class="iconfont-archer github" target="_blank" title="github"></a>
+
+        </div>
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    <!-- 不蒜子  -->
+        <div class="busuanzi-container">
+                <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+        </div>
+</footer>
+
+        </div>
+        <!-- toc -->
+            <div class="toc-wrapper toc-wrapper-loding" style=    top:50vh;
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#Django-Restful-Framework-Business-Logic"><span class="toc-number">1.</span> <span class="toc-text">Django Restful Framework Business Logic</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Django-Restful-Framework"><span class="toc-number">1.1.</span> <span class="toc-text">Django Restful Framework</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B1%80%E9%99%90%E6%80%A7"><span class="toc-number">1.2.</span> <span class="toc-text">局限性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-number">1.3.</span> <span class="toc-text">解决方案</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A1%86%E6%9E%B6%E5%8F%AA%E6%98%AF%E8%A7%A3%E5%86%B3%E4%B8%80%E9%83%A8%E5%88%86%E9%97%AE%E9%A2%98"><span class="toc-number">1.4.</span> <span class="toc-text">框架只是解决一部分问题</span></a></li></ol></li></ol>
+            </div>
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 29
+        </div>
+        <!-- search  -->
+    </div>
+    <div class="post-archive">
+            <div class="archive-year"> 2026 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/17</span>
+            <a class="archive-post-title" href="/2026/01/17/trading-drawdown-control-guide/">交易回撤控制指南：认知、守心与仓位管理</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2025 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2025/11/10/mcp-recent-sharing/">MCP 近期内容分享：从 Resources、Tools 到 Prompts 的实践探索</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span>
+            <a class="archive-post-title" href="/2025/10/28/args_doc_format_comparison/">Tool Args Documentation Format Comparison Analysis</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span>
+            <a class="archive-post-title" href="/2025/10/27/asgi_lifespan_complete_guide/">ASGI Lifespan 完整指南</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/mcp-output-schema/">MCP Output Schema：数据验证与结构化输出的技术实现</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/stop-converting-rest-api-to-mcp/">停止转换REST API到MCP：设计AI原生接口的正确方式</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span>
+            <a class="archive-post-title" href="/2025/09/20/llm-consistency-challenges-large-data-processing/">大型语言模型在处理大批量数据时的一致性挑战与解决方案</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/01</span>
+            <a class="archive-post-title" href="/2024/02/01/nextjs-pagination/">nextjs-pagination</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span>
+            <a class="archive-post-title" href="/2023/09/20/smart-contract-demo/">smart-contract-demo</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/30</span>
+            <a class="archive-post-title" href="/2023/08/30/multi-tenant/">多租户应用与架构设计关注点</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2022 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span>
+            <a class="archive-post-title" href="/2022/12/13/go-ddd/">go-ddd</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/07</span>
+            <a class="archive-post-title" href="/2022/12/07/git-rebase/">使用 `git pull --rebase`</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span>
+            <a class="archive-post-title" href="/2022/12/03/opentelemetry-jaeger/">opnetelemetry-jaeger</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/09</span>
+            <a class="archive-post-title" href="/2022/06/09/ddd-thinking/">ddd-thinking</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/23</span>
+            <a class="archive-post-title" href="/2022/05/23/mvc-and-ddd/">mvc-and-ddd</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span>
+            <a class="archive-post-title" href="/2022/02/13/commit-format-and-auto-changelog/">Git commit 规范</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/tight-lipped/">思考与交流</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/30</span>
+            <a class="archive-post-title" href="/2022/01/30/knowledge-breath-and-depth/">知识掌握的广度与深度</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2021 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/16</span>
+            <a class="archive-post-title" href="/2021/12/16/software-design-doc/">如何撰写技术设计文档</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/21</span>
+            <a class="archive-post-title" href="/2021/11/21/breaking-creation-product/">突破式创新的产品设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span>
+            <a class="archive-post-title" href="/2021/07/15/parallel-and-asynchronous-python/">DRF Exception Handle</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/17</span>
+            <a class="archive-post-title" href="/2021/06/17/DRF-Exception/">DRF Exception Handle</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span>
+            <a class="archive-post-title" href="/2021/06/15/Django-With-DDD/">Django With DDD</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/09</span>
+            <a class="archive-post-title" href="/2021/05/09/Agile-Design/">敏捷软件开发：设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span>
+            <a class="archive-post-title" href="/2021/03/30/DRF-Bussiness-Logic/">Django Restful Framework Business Logic</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2021/03/21/graphql-and-restful/">Graphql and Restful API</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/08</span>
+            <a class="archive-post-title" href="/2021/03/08/grpc-hello-world/">grpc hello world</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/03</span>
+            <a class="archive-post-title" href="/2021/01/03/New-Coding-Language/">我如何学一门新的编程语言</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2020 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/08</span>
+            <a class="archive-post-title" href="/2020/11/08/Agile-Dev/">敏捷开发辅助新项目验证与落地</a>
+        </li>
+            </ul>
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+            <span class="sidebar-tag-name" data-tags="agile">
+                <span class="iconfont-archer">&#xe606;</span>
+                agile
+            </span>
+            <span class="sidebar-tag-name" data-tags="LLM">
+                <span class="iconfont-archer">&#xe606;</span>
+                LLM
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Format">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Format
+            </span>
+            <span class="sidebar-tag-name" data-tags="ASGI, Python, FastAPI">
+                <span class="iconfont-archer">&#xe606;</span>
+                ASGI, Python, FastAPI
+            </span>
+            <span class="sidebar-tag-name" data-tags="thinking">
+                <span class="iconfont-archer">&#xe606;</span>
+                thinking
+            </span>
+            <span class="sidebar-tag-name" data-tags="DDD">
+                <span class="iconfont-archer">&#xe606;</span>
+                DDD
+            </span>
+            <span class="sidebar-tag-name" data-tags="MCP">
+                <span class="iconfont-archer">&#xe606;</span>
+                MCP
+            </span>
+            <span class="sidebar-tag-name" data-tags="multi-tenant">
+                <span class="iconfont-archer">&#xe606;</span>
+                multi-tenant
+            </span>
+            <span class="sidebar-tag-name" data-tags="可观测性">
+                <span class="iconfont-archer">&#xe606;</span>
+                可观测性
+            </span>
+            <span class="sidebar-tag-name" data-tags="opentelemetry">
+                <span class="iconfont-archer">&#xe606;</span>
+                opentelemetry
+            </span>
+            <span class="sidebar-tag-name" data-tags="API Design">
+                <span class="iconfont-archer">&#xe606;</span>
+                API Design
+            </span>
+            <span class="sidebar-tag-name" data-tags="交易">
+                <span class="iconfont-archer">&#xe606;</span>
+                交易
+            </span>
+            <span class="sidebar-tag-name" data-tags="投资">
+                <span class="iconfont-archer">&#xe606;</span>
+                投资
+            </span>
+            <span class="sidebar-tag-name" data-tags="风险管理">
+                <span class="iconfont-archer">&#xe606;</span>
+                风险管理
+            </span>
+            <span class="sidebar-tag-name" data-tags="回撤控制">
+                <span class="iconfont-archer">&#xe606;</span>
+                回撤控制
+            </span>
+            <span class="sidebar-tag-name" data-tags="仓位管理">
+                <span class="iconfont-archer">&#xe606;</span>
+                仓位管理
+            </span>
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+        <span class="sidebar-category-name" data-categories="AI Agent">
+            <span class="iconfont-archer">&#xe60a;</span>
+            AI Agent
+        </span>
+        <span class="sidebar-category-name" data-categories="交易策略">
+            <span class="iconfont-archer">&#xe60a;</span>
+            交易策略
+        </span>
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "https://edison-a-n.github.io",
+        root: siteMetaRoot,
+        author: "Edison"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+        <!-- main func -->
+        <script src="/scripts/main.js"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.umd.js" onload="window.Fancybox.bind('[data-fancybox]')" defer></script>
+        <!-- algolia -->
+        <!-- busuanzi -->
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        <!-- async load share.js -->
+            <script src="/scripts/share.js" async></script>
+        <!-- mermaid -->
+    </body>
+</html>

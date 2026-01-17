@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+<!-- keywords -->
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Edison">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Edison">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,Edison,DDD">
+    <meta name="description" content="Thinking, writing and sharing''">
+    <meta name="description" content="本文对比分析了 smolagents 项目中两种不同的 args_doc 组织形式（Indent 格式 vs JSON 格式），评估了它们在 Token 消耗、可读性、LLM 理解能力等方面的优劣势，并提出了推荐方案和使用场景建议。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Tool Args Documentation Format Comparison Analysis">
+<meta property="og:url" content="https://edison-a-n.github.io/2025/10/28/args_doc_format_comparison/index.html">
+<meta property="og:site_name" content="Edison">
+<meta property="og:description" content="本文对比分析了 smolagents 项目中两种不同的 args_doc 组织形式（Indent 格式 vs JSON 格式），评估了它们在 Token 消耗、可读性、LLM 理解能力等方面的优劣势，并提出了推荐方案和使用场景建议。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2025-10-27T16:00:00.000Z">
+<meta property="article:modified_time" content="2025-11-03T14:51:35.152Z">
+<meta property="article:author" content="Edison">
+<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="AI Agent">
+<meta property="article:tag" content="Tool Format">
+<meta name="twitter:card" content="summary">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/avatar/avatar.jpg">
+    <title>Tool Args Documentation Format Comparison Analysis · Edison&#39;s Blog</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .footer-fixed-btn,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(
+            -45deg,
+            #444 0,
+            #444 80px,
+            #333 80px,
+            #333 160px
+        );
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link id="stylesheet-fancybox" rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link id="stylesheet-base" rel="preload" href="/css/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link id="stylesheet-mobile" rel="preload" href="/css/mobile.css" as="style" onload="this.onload=null;this.rel='stylesheet';this.media='screen and (max-width: 960px)'">
+    <link id="stylesheet-theme-dark" rel="preload" href="/css/dark.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    <!-- 百度统计  -->
+    <!-- 谷歌统计  -->
+        <script>
+            var cnzz_s_tag = document.createElement('script');
+            cnzz_s_tag.type = 'text/javascript';
+            cnzz_s_tag.async = true;
+            cnzz_s_tag.charset = 'utf-8';
+            cnzz_s_tag.src = 'https://w.cnzz.com/c.php?id=&async=1';
+            var root_s = document.getElementsByTagName('script')[0];
+            root_s.parentNode.insertBefore(cnzz_s_tag, root_s);
+        </script>
+    <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-188648772-3"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-188648772-3');
+        </script>
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Edison" type="application/atom+xml">
+</head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+        <body class="post-body">
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        <div class="header-sidebar-menu">
+            <div style="padding-left: 1px;">&#xe775;</div>
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href="/">Edison's Studio.</a>
+        </span>
+    </div>
+    <!-- toggle banner -->
+    <div class="banner">
+        <div class="blog-title header-element">
+            <a href="/">Edison&#39;s Studio.</a>
+        </div>
+        <div class="post-title header-element">
+            <a href="#" class="post-name">Tool Args Documentation Format Comparison Analysis</a>
+        </div>
+    </div>
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- donate button -->
+
+    <!-- back to top button -->
+    <div class="footer-fixed-btn footer-fixed-btn--hidden back-top">
+        <div>&#xe639;</div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="    height:50vh;
+">
+    <!-- 主页  -->
+    <!-- 404页  -->
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+                Tool Args Documentation Format Comparison Analysis
+            <!-- 404 -->
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            <!-- 404 -->
+        </p>
+        <!-- 文章页 meta -->
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                    <div class="post-intro-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="LLM">LLM</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Tool Format">Tool Format</a>
+</div>
+
+                <!-- 文章字数统计 -->
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">1.8k</span>Reading time: <span class="post-count reading-time">7 min</span></span>
+                    </div>
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2025/10/28</span>
+                    <!-- busuanzi -->
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" alt="loading">
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <h1 id="Tool-Args-Documentation-Format-Comparison-Analysis"><a href="#Tool-Args-Documentation-Format-Comparison-Analysis" class="headerlink" title="Tool Args Documentation Format Comparison Analysis"></a>Tool Args Documentation Format Comparison Analysis</h1><h2 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h2><p>本文档对比分析了 <a target="_blank" rel="noopener" href="https://github.com/huggingface/smolagents">smolagents</a> 项目中两种不同的 <code>to_code_prompt</code> 方法中 <code>args_doc</code> 组织形式的优劣势。这两种格式分别实现在以下分支中：</p>
+<ul>
+<li><strong>Indent 格式</strong>: <a target="_blank" rel="noopener" href="https://github.com/Edison-A-N/smolagents/tree/feature/nested-args-formatting">feature&#x2F;nested-args-formatting</a></li>
+<li><strong>JSON 格式</strong>: <a target="_blank" rel="noopener" href="https://github.com/Edison-A-N/smolagents/tree/feature/json-input-schema-formatting">feature&#x2F;json-input-schema-formatting</a></li>
+</ul>
+<h2 id="两种格式对比"><a href="#两种格式对比" class="headerlink" title="两种格式对比"></a>两种格式对比</h2><h3 id="1-Indent-格式-feature-x2F-nested-args-formatting"><a href="#1-Indent-格式-feature-x2F-nested-args-formatting" class="headerlink" title="1. Indent 格式 (feature&#x2F;nested-args-formatting)"></a>1. Indent 格式 (<a target="_blank" rel="noopener" href="https://github.com/Edison-A-N/smolagents/tree/feature/nested-args-formatting">feature&#x2F;nested-args-formatting</a>)</h3><h4 id="实现方式"><a href="#实现方式" class="headerlink" title="实现方式"></a>实现方式</h4><ul>
+<li>使用递归函数 <code>format_nested_args</code> 格式化嵌套参数</li>
+<li>采用缩进层级显示参数结构</li>
+<li><strong>智能深度限制</strong>：最大深度固定为 3 层，这是经过深思熟虑的设计决策</li>
+<li>简洁的描述性文本格式</li>
+</ul>
+<p><strong>深度限制的设计理念</strong>：</p>
+<ul>
+<li><strong>LLM 理解优化</strong>：超过 3 层的嵌套结构会使 LLM 难以理解和准确配置参数</li>
+<li><strong>实用性平衡</strong>：3 层深度已覆盖绝大多数实际使用场景</li>
+<li><strong>性能考虑</strong>：避免过深的嵌套导致信息过载，影响 LLM 的决策质量</li>
+<li><strong>可扩展性</strong>：如需要更深嵌套，可在未来版本中讨论和改进</li>
+</ul>
+<h4 id="示例输出"><a href="#示例输出" class="headerlink" title="示例输出"></a>示例输出</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">search_items_v1_item_search</span>(<span class="params">page: integer, page_size: integer, <span class="built_in">filter</span>: <span class="built_in">object</span>, sort: array</span>) -&gt; <span class="built_in">dict</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;Search items</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Important: This tool returns structured output! Use the JSON schema below to directly access fields like result[&#x27;field_name&#x27;]. NO print() statements needed to inspect the output!</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        page: Page number</span></span><br><span class="line"><span class="string">        page_size: Page size</span></span><br><span class="line"><span class="string">        filter: 查询项目的请求参数</span></span><br><span class="line"><span class="string">            project_id: Project ID</span></span><br><span class="line"><span class="string">            id__in: Item ID to include, split by comma</span></span><br><span class="line"><span class="string">            tags__in: Tags name to include, split by comma</span></span><br><span class="line"><span class="string">            # ... 更多嵌套参数</span></span><br><span class="line"><span class="string">        sort (array): see tool description</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h4><ol>
+<li><strong>Token 效率高</strong>：内容简洁，token 消耗少</li>
+<li><strong>可读性强</strong>：层级结构清晰，人类容易理解</li>
+<li><strong>简洁明了</strong>：只显示关键信息（参数名和描述）</li>
+<li><strong>智能嵌套处理</strong>：通过 3 层深度限制，平衡了复杂性和可理解性</li>
+<li><strong>LLM 优化设计</strong>：专门针对 LLM 的理解能力进行优化，避免信息过载</li>
+<li><strong>实用性导向</strong>：覆盖绝大多数实际使用场景，避免过度复杂化</li>
+</ol>
+<h4 id="劣势"><a href="#劣势" class="headerlink" title="劣势"></a>劣势</h4><ol>
+<li><strong>信息不完整</strong>：缺少详细的类型约束、枚举值、默认值等</li>
+<li><strong>结构化程度低</strong>：不是标准化的 JSON Schema 格式</li>
+<li><strong>验证信息缺失</strong>：缺少 <code>required</code>、<code>minLength</code>、<code>maxLength</code> 等验证规则</li>
+</ol>
+<h3 id="2-JSON-格式-feature-x2F-json-input-schema-formatting"><a href="#2-JSON-格式-feature-x2F-json-input-schema-formatting" class="headerlink" title="2. JSON 格式 (feature&#x2F;json-input-schema-formatting)"></a>2. JSON 格式 (<a target="_blank" rel="noopener" href="https://github.com/Edison-A-N/smolagents/tree/feature/json-input-schema-formatting">feature&#x2F;json-input-schema-formatting</a>)</h3><h4 id="实现方式-1"><a href="#实现方式-1" class="headerlink" title="实现方式"></a>实现方式</h4><ul>
+<li>直接使用 <code>json.dumps()</code> 序列化完整的 <code>inputs</code> 字典</li>
+<li>保持完整的 JSON Schema 结构</li>
+<li>包含所有类型信息和约束条件</li>
+</ul>
+<h4 id="示例输出-1"><a href="#示例输出-1" class="headerlink" title="示例输出"></a>示例输出</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">search_items_v1_item_search</span>(<span class="params">page: integer, page_size: integer, <span class="built_in">filter</span>: <span class="built_in">object</span>, sort: array</span>) -&gt; <span class="built_in">dict</span>:</span><br><span class="line">    <span class="string">&quot;&quot;&quot;Search items</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Important: This tool returns structured output! Use the JSON schema below to directly access fields like result[&#x27;field_name&#x27;]. NO print() statements needed to inspect the output!</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        dict (input schema): This tool expects arguments that strictly adhere to the following JSON schema:</span></span><br><span class="line"><span class="string">            &#123;</span></span><br><span class="line"><span class="string">                &quot;page&quot;: &#123;</span></span><br><span class="line"><span class="string">                    &quot;type&quot;: &quot;integer&quot;,</span></span><br><span class="line"><span class="string">                    &quot;minimum&quot;: 1.0,</span></span><br><span class="line"><span class="string">                    &quot;title&quot;: &quot;Page&quot;,</span></span><br><span class="line"><span class="string">                    &quot;description&quot;: &quot;Page number&quot;,</span></span><br><span class="line"><span class="string">                    &quot;default&quot;: 1</span></span><br><span class="line"><span class="string">                &#125;,</span></span><br><span class="line"><span class="string">                &quot;page_size&quot;: &#123;</span></span><br><span class="line"><span class="string">                    &quot;type&quot;: &quot;integer&quot;,</span></span><br><span class="line"><span class="string">                    &quot;maximum&quot;: 10000.0,</span></span><br><span class="line"><span class="string">                    &quot;minimum&quot;: 1.0,</span></span><br><span class="line"><span class="string">                    &quot;title&quot;: &quot;Page Size&quot;,</span></span><br><span class="line"><span class="string">                    &quot;description&quot;: &quot;Page size&quot;,</span></span><br><span class="line"><span class="string">                    &quot;default&quot;: 25</span></span><br><span class="line"><span class="string">                &#125;,</span></span><br><span class="line"><span class="string">                # ... 完整的 JSON Schema</span></span><br><span class="line"><span class="string">            &#125;</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="优势-1"><a href="#优势-1" class="headerlink" title="优势"></a>优势</h4><ol>
+<li><strong>信息完整</strong>：包含完整的 JSON Schema 信息</li>
+<li><strong>标准化</strong>：符合 JSON Schema 标准，便于程序化处理</li>
+<li><strong>详细约束</strong>：包含类型、枚举、默认值、验证规则等</li>
+<li><strong>精确匹配</strong>：提供精确的参数结构定义</li>
+<li><strong>未来扩展性</strong>：易于添加新的 Schema 属性</li>
+</ol>
+<h4 id="劣势-1"><a href="#劣势-1" class="headerlink" title="劣势"></a>劣势</h4><ol>
+<li><strong>Token 消耗大</strong>：内容冗长，token 消耗多</li>
+<li><strong>可读性差</strong>：对 LLM 来说，大量 JSON 结构可能造成信息过载</li>
+<li><strong>解析复杂</strong>：LLM 需要从大量 JSON 中提取关键信息</li>
+<li><strong>冗余信息</strong>：包含很多 LLM 可能不需要的详细约束</li>
+</ol>
+<h2 id="性能对比分析"><a href="#性能对比分析" class="headerlink" title="性能对比分析"></a>性能对比分析</h2><blockquote>
+<p><strong>重要说明</strong>：以下性能数据基于前述方法的单一测试用例，仅作为定性示例展示两种格式的差异趋势，不应用于定量判断或生产环境的性能评估。实际性能可能因具体使用场景、模型类型、参数复杂度等因素而有所差异。</p>
+</blockquote>
+<h3 id="Token-使用量对比"><a href="#Token-使用量对比" class="headerlink" title="Token 使用量对比"></a>Token 使用量对比</h3><table>
+<thead>
+<tr>
+<th>格式</th>
+<th>Step 1 Tokens</th>
+<th>Step 2 Tokens</th>
+<th>总 Tokens</th>
+<th>相对差异</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Indent 格式</td>
+<td>53,953</td>
+<td>108,123</td>
+<td>162,076</td>
+<td>基准</td>
+</tr>
+<tr>
+<td>JSON 格式</td>
+<td>76,436</td>
+<td>153,135</td>
+<td>229,571</td>
+<td>+42%</td>
+</tr>
+</tbody></table>
+<p><strong>结论</strong>：JSON 格式比 Indent 格式多消耗约 42% 的 tokens</p>
+<h3 id="参数内容长度对比"><a href="#参数内容长度对比" class="headerlink" title="参数内容长度对比"></a>参数内容长度对比</h3><table>
+<thead>
+<tr>
+<th>格式</th>
+<th>输出行数</th>
+<th>相对差异</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Indent 格式</td>
+<td>874 行</td>
+<td>基准</td>
+</tr>
+<tr>
+<td>JSON 格式</td>
+<td>1,269 行</td>
+<td>+45%</td>
+</tr>
+</tbody></table>
+<p><strong>结论</strong>：JSON 格式比 Indent 格式多约 45% 的内容</p>
+<h2 id="准确性对比"><a href="#准确性对比" class="headerlink" title="准确性对比"></a>准确性对比</h2><h3 id="参数匹配准确性"><a href="#参数匹配准确性" class="headerlink" title="参数匹配准确性"></a>参数匹配准确性</h3><ul>
+<li><strong>Indent 格式</strong>：✅ 能正确识别和匹配复杂参数</li>
+<li><strong>JSON 格式</strong>：✅ 能正确识别和匹配复杂参数</li>
+<li><strong>结论</strong>：两种格式的参数匹配准确性基本相同</li>
+</ul>
+<h3 id="任务执行结果"><a href="#任务执行结果" class="headerlink" title="任务执行结果"></a>任务执行结果</h3><ul>
+<li><strong>Indent 格式</strong>：✅ 成功执行任务，返回正确结果 (291)</li>
+<li><strong>JSON 格式</strong>：✅ 成功执行任务，返回正确结果 (291)</li>
+<li><strong>结论</strong>：两种格式都能正确完成任务</li>
+</ul>
+<h2 id="综合评估"><a href="#综合评估" class="headerlink" title="综合评估"></a>综合评估</h2><h3 id="推荐方案：Indent-格式"><a href="#推荐方案：Indent-格式" class="headerlink" title="推荐方案：Indent 格式"></a>推荐方案：Indent 格式</h3><p>基于全面的分析，<strong>推荐使用 Indent 格式</strong>，理由如下：</p>
+<ol>
+<li><strong>成本效益最优</strong>：Token 消耗减少 42%，成本显著降低</li>
+<li><strong>准确性相当</strong>：两种格式的参数匹配准确性基本相同</li>
+<li><strong>LLM 友好</strong>：简洁的格式更适合 LLM 理解和处理</li>
+<li><strong>实用性更强</strong>：对于大多数用例，LLM 只需要知道参数名和基本描述</li>
+</ol>
+<h3 id="可能的改进建议"><a href="#可能的改进建议" class="headerlink" title="可能的改进建议"></a>可能的改进建议</h3><ol>
+<li><strong>混合方案</strong>：可以考虑在 Indent 格式基础上，为关键参数添加类型信息</li>
+<li><strong>关键约束保留</strong>：对于重要的验证规则（如 <code>required</code>），可以在描述中体现</li>
+<li><strong>分层显示</strong>：简单参数用 Indent 格式，复杂嵌套参数可选择 JSON 格式</li>
+</ol>
+<h3 id="使用场景建议"><a href="#使用场景建议" class="headerlink" title="使用场景建议"></a>使用场景建议</h3><h4 id="推荐使用-Indent-格式的场景："><a href="#推荐使用-Indent-格式的场景：" class="headerlink" title="推荐使用 Indent 格式的场景："></a>推荐使用 Indent 格式的场景：</h4><ul>
+<li>大多数常规工具调用场景</li>
+<li>成本敏感的应用</li>
+<li>需要快速响应的应用</li>
+<li>参数结构相对简单的工具</li>
+</ul>
+<h4 id="可考虑使用-JSON-格式的场景："><a href="#可考虑使用-JSON-格式的场景：" class="headerlink" title="可考虑使用 JSON 格式的场景："></a>可考虑使用 JSON 格式的场景：</h4><ul>
+<li>需要严格参数验证的场景</li>
+<li>参数结构极其复杂的工具</li>
+<li>需要程序化处理 Schema 的场景</li>
+<li>对成本不敏感的应用</li>
+</ul>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>基于单一测试用例的对比分析，虽然 JSON 格式提供了更完整的信息，但在测试场景中，<strong>Indent 格式在保持相同准确性的同时，显著降低了成本</strong>。更重要的是，Indent 格式的设计体现了对 LLM 认知特性的深度理解：</p>
+<blockquote>
+<p><strong>测试局限性说明</strong>：本分析基于特定的测试用例，实际效果可能因具体应用场景而异。建议在生产环境中进行更全面的测试验证。</p>
+</blockquote>
+<ol>
+<li><strong>成本效益最优</strong>：在保持功能完整性的前提下，最大化成本效益</li>
+<li><strong>用户体验导向</strong>：优先考虑 LLM 的理解能力和开发者的使用体验</li>
+</ol>
+<p><strong>最终建议</strong>：采用 Indent 格式作为默认方案，其设计哲学体现了对技术细节的深度思考。同时保留 JSON 格式作为可选的高级配置选项，以满足特殊场景的需求。这种设计既保证了实用性，又为未来的优化和改进留下了空间。</p>
+<hr>
+<p><em>基于分支：<a target="_blank" rel="noopener" href="https://github.com/Edison-A-N/smolagents/tree/feature/nested-args-formatting">feature&#x2F;nested-args-formatting</a> vs <a target="_blank" rel="noopener" href="https://github.com/Edison-A-N/smolagents/tree/feature/json-input-schema-formatting">feature&#x2F;json-input-schema-formatting</a></em></p>
+
+    </article>
+    <!-- license -->
+        <div class="license-wrapper">
+            <p>Author：<a href="https://edison-a-n.github.io">Edison</a>
+            <p>Link：<a href="https://edison-a-n.github.io/2025/10/28/args_doc_format_comparison/">https://edison-a-n.github.io/2025/10/28/args_doc_format_comparison/</a>
+            <p>Publish date：<a href="https://edison-a-n.github.io/2025/10/28/args_doc_format_comparison/">October 28th 2025, 12:00:00 am</a>
+            <p>Update date：<a href="https://edison-a-n.github.io/2025/10/28/args_doc_format_comparison/">November 3rd 2025, 10:51:35 pm</a>
+            <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2025/11/10/mcp-recent-sharing/" title="MCP 近期内容分享：从 Resources、Tools 到 Prompts 的实践探索">
+                    <div class="nextTitle">MCP 近期内容分享：从 Resources、Tools 到 Prompts 的实践探索</div>
+                </a>
+        </li>
+        <li class="previous">
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2025/10/27/asgi_lifespan_complete_guide/" title="ASGI Lifespan 完整指南">
+                    <div class="prevTitle">ASGI Lifespan 完整指南</div>
+                </a>
+        </li>
+    </ul>
+    <!-- comment -->
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+            
+            
+            
+            <!-- utteranc评论 -->
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+            
+            
+            
+        </div>
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    <!-- Mathjax -->
+</main>
+
+                <!-- profile -->
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+        <div class="social">
+                            <a href="mailto:zhangn661@gmail.com" class="iconfont-archer email" title="email" ></a>
+                <a href="//github.com/Edison-A-N" class="iconfont-archer github" target="_blank" title="github"></a>
+
+        </div>
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    <!-- 不蒜子  -->
+        <div class="busuanzi-container">
+                <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+        </div>
+</footer>
+
+        </div>
+        <!-- toc -->
+            <div class="toc-wrapper toc-wrapper-loding" style=    top:50vh;
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Tool-Args-Documentation-Format-Comparison-Analysis"><span class="toc-number">1.</span> <span class="toc-text">Tool Args Documentation Format Comparison Analysis</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E8%BF%B0"><span class="toc-number">1.1.</span> <span class="toc-text">概述</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%A4%E7%A7%8D%E6%A0%BC%E5%BC%8F%E5%AF%B9%E6%AF%94"><span class="toc-number">1.2.</span> <span class="toc-text">两种格式对比</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-Indent-%E6%A0%BC%E5%BC%8F-feature-x2F-nested-args-formatting"><span class="toc-number">1.2.1.</span> <span class="toc-text">1. Indent 格式 (feature&#x2F;nested-args-formatting)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F"><span class="toc-number">1.2.1.1.</span> <span class="toc-text">实现方式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B%E8%BE%93%E5%87%BA"><span class="toc-number">1.2.1.2.</span> <span class="toc-text">示例输出</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BC%98%E5%8A%BF"><span class="toc-number">1.2.1.3.</span> <span class="toc-text">优势</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8A%A3%E5%8A%BF"><span class="toc-number">1.2.1.4.</span> <span class="toc-text">劣势</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-JSON-%E6%A0%BC%E5%BC%8F-feature-x2F-json-input-schema-formatting"><span class="toc-number">1.2.2.</span> <span class="toc-text">2. JSON 格式 (feature&#x2F;json-input-schema-formatting)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0%E6%96%B9%E5%BC%8F-1"><span class="toc-number">1.2.2.1.</span> <span class="toc-text">实现方式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%A4%BA%E4%BE%8B%E8%BE%93%E5%87%BA-1"><span class="toc-number">1.2.2.2.</span> <span class="toc-text">示例输出</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BC%98%E5%8A%BF-1"><span class="toc-number">1.2.2.3.</span> <span class="toc-text">优势</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8A%A3%E5%8A%BF-1"><span class="toc-number">1.2.2.4.</span> <span class="toc-text">劣势</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%A7%E8%83%BD%E5%AF%B9%E6%AF%94%E5%88%86%E6%9E%90"><span class="toc-number">1.3.</span> <span class="toc-text">性能对比分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Token-%E4%BD%BF%E7%94%A8%E9%87%8F%E5%AF%B9%E6%AF%94"><span class="toc-number">1.3.1.</span> <span class="toc-text">Token 使用量对比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E5%86%85%E5%AE%B9%E9%95%BF%E5%BA%A6%E5%AF%B9%E6%AF%94"><span class="toc-number">1.3.2.</span> <span class="toc-text">参数内容长度对比</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%87%86%E7%A1%AE%E6%80%A7%E5%AF%B9%E6%AF%94"><span class="toc-number">1.4.</span> <span class="toc-text">准确性对比</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E5%8C%B9%E9%85%8D%E5%87%86%E7%A1%AE%E6%80%A7"><span class="toc-number">1.4.1.</span> <span class="toc-text">参数匹配准确性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%BB%E5%8A%A1%E6%89%A7%E8%A1%8C%E7%BB%93%E6%9E%9C"><span class="toc-number">1.4.2.</span> <span class="toc-text">任务执行结果</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%BC%E5%90%88%E8%AF%84%E4%BC%B0"><span class="toc-number">1.5.</span> <span class="toc-text">综合评估</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A8%E8%8D%90%E6%96%B9%E6%A1%88%EF%BC%9AIndent-%E6%A0%BC%E5%BC%8F"><span class="toc-number">1.5.1.</span> <span class="toc-text">推荐方案：Indent 格式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%AF%E8%83%BD%E7%9A%84%E6%94%B9%E8%BF%9B%E5%BB%BA%E8%AE%AE"><span class="toc-number">1.5.2.</span> <span class="toc-text">可能的改进建议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF%E5%BB%BA%E8%AE%AE"><span class="toc-number">1.5.3.</span> <span class="toc-text">使用场景建议</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A8%E8%8D%90%E4%BD%BF%E7%94%A8-Indent-%E6%A0%BC%E5%BC%8F%E7%9A%84%E5%9C%BA%E6%99%AF%EF%BC%9A"><span class="toc-number">1.5.3.1.</span> <span class="toc-text">推荐使用 Indent 格式的场景：</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%AF%E8%80%83%E8%99%91%E4%BD%BF%E7%94%A8-JSON-%E6%A0%BC%E5%BC%8F%E7%9A%84%E5%9C%BA%E6%99%AF%EF%BC%9A"><span class="toc-number">1.5.3.2.</span> <span class="toc-text">可考虑使用 JSON 格式的场景：</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%93%E8%AE%BA"><span class="toc-number">1.6.</span> <span class="toc-text">结论</span></a></li></ol></li></ol>
+            </div>
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 29
+        </div>
+        <!-- search  -->
+    </div>
+    <div class="post-archive">
+            <div class="archive-year"> 2026 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/17</span>
+            <a class="archive-post-title" href="/2026/01/17/trading-drawdown-control-guide/">交易回撤控制指南：认知、守心与仓位管理</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2025 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2025/11/10/mcp-recent-sharing/">MCP 近期内容分享：从 Resources、Tools 到 Prompts 的实践探索</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span>
+            <a class="archive-post-title" href="/2025/10/28/args_doc_format_comparison/">Tool Args Documentation Format Comparison Analysis</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span>
+            <a class="archive-post-title" href="/2025/10/27/asgi_lifespan_complete_guide/">ASGI Lifespan 完整指南</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/mcp-output-schema/">MCP Output Schema：数据验证与结构化输出的技术实现</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/stop-converting-rest-api-to-mcp/">停止转换REST API到MCP：设计AI原生接口的正确方式</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span>
+            <a class="archive-post-title" href="/2025/09/20/llm-consistency-challenges-large-data-processing/">大型语言模型在处理大批量数据时的一致性挑战与解决方案</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/01</span>
+            <a class="archive-post-title" href="/2024/02/01/nextjs-pagination/">nextjs-pagination</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span>
+            <a class="archive-post-title" href="/2023/09/20/smart-contract-demo/">smart-contract-demo</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/30</span>
+            <a class="archive-post-title" href="/2023/08/30/multi-tenant/">多租户应用与架构设计关注点</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2022 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span>
+            <a class="archive-post-title" href="/2022/12/13/go-ddd/">go-ddd</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/07</span>
+            <a class="archive-post-title" href="/2022/12/07/git-rebase/">使用 `git pull --rebase`</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span>
+            <a class="archive-post-title" href="/2022/12/03/opentelemetry-jaeger/">opnetelemetry-jaeger</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/09</span>
+            <a class="archive-post-title" href="/2022/06/09/ddd-thinking/">ddd-thinking</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/23</span>
+            <a class="archive-post-title" href="/2022/05/23/mvc-and-ddd/">mvc-and-ddd</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span>
+            <a class="archive-post-title" href="/2022/02/13/commit-format-and-auto-changelog/">Git commit 规范</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/tight-lipped/">思考与交流</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/30</span>
+            <a class="archive-post-title" href="/2022/01/30/knowledge-breath-and-depth/">知识掌握的广度与深度</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2021 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/16</span>
+            <a class="archive-post-title" href="/2021/12/16/software-design-doc/">如何撰写技术设计文档</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/21</span>
+            <a class="archive-post-title" href="/2021/11/21/breaking-creation-product/">突破式创新的产品设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span>
+            <a class="archive-post-title" href="/2021/07/15/parallel-and-asynchronous-python/">DRF Exception Handle</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/17</span>
+            <a class="archive-post-title" href="/2021/06/17/DRF-Exception/">DRF Exception Handle</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span>
+            <a class="archive-post-title" href="/2021/06/15/Django-With-DDD/">Django With DDD</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/09</span>
+            <a class="archive-post-title" href="/2021/05/09/Agile-Design/">敏捷软件开发：设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span>
+            <a class="archive-post-title" href="/2021/03/30/DRF-Bussiness-Logic/">Django Restful Framework Business Logic</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2021/03/21/graphql-and-restful/">Graphql and Restful API</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/08</span>
+            <a class="archive-post-title" href="/2021/03/08/grpc-hello-world/">grpc hello world</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/03</span>
+            <a class="archive-post-title" href="/2021/01/03/New-Coding-Language/">我如何学一门新的编程语言</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2020 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/08</span>
+            <a class="archive-post-title" href="/2020/11/08/Agile-Dev/">敏捷开发辅助新项目验证与落地</a>
+        </li>
+            </ul>
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+            <span class="sidebar-tag-name" data-tags="agile">
+                <span class="iconfont-archer">&#xe606;</span>
+                agile
+            </span>
+            <span class="sidebar-tag-name" data-tags="LLM">
+                <span class="iconfont-archer">&#xe606;</span>
+                LLM
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Format">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Format
+            </span>
+            <span class="sidebar-tag-name" data-tags="ASGI, Python, FastAPI">
+                <span class="iconfont-archer">&#xe606;</span>
+                ASGI, Python, FastAPI
+            </span>
+            <span class="sidebar-tag-name" data-tags="thinking">
+                <span class="iconfont-archer">&#xe606;</span>
+                thinking
+            </span>
+            <span class="sidebar-tag-name" data-tags="DDD">
+                <span class="iconfont-archer">&#xe606;</span>
+                DDD
+            </span>
+            <span class="sidebar-tag-name" data-tags="MCP">
+                <span class="iconfont-archer">&#xe606;</span>
+                MCP
+            </span>
+            <span class="sidebar-tag-name" data-tags="multi-tenant">
+                <span class="iconfont-archer">&#xe606;</span>
+                multi-tenant
+            </span>
+            <span class="sidebar-tag-name" data-tags="可观测性">
+                <span class="iconfont-archer">&#xe606;</span>
+                可观测性
+            </span>
+            <span class="sidebar-tag-name" data-tags="opentelemetry">
+                <span class="iconfont-archer">&#xe606;</span>
+                opentelemetry
+            </span>
+            <span class="sidebar-tag-name" data-tags="API Design">
+                <span class="iconfont-archer">&#xe606;</span>
+                API Design
+            </span>
+            <span class="sidebar-tag-name" data-tags="交易">
+                <span class="iconfont-archer">&#xe606;</span>
+                交易
+            </span>
+            <span class="sidebar-tag-name" data-tags="投资">
+                <span class="iconfont-archer">&#xe606;</span>
+                投资
+            </span>
+            <span class="sidebar-tag-name" data-tags="风险管理">
+                <span class="iconfont-archer">&#xe606;</span>
+                风险管理
+            </span>
+            <span class="sidebar-tag-name" data-tags="回撤控制">
+                <span class="iconfont-archer">&#xe606;</span>
+                回撤控制
+            </span>
+            <span class="sidebar-tag-name" data-tags="仓位管理">
+                <span class="iconfont-archer">&#xe606;</span>
+                仓位管理
+            </span>
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+        <span class="sidebar-category-name" data-categories="AI Agent">
+            <span class="iconfont-archer">&#xe60a;</span>
+            AI Agent
+        </span>
+        <span class="sidebar-category-name" data-categories="交易策略">
+            <span class="iconfont-archer">&#xe60a;</span>
+            交易策略
+        </span>
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "https://edison-a-n.github.io",
+        root: siteMetaRoot,
+        author: "Edison"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+        <!-- main func -->
+        <script src="/scripts/main.js"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.umd.js" onload="window.Fancybox.bind('[data-fancybox]')" defer></script>
+        <!-- algolia -->
+        <!-- busuanzi -->
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        <!-- async load share.js -->
+            <script src="/scripts/share.js" async></script>
+        <!-- mermaid -->
+    </body>
+</html>

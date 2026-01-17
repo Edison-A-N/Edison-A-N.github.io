@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+<!-- keywords -->
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Edison">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Edison">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,Edison,DDD">
+    <meta name="description" content="Thinking, writing and sharing''">
+    <meta name="description" content="本文是对近期接触 Model Context Protocol (MCP) 相关知识的分享，涵盖了 Resources、Tools、Prompts 等核心功能的设计理念、用户交互模型对比，以及在实际应用中的思考与实践。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MCP 近期内容分享：从 Resources、Tools 到 Prompts 的实践探索">
+<meta property="og:url" content="https://edison-a-n.github.io/2025/11/10/mcp-recent-sharing/index.html">
+<meta property="og:site_name" content="Edison">
+<meta property="og:description" content="本文是对近期接触 Model Context Protocol (MCP) 相关知识的分享，涵盖了 Resources、Tools、Prompts 等核心功能的设计理念、用户交互模型对比，以及在实际应用中的思考与实践。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2025-11-09T16:00:00.000Z">
+<meta property="article:modified_time" content="2025-11-15T16:17:07.315Z">
+<meta property="article:author" content="Edison">
+<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="AI Agent">
+<meta property="article:tag" content="MCP">
+<meta name="twitter:card" content="summary">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/avatar/avatar.jpg">
+    <title>MCP 近期内容分享：从 Resources、Tools 到 Prompts 的实践探索 · Edison&#39;s Blog</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .footer-fixed-btn,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(
+            -45deg,
+            #444 0,
+            #444 80px,
+            #333 80px,
+            #333 160px
+        );
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link id="stylesheet-fancybox" rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link id="stylesheet-base" rel="preload" href="/css/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link id="stylesheet-mobile" rel="preload" href="/css/mobile.css" as="style" onload="this.onload=null;this.rel='stylesheet';this.media='screen and (max-width: 960px)'">
+    <link id="stylesheet-theme-dark" rel="preload" href="/css/dark.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    <!-- 百度统计  -->
+    <!-- 谷歌统计  -->
+        <script>
+            var cnzz_s_tag = document.createElement('script');
+            cnzz_s_tag.type = 'text/javascript';
+            cnzz_s_tag.async = true;
+            cnzz_s_tag.charset = 'utf-8';
+            cnzz_s_tag.src = 'https://w.cnzz.com/c.php?id=&async=1';
+            var root_s = document.getElementsByTagName('script')[0];
+            root_s.parentNode.insertBefore(cnzz_s_tag, root_s);
+        </script>
+    <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-188648772-3"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-188648772-3');
+        </script>
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Edison" type="application/atom+xml">
+</head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+        <body class="post-body">
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        <div class="header-sidebar-menu">
+            <div style="padding-left: 1px;">&#xe775;</div>
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href="/">Edison's Studio.</a>
+        </span>
+    </div>
+    <!-- toggle banner -->
+    <div class="banner">
+        <div class="blog-title header-element">
+            <a href="/">Edison&#39;s Studio.</a>
+        </div>
+        <div class="post-title header-element">
+            <a href="#" class="post-name">MCP 近期内容分享：从 Resources、Tools 到 Prompts 的实践探索</a>
+        </div>
+    </div>
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- donate button -->
+
+    <!-- back to top button -->
+    <div class="footer-fixed-btn footer-fixed-btn--hidden back-top">
+        <div>&#xe639;</div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="    height:50vh;
+">
+    <!-- 主页  -->
+    <!-- 404页  -->
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+                MCP 近期内容分享：从 Resources、Tools 到 Prompts 的实践探索
+            <!-- 404 -->
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            <!-- 404 -->
+        </p>
+        <!-- 文章页 meta -->
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                    <div class="post-intro-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="LLM">LLM</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="MCP">MCP</a>
+</div>
+
+                <!-- 文章字数统计 -->
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">2.6k</span>Reading time: <span class="post-count reading-time">9 min</span></span>
+                    </div>
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2025/11/10</span>
+                    <!-- busuanzi -->
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" alt="loading">
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <div style="color: #666; font-style: italic; font-size: 0.9em; margin-bottom: 1em;">
+本文内容由 AI 协助生成
+</div>
+
+<h3 id="一、Resources、Tools-与-Prompts-的用户交互模型对比"><a href="#一、Resources、Tools-与-Prompts-的用户交互模型对比" class="headerlink" title="一、Resources、Tools 与 Prompts 的用户交互模型对比"></a>一、Resources、Tools 与 Prompts 的用户交互模型对比</h3><p>Model Context Protocol (MCP) 中的 Resources、Tools 和 Prompts 三种功能在设计理念和用户交互模型上存在显著差异。基于<a target="_blank" rel="noopener" href="https://modelcontextprotocol.io/specification/2025-06-18/">MCP 官方文档</a>的规范，以下是三种功能的详细对比：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Resources（资源）</th>
+<th>Tools（工具）</th>
+<th>Prompts（提示）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>控制方式</strong></td>
+<td>应用程序驱动（Application-driven）<br><a target="_blank" rel="noopener" href="https://modelcontextprotocol.io/specification/2025-06-18/server/resources#user-interaction-model">参考文档</a></td>
+<td>模型控制（Model-controlled）<br><a target="_blank" rel="noopener" href="https://modelcontextprotocol.io/specification/2025-06-18/server/tools#user-interaction-model">参考文档</a></td>
+<td>用户控制（User-controlled）<br><a target="_blank" rel="noopener" href="https://modelcontextprotocol.io/specification/2025-06-18/server/prompts#user-interaction-model">参考文档</a></td>
+</tr>
+<tr>
+<td><strong>用户交互模型描述</strong></td>
+<td>资源设计为应用程序驱动，主机应用程序根据需要决定如何整合上下文。应用程序可以：<br>• 通过 UI 元素以树状或列表视图显式选择资源<br>• 允许用户搜索和过滤可用资源<br>• 基于启发式或 AI 模型的选择实现自动上下文包含</td>
+<td>工具设计为模型控制，语言模型可以根据其上下文理解和用户的提示自动发现和调用工具。协议本身不强制任何特定的用户交互模型。</td>
+<td>提示从服务器暴露给客户端，用户可以明确选择使用。通常通过用户界面中的用户发起命令触发，允许用户自然地发现和调用可用的提示。</td>
+</tr>
+<tr>
+<td><strong>典型交互方式</strong></td>
+<td>• 树状或列表视图选择<br>• 搜索和过滤<br>• 自动上下文包含</td>
+<td>• 模型自动发现和调用<br>• 基于上下文理解自动执行</td>
+<td>• 用户发起的命令（如斜杠命令）<br>• 明确的用户选择<br>• 自然发现和调用</td>
+</tr>
+<tr>
+<td><strong>控制权归属</strong></td>
+<td>应用程序决定如何整合和使用资源</td>
+<td>AI 模型自动发现和调用，但需要人工确认</td>
+<td>用户完全控制何时使用</td>
+</tr>
+<tr>
+<td><strong>交互主动性</strong></td>
+<td>被动提供，由应用程序主动选择</td>
+<td>主动执行，由模型根据上下文自动调用</td>
+<td>被动等待，由用户主动触发</td>
+</tr>
+<tr>
+<td><strong>安全机制</strong></td>
+<td>通过 URI 验证和访问控制保障安全<br>• 服务器必须验证所有资源 URI<br>• 对敏感资源实施访问控制</td>
+<td>必须有人工确认环节，防止恶意或意外操作<br>• 提供清晰的工具暴露 UI<br>• 工具调用时插入视觉指示器<br>• 对操作提供确认提示</td>
+<td>用户完全控制何时使用提示，风险相对较低</td>
+</tr>
+</tbody></table>
+<h4 id="设计理念的启示"><a href="#设计理念的启示" class="headerlink" title="设计理念的启示"></a>设计理念的启示</h4><p>这三种不同的交互模型反映了 MCP 协议在不同场景下的设计考量：</p>
+<ul>
+<li><strong>Resources</strong> 强调应用程序的灵活性和上下文管理能力</li>
+<li><strong>Tools</strong> 强调 AI 模型的自主性和执行能力，但必须保证安全可控</li>
+<li><strong>Prompts</strong> 强调用户的主动性和控制权</li>
+</ul>
+<p>这种分层设计使得 MCP 能够同时支持自动化 AI 代理和人工辅助的交互模式，为不同类型的应用场景提供了灵活的实现方案。</p>
+<h3 id="二、Code-Execution-with-MCP：协议应用的子集与限制"><a href="#二、Code-Execution-with-MCP：协议应用的子集与限制" class="headerlink" title="二、Code Execution with MCP：协议应用的子集与限制"></a>二、Code Execution with MCP：协议应用的子集与限制</h3><p>在实际应用中，<code>code-execution-with-mcp</code> 这类实践可以视为 MCP 协议应用的一个<strong>子集</strong>，它在某些场景下会呈现出与标准 MCP 协议不同的特征和限制。参考 <a target="_blank" rel="noopener" href="https://www.anthropic.com/engineering/code-execution-with-mcp">Anthropic 的 Code Execution with MCP 实践</a>。</p>
+<h4 id="子集特性：类似-RESTful-的请求处理"><a href="#子集特性：类似-RESTful-的请求处理" class="headerlink" title="子集特性：类似 RESTful 的请求处理"></a>子集特性：类似 RESTful 的请求处理</h4><p><code>code-execution-with-mcp</code> 的实现往往更倾向于处理类似 RESTful API 的请求模式：</p>
+<ul>
+<li><strong>请求-响应模式</strong>：主要关注工具调用的请求和响应，而非完整的 MCP 协议能力</li>
+<li><strong>简化的交互</strong>：可能只实现了 MCP 协议中的部分功能，特别是 Tools 相关的功能</li>
+<li><strong>API 化倾向</strong>：将 MCP 工具调用抽象为类似 RESTful 接口的调用方式</li>
+</ul>
+<p>这种实现方式虽然能够满足代码执行等特定场景的需求，但可能会丢失 MCP 协议的一些核心优势。</p>
+<h4 id="meta-能力的潜在丢失"><a href="#meta-能力的潜在丢失" class="headerlink" title="_meta 能力的潜在丢失"></a><code>_meta</code> 能力的潜在丢失</h4><p>根据 <a target="_blank" rel="noopener" href="https://github.com/modelcontextprotocol/modelcontextprotocol/blob/47339c03c143bb4ec01a26e721a1b8fe66634ebe/docs/specification/draft/basic/index.mdx#_meta">MCP 协议规范</a>，<code>_meta</code> 属性允许客户端和服务器在交互中附加额外的元数据：</p>
+<ul>
+<li><strong>协议级元数据</strong>：某些键名被 MCP 保留用于协议级元数据</li>
+<li><strong>自定义元数据</strong>：实现可以添加特定用途的元数据，遵循命名规范</li>
+<li><strong>扩展性</strong>：<code>_meta</code> 机制为协议提供了良好的扩展能力</li>
+</ul>
+<p>在 <code>code-execution-with-mcp</code> 这类子集实现中，<code>_meta</code> 的能力可能会丢失，原因包括：</p>
+<ol>
+<li><strong>简化实现</strong>：为了快速实现代码执行功能，可能跳过了 <code>_meta</code> 的支持</li>
+<li><strong>协议理解不足</strong>：对 MCP 协议的完整理解不够深入，只关注核心功能</li>
+<li><strong>工具链限制</strong>：使用的工具链或框架可能不支持 <code>_meta</code> 的传递和处理</li>
+</ol>
+<h4 id="meta-在实际应用中的丰富用途"><a href="#meta-在实际应用中的丰富用途" class="headerlink" title="_meta 在实际应用中的丰富用途"></a><code>_meta</code> 在实际应用中的丰富用途</h4><p><code>_meta</code> 不仅仅是简单的元数据容器，在实际生产环境中承载着重要的功能配置。以 <a target="_blank" rel="noopener" href="https://developers.openai.com/apps-sdk/build/mcp-server#describe-your-tools">OpenAI Apps SDK</a> 为例，<code>_meta</code> 被广泛用于：</p>
+<ul>
+<li><strong>UI 组件关联</strong>：<code>_meta[&quot;openai/outputTemplate&quot;]</code> 将工具与 HTML UI 模板关联，实现富交互界面</li>
+<li><strong>组件工具访问控制</strong>：<code>_meta[&quot;openai/widgetAccessible&quot;]</code> 允许组件内部发起工具调用</li>
+<li><strong>安全策略配置</strong>：<code>_meta[&quot;openai/widgetCSP&quot;]</code> 定义内容安全策略，控制组件的外部资源访问</li>
+<li><strong>用户体验优化</strong>：<code>_meta[&quot;openai/toolInvocation/invoking&quot;]</code> 和 <code>_meta[&quot;openai/toolInvocation/invoked&quot;]</code> 提供工具调用时的状态提示</li>
+<li><strong>本地化支持</strong>：<code>_meta[&quot;openai/locale&quot;]</code> 支持多语言和区域化内容</li>
+<li><strong>客户端上下文</strong>：<code>_meta[&quot;openai/userAgent&quot;]</code> 和 <code>_meta[&quot;openai/userLocation&quot;]</code> 提供客户端环境信息</li>
+<li><strong>组件描述</strong>：<code>_meta[&quot;openai/widgetDescription&quot;]</code> 帮助模型理解组件功能，避免冗余响应</li>
+</ul>
+<p>这些 <code>_meta</code> 字段在实际应用中发挥着关键作用，但在 <code>code-execution-with-mcp</code> 这类简化实现中，这些高级功能往往被忽略，导致：</p>
+<ul>
+<li><strong>UI 交互能力受限</strong>：无法实现丰富的组件化界面</li>
+<li><strong>安全策略缺失</strong>：缺少细粒度的安全控制机制</li>
+<li><strong>用户体验下降</strong>：缺少状态提示和本地化支持</li>
+<li><strong>功能扩展困难</strong>：无法利用 <code>_meta</code> 的扩展性实现定制化功能</li>
+</ul>
+<h4 id="实践建议"><a href="#实践建议" class="headerlink" title="实践建议"></a>实践建议</h4><p>在使用 <code>code-execution-with-mcp</code> 这类实现时，需要注意：</p>
+<ul>
+<li><strong>明确使用场景</strong>：理解这是 MCP 协议的子集应用，而非完整实现</li>
+<li><strong>评估功能损失</strong>：评估丢失 <code>_meta</code> 等能力对实际应用的影响</li>
+<li><strong>主动检查能力</strong>：需要主动检查 MCP server 的能力声明，甚至 tool 的 <code>_meta</code> 信息等，确认该 tool 是否适合按照 <code>code-execution-with-mcp</code> 的实现方式执行。并非所有 tool 都适合这种简化的执行模式</li>
+<li><strong>保留原有方案</strong>：原本的大模型 call tool 的方案很可能还需要继续保留，作为 fallback 或用于处理不适合 <code>code-execution-with-mcp</code> 模式的 tool</li>
+<li><strong>考虑升级路径</strong>：如果未来需要更完整的 MCP 能力，考虑向标准实现迁移</li>
+</ul>
+<p>这种子集实现虽然有其适用场景，但在设计系统架构时，应该充分理解其与完整 MCP 协议的差异，以便做出合适的技术选择。在实际应用中，可能需要同时支持两种执行模式，根据 tool 的特性和能力声明动态选择合适的执行方式。</p>
+<h3 id="三、OpenAI-Apps-SDK：Resource-meta-实现-UI-组件渲染"><a href="#三、OpenAI-Apps-SDK：Resource-meta-实现-UI-组件渲染" class="headerlink" title="三、OpenAI Apps SDK：Resource + _meta 实现 UI 组件渲染"></a>三、OpenAI Apps SDK：Resource + <code>_meta</code> 实现 UI 组件渲染</h3><p><a target="_blank" rel="noopener" href="https://developers.openai.com/apps-sdk/build/mcp-server#describe-your-tools">OpenAI Apps SDK</a> 通过 <strong>Resource + <code>_meta</code></strong> 的组合方式，实现了在 ChatGPT 应用中渲染 MCP server 提供的 UI 组件。这种设计巧妙地利用了 MCP 的 Resource 机制来承载 UI 组件，通过 <code>_meta</code> 来配置组件的行为和属性。</p>
+<h4 id="工作机制"><a href="#工作机制" class="headerlink" title="工作机制"></a>工作机制</h4><ol>
+<li><p><strong>注册 UI 模板资源</strong>：MCP server 通过 <code>registerResource</code> 注册一个 HTML 资源，其 <code>mimeType</code> 为 <code>text/html+skybridge</code>，资源 URI（如 <code>ui://widget/kanban-board.html</code>）成为组件的唯一标识符</p>
+</li>
+<li><p><strong>工具关联模板</strong>：在 tool 的 descriptor 中，通过 <code>_meta[&quot;openai/outputTemplate&quot;]</code> 将工具与资源 URI 关联，告诉 ChatGPT 当该工具被调用时应该渲染哪个 UI 组件</p>
+</li>
+<li><p><strong>数据注入</strong>：工具返回的 <code>structuredContent</code> 会被 ChatGPT 注入到 iframe 中，作为 <code>window.openai.toolOutput</code> 供组件使用</p>
+</li>
+<li><p><strong>元数据配置</strong>：通过 <code>_meta</code> 配置组件的各种属性：</p>
+<ul>
+<li><code>openai/widgetCSP</code>：定义内容安全策略</li>
+<li><code>openai/widgetDomain</code>：配置组件子域名</li>
+<li><code>openai/widgetAccessible</code>：允许组件内部发起工具调用</li>
+<li><code>openai/widgetDescription</code>：帮助模型理解组件功能</li>
+</ul>
+</li>
+</ol>
+<h4 id="补充阅读"><a href="#补充阅读" class="headerlink" title="补充阅读"></a>补充阅读</h4><p><strong>MCP 协议的分裂风险</strong></p>
+<p><a target="_blank" rel="noopener" href="https://grapeot.me/mcp-revisited.html">grapeot 的文章</a>从另一个角度讨论了<strong>协议分裂的风险</strong>：<a target="_blank" rel="noopener" href="https://developers.openai.com/apps-sdk">OpenAI Apps SDK</a> 通过 <code>_meta</code> 域创建了私有扩展（<code>openai/*</code> 命名空间），这可能导致 MCP 协议出现类似 SQL dialect 的分裂。</p>
+<p><strong>MCP 忽视 40 年 RPC 最佳实践的风险</strong></p>
+<p><a target="_blank" rel="noopener" href="https://julsimon.medium.com/why-mcps-disregard-for-40-years-of-rpc-best-practices-will-burn-enterprises-8ef85ce5bc9b">Julien Simon 的文章</a>深入分析了 MCP 协议在企业级应用中的潜在风险。文章指出，虽然 MCP 的简洁性加速了采用，但它系统性地忽视了分布式系统领域 40 年来的经验教训，包括类型安全、分布式追踪、服务发现、版本管理等关键能力。这些缺失可能导致企业在生产环境中面临调试困难、成本归因危机、安全漏洞等严重问题。文章强调，MCP 需要从 UNIX RPC、CORBA、REST、SOAP、gRPC 等历史协议中学习，才能真正满足企业级部署的需求。</p>
+<p><strong>MCP 联合创建者的深度访谈</strong></p>
+<p><a target="_blank" rel="noopener" href="https://a16z.com/podcast/mcp-co-creator-on-the-next-wave-of-llm-innovation/">a16z 的播客访谈</a>邀请了 Anthropic 的 David Soria Parra（MCP 联合创建者之一）深入探讨了 MCP 项目的起源、设计理念和未来发展。访谈揭示了 MCP 诞生的背景故事：为了解决在不同 AI 应用（如 Claude Desktop 和代码编辑器）之间共享工作流的 M×N 问题，David 与 Justin Spahr-Summers 共同创建了这个协议。访谈还讨论了 MCP 如何通过标准化的接口实现类似 API 生态系统的效果，让开发者能够构建一次 MCP 服务器，在多个客户端（Cursor、Claude Desktop、Goose 等）中复用，从而大大降低了集成成本。这对于理解 MCP 的设计初衷和未来发展方向具有重要参考价值。</p>
+
+    </article>
+    <!-- license -->
+        <div class="license-wrapper">
+            <p>Author：<a href="https://edison-a-n.github.io">Edison</a>
+            <p>Link：<a href="https://edison-a-n.github.io/2025/11/10/mcp-recent-sharing/">https://edison-a-n.github.io/2025/11/10/mcp-recent-sharing/</a>
+            <p>Publish date：<a href="https://edison-a-n.github.io/2025/11/10/mcp-recent-sharing/">November 10th 2025, 12:00:00 am</a>
+            <p>Update date：<a href="https://edison-a-n.github.io/2025/11/10/mcp-recent-sharing/">November 16th 2025, 12:17:07 am</a>
+            <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2026/01/17/trading-drawdown-control-guide/" title="交易回撤控制指南：认知、守心与仓位管理">
+                    <div class="nextTitle">交易回撤控制指南：认知、守心与仓位管理</div>
+                </a>
+        </li>
+        <li class="previous">
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2025/10/28/args_doc_format_comparison/" title="Tool Args Documentation Format Comparison Analysis">
+                    <div class="prevTitle">Tool Args Documentation Format Comparison Analysis</div>
+                </a>
+        </li>
+    </ul>
+    <!-- comment -->
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+            
+            
+            
+            <!-- utteranc评论 -->
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+            
+            
+            
+        </div>
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    <!-- Mathjax -->
+</main>
+
+                <!-- profile -->
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+        <div class="social">
+                            <a href="mailto:zhangn661@gmail.com" class="iconfont-archer email" title="email" ></a>
+                <a href="//github.com/Edison-A-N" class="iconfont-archer github" target="_blank" title="github"></a>
+
+        </div>
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    <!-- 不蒜子  -->
+        <div class="busuanzi-container">
+                <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+        </div>
+</footer>
+
+        </div>
+        <!-- toc -->
+            <div class="toc-wrapper toc-wrapper-loding" style=    top:50vh;
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E3%80%81Resources%E3%80%81Tools-%E4%B8%8E-Prompts-%E7%9A%84%E7%94%A8%E6%88%B7%E4%BA%A4%E4%BA%92%E6%A8%A1%E5%9E%8B%E5%AF%B9%E6%AF%94"><span class="toc-number">1.</span> <span class="toc-text">一、Resources、Tools 与 Prompts 的用户交互模型对比</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%BE%E8%AE%A1%E7%90%86%E5%BF%B5%E7%9A%84%E5%90%AF%E7%A4%BA"><span class="toc-number">1.1.</span> <span class="toc-text">设计理念的启示</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Code-Execution-with-MCP%EF%BC%9A%E5%8D%8F%E8%AE%AE%E5%BA%94%E7%94%A8%E7%9A%84%E5%AD%90%E9%9B%86%E4%B8%8E%E9%99%90%E5%88%B6"><span class="toc-number">2.</span> <span class="toc-text">二、Code Execution with MCP：协议应用的子集与限制</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AD%90%E9%9B%86%E7%89%B9%E6%80%A7%EF%BC%9A%E7%B1%BB%E4%BC%BC-RESTful-%E7%9A%84%E8%AF%B7%E6%B1%82%E5%A4%84%E7%90%86"><span class="toc-number">2.1.</span> <span class="toc-text">子集特性：类似 RESTful 的请求处理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#meta-%E8%83%BD%E5%8A%9B%E7%9A%84%E6%BD%9C%E5%9C%A8%E4%B8%A2%E5%A4%B1"><span class="toc-number">2.2.</span> <span class="toc-text">_meta 能力的潜在丢失</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#meta-%E5%9C%A8%E5%AE%9E%E9%99%85%E5%BA%94%E7%94%A8%E4%B8%AD%E7%9A%84%E4%B8%B0%E5%AF%8C%E7%94%A8%E9%80%94"><span class="toc-number">2.3.</span> <span class="toc-text">_meta 在实际应用中的丰富用途</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E8%B7%B5%E5%BB%BA%E8%AE%AE"><span class="toc-number">2.4.</span> <span class="toc-text">实践建议</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E3%80%81OpenAI-Apps-SDK%EF%BC%9AResource-meta-%E5%AE%9E%E7%8E%B0-UI-%E7%BB%84%E4%BB%B6%E6%B8%B2%E6%9F%93"><span class="toc-number">3.</span> <span class="toc-text">三、OpenAI Apps SDK：Resource + _meta 实现 UI 组件渲染</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B7%A5%E4%BD%9C%E6%9C%BA%E5%88%B6"><span class="toc-number">3.1.</span> <span class="toc-text">工作机制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A1%A5%E5%85%85%E9%98%85%E8%AF%BB"><span class="toc-number">3.2.</span> <span class="toc-text">补充阅读</span></a></li></ol></li></ol>
+            </div>
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 29
+        </div>
+        <!-- search  -->
+    </div>
+    <div class="post-archive">
+            <div class="archive-year"> 2026 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/17</span>
+            <a class="archive-post-title" href="/2026/01/17/trading-drawdown-control-guide/">交易回撤控制指南：认知、守心与仓位管理</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2025 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2025/11/10/mcp-recent-sharing/">MCP 近期内容分享：从 Resources、Tools 到 Prompts 的实践探索</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span>
+            <a class="archive-post-title" href="/2025/10/28/args_doc_format_comparison/">Tool Args Documentation Format Comparison Analysis</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span>
+            <a class="archive-post-title" href="/2025/10/27/asgi_lifespan_complete_guide/">ASGI Lifespan 完整指南</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/mcp-output-schema/">MCP Output Schema：数据验证与结构化输出的技术实现</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/stop-converting-rest-api-to-mcp/">停止转换REST API到MCP：设计AI原生接口的正确方式</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span>
+            <a class="archive-post-title" href="/2025/09/20/llm-consistency-challenges-large-data-processing/">大型语言模型在处理大批量数据时的一致性挑战与解决方案</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/01</span>
+            <a class="archive-post-title" href="/2024/02/01/nextjs-pagination/">nextjs-pagination</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span>
+            <a class="archive-post-title" href="/2023/09/20/smart-contract-demo/">smart-contract-demo</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/30</span>
+            <a class="archive-post-title" href="/2023/08/30/multi-tenant/">多租户应用与架构设计关注点</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2022 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span>
+            <a class="archive-post-title" href="/2022/12/13/go-ddd/">go-ddd</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/07</span>
+            <a class="archive-post-title" href="/2022/12/07/git-rebase/">使用 `git pull --rebase`</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span>
+            <a class="archive-post-title" href="/2022/12/03/opentelemetry-jaeger/">opnetelemetry-jaeger</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/09</span>
+            <a class="archive-post-title" href="/2022/06/09/ddd-thinking/">ddd-thinking</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/23</span>
+            <a class="archive-post-title" href="/2022/05/23/mvc-and-ddd/">mvc-and-ddd</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span>
+            <a class="archive-post-title" href="/2022/02/13/commit-format-and-auto-changelog/">Git commit 规范</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/tight-lipped/">思考与交流</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/30</span>
+            <a class="archive-post-title" href="/2022/01/30/knowledge-breath-and-depth/">知识掌握的广度与深度</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2021 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/16</span>
+            <a class="archive-post-title" href="/2021/12/16/software-design-doc/">如何撰写技术设计文档</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/21</span>
+            <a class="archive-post-title" href="/2021/11/21/breaking-creation-product/">突破式创新的产品设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span>
+            <a class="archive-post-title" href="/2021/07/15/parallel-and-asynchronous-python/">DRF Exception Handle</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/17</span>
+            <a class="archive-post-title" href="/2021/06/17/DRF-Exception/">DRF Exception Handle</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span>
+            <a class="archive-post-title" href="/2021/06/15/Django-With-DDD/">Django With DDD</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/09</span>
+            <a class="archive-post-title" href="/2021/05/09/Agile-Design/">敏捷软件开发：设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span>
+            <a class="archive-post-title" href="/2021/03/30/DRF-Bussiness-Logic/">Django Restful Framework Business Logic</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2021/03/21/graphql-and-restful/">Graphql and Restful API</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/08</span>
+            <a class="archive-post-title" href="/2021/03/08/grpc-hello-world/">grpc hello world</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/03</span>
+            <a class="archive-post-title" href="/2021/01/03/New-Coding-Language/">我如何学一门新的编程语言</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2020 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/08</span>
+            <a class="archive-post-title" href="/2020/11/08/Agile-Dev/">敏捷开发辅助新项目验证与落地</a>
+        </li>
+            </ul>
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+            <span class="sidebar-tag-name" data-tags="agile">
+                <span class="iconfont-archer">&#xe606;</span>
+                agile
+            </span>
+            <span class="sidebar-tag-name" data-tags="LLM">
+                <span class="iconfont-archer">&#xe606;</span>
+                LLM
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Format">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Format
+            </span>
+            <span class="sidebar-tag-name" data-tags="ASGI, Python, FastAPI">
+                <span class="iconfont-archer">&#xe606;</span>
+                ASGI, Python, FastAPI
+            </span>
+            <span class="sidebar-tag-name" data-tags="thinking">
+                <span class="iconfont-archer">&#xe606;</span>
+                thinking
+            </span>
+            <span class="sidebar-tag-name" data-tags="DDD">
+                <span class="iconfont-archer">&#xe606;</span>
+                DDD
+            </span>
+            <span class="sidebar-tag-name" data-tags="MCP">
+                <span class="iconfont-archer">&#xe606;</span>
+                MCP
+            </span>
+            <span class="sidebar-tag-name" data-tags="multi-tenant">
+                <span class="iconfont-archer">&#xe606;</span>
+                multi-tenant
+            </span>
+            <span class="sidebar-tag-name" data-tags="可观测性">
+                <span class="iconfont-archer">&#xe606;</span>
+                可观测性
+            </span>
+            <span class="sidebar-tag-name" data-tags="opentelemetry">
+                <span class="iconfont-archer">&#xe606;</span>
+                opentelemetry
+            </span>
+            <span class="sidebar-tag-name" data-tags="API Design">
+                <span class="iconfont-archer">&#xe606;</span>
+                API Design
+            </span>
+            <span class="sidebar-tag-name" data-tags="交易">
+                <span class="iconfont-archer">&#xe606;</span>
+                交易
+            </span>
+            <span class="sidebar-tag-name" data-tags="投资">
+                <span class="iconfont-archer">&#xe606;</span>
+                投资
+            </span>
+            <span class="sidebar-tag-name" data-tags="风险管理">
+                <span class="iconfont-archer">&#xe606;</span>
+                风险管理
+            </span>
+            <span class="sidebar-tag-name" data-tags="回撤控制">
+                <span class="iconfont-archer">&#xe606;</span>
+                回撤控制
+            </span>
+            <span class="sidebar-tag-name" data-tags="仓位管理">
+                <span class="iconfont-archer">&#xe606;</span>
+                仓位管理
+            </span>
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+        <span class="sidebar-category-name" data-categories="AI Agent">
+            <span class="iconfont-archer">&#xe60a;</span>
+            AI Agent
+        </span>
+        <span class="sidebar-category-name" data-categories="交易策略">
+            <span class="iconfont-archer">&#xe60a;</span>
+            交易策略
+        </span>
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "https://edison-a-n.github.io",
+        root: siteMetaRoot,
+        author: "Edison"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+        <!-- main func -->
+        <script src="/scripts/main.js"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.umd.js" onload="window.Fancybox.bind('[data-fancybox]')" defer></script>
+        <!-- algolia -->
+        <!-- busuanzi -->
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        <!-- async load share.js -->
+            <script src="/scripts/share.js" async></script>
+        <!-- mermaid -->
+    </body>
+</html>

@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+<!-- keywords -->
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Edison">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Edison">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,Edison,DDD">
+    <meta name="description" content="Thinking, writing and sharing''">
+    <meta name="description" content="Thinking, writing and sharing&#39;&#39;">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Edison">
+<meta property="og:url" content="https://edison-a-n.github.io/archives/page/2/index.html">
+<meta property="og:site_name" content="Edison">
+<meta property="og:description" content="Thinking, writing and sharing&#39;&#39;">
+<meta property="og:locale" content="en_US">
+<meta property="article:author" content="Edison">
+<meta name="twitter:card" content="summary">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/avatar/avatar.jpg">
+    <title>Edison&#39;s Blog</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .footer-fixed-btn,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(
+            -45deg,
+            #444 0,
+            #444 80px,
+            #333 80px,
+            #333 160px
+        );
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link id="stylesheet-fancybox" rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link id="stylesheet-base" rel="preload" href="/css/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link id="stylesheet-mobile" rel="preload" href="/css/mobile.css" as="style" onload="this.onload=null;this.rel='stylesheet';this.media='screen and (max-width: 960px)'">
+    <link id="stylesheet-theme-dark" rel="preload" href="/css/dark.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    <!-- 百度统计  -->
+    <!-- 谷歌统计  -->
+        <script>
+            var cnzz_s_tag = document.createElement('script');
+            cnzz_s_tag.type = 'text/javascript';
+            cnzz_s_tag.async = true;
+            cnzz_s_tag.charset = 'utf-8';
+            cnzz_s_tag.src = 'https://w.cnzz.com/c.php?id=&async=1';
+            var root_s = document.getElementsByTagName('script')[0];
+            root_s.parentNode.insertBefore(cnzz_s_tag, root_s);
+        </script>
+    <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-188648772-3"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-188648772-3');
+        </script>
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Edison" type="application/atom+xml">
+</head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        <div class="header-sidebar-menu">
+            <div style="padding-left: 1px;">&#xe775;</div>
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href="/">Edison's Studio.</a>
+        </span>
+    </div>
+    <!-- toggle banner -->
+    <div class="banner">
+        <div class="blog-title header-element">
+            <a href="/">Edison&#39;s Studio.</a>
+        </div>
+        <div class="post-title header-element">
+            <a href="#" class="post-name"></a>
+        </div>
+    </div>
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- donate button -->
+
+    <!-- back to top button -->
+    <div class="footer-fixed-btn footer-fixed-btn--hidden back-top">
+        <div>&#xe639;</div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="">
+    <!-- 主页  -->
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+        </p>
+        <!-- 文章页 meta -->
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" alt="loading">
+            <div class="container container-unloaded">
+                <main class="main index-page">
+            
+        <article class="index-post">
+            <a class="abstract-title" href="/2022/12/13/go-ddd/">
+                <span class="abstract-title-text">go-ddd</span>
+            </a>
+            <div class="abstract-content">
+                基于 internal 规划工程目录Go internal package design介绍了设计的原因
+
+Go encourages structuring a program as a collection of packages interacting using exported APIs. However, all packages can be imported. This creates a tension when implementing a library or command: it may grow large enough to structure as mul...
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2023/08/29">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2022/12/13</span>
+                </div>
+                <!-- tags -->
+                    <div class="abstract-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="DDD">DDD</a>
+</div>
+
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+            
+        <article class="index-post">
+            <a class="abstract-title" href="/2022/12/07/git-rebase/">
+                <span class="abstract-title-text">使用 `git pull --rebase`</span>
+            </a>
+            <div class="abstract-content">
+                git-rebase使用 git pull 的时候，要加上 --rebase，减少merge，保持 log 整洁
+参考git rebase
+
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2023/08/29">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2022/12/07</span>
+                </div>
+                <!-- tags -->
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+            
+        <article class="index-post">
+            <a class="abstract-title" href="/2022/12/03/opentelemetry-jaeger/">
+                <span class="abstract-title-text">opnetelemetry-jaeger</span>
+            </a>
+            <div class="abstract-content">
+                在调研中，持续更新本篇 …
+架构
+Tracing核心概念此处只介绍使用中会遇到的概念，具体细节请查阅文档
+API
+TracerProvider 提供访问 Tracer 的入口。作为一个池子放置和管理 Tracers
+
+Span Exporter 定义一系列接口，执行 telemetry data 的序列化与反序列化，以将数据提交到不同的 backend。
+
+
+应用
+Tracing根据其架构设计，所有的应用都可以实现为：
+
+定义 Resource
+创建 Provider
+设置全局 Provider (option)
+设置 Exporter (option)
+server 中使用 Traci...
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2023/08/29">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2022/12/03</span>
+                </div>
+                <!-- tags -->
+                    <div class="abstract-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="可观测性">可观测性</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="opentelemetry">opentelemetry</a>
+</div>
+
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+            
+        <article class="index-post">
+            <a class="abstract-title" href="/2022/06/09/ddd-thinking/">
+                <span class="abstract-title-text">ddd-thinking</span>
+            </a>
+            <div class="abstract-content">
+                DDD 关键概念Domain 中的概念Context一个Domain独占一个Context。在Context中完成下述的一系列逻辑。在应用DDD中，最难的一步是，划定Context。将不同Domain的边界准确的描述清楚，对于抽象能力、业务理解准确性与未来预期的判断能力要求极高。边界划定的不好，也将难以保障内聚与耦合的合理性。
+Aggregate、Entity、Value Object将三者放在一起，是因为三者是一个包含关系，并对上层提供引用。在这些model中，会提供独占的attribute以及对应的对attribute的访问方法。
+Service对于一些无法由一个model完成执行的...
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2022/06/13">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2022/06/09</span>
+                </div>
+                <!-- tags -->
+                    <div class="abstract-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="DDD">DDD</a>
+</div>
+
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+            
+        <article class="index-post">
+            <a class="abstract-title" href="/2022/05/23/mvc-and-ddd/">
+                <span class="abstract-title-text">mvc-and-ddd</span>
+            </a>
+            <div class="abstract-content">
+                MVC与DDD比较(2022.05.23)MVC与DDD其实并不是对立的。在MVC中，我们会在controller中执行一些校验逻辑，包含可能的鉴权、参数校验等。我们也会在view里面实现service，包含各种validator与serializer以及data transfer。
+DDD拆解并丰富了MVC中的M，将一些在V中执行的逻辑迁移到M中，由domain model执行model内的业务处理，同时将DTO从M中剥离出来放到infrastructure中，借由其他的设计模式如repository或者CQRS等进行处理。
+同时，DDD中依然会有一些业务操作无法在model中完成，这...
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2022/06/13">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2022/05/23</span>
+                </div>
+                <!-- tags -->
+                    <div class="abstract-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="DDD">DDD</a>
+</div>
+
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+            
+        <article class="index-post">
+            <a class="abstract-title" href="/2022/02/13/commit-format-and-auto-changelog/">
+                <span class="abstract-title-text">Git commit 规范</span>
+            </a>
+            <div class="abstract-content">
+                commit message format提交格式12345&lt;type&gt;(&lt;scope&gt;): &lt;subject&gt;&lt;BLANK LINE&gt;&lt;body&gt;&lt;BLANK LINE&gt;&lt;footer&gt;
+
+type
+build：对构建系统或者外部依赖项进行了修改
+ci：对CI配置文件或脚本进行了修改
+feature：增加新的特征，一般指的是大的变更
+func： 增加新的功能，一般指小的功能
+fix：修复bug
+impr: improvement，小的代码设计改进
+conf: 仅配置变化，Spring配置、propert...
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2023/08/29">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2022/02/13</span>
+                </div>
+                <!-- tags -->
+                    <div class="abstract-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="thinking">thinking</a>
+</div>
+
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+            
+        <article class="index-post">
+            <a class="abstract-title" href="/2022/02/03/tight-lipped/">
+                <span class="abstract-title-text">思考与交流</span>
+            </a>
+            <div class="abstract-content">
+                题记想写这篇文章，是因为在某平台看某用户的一篇文章，想了解一下作者的背景，进而看到其在一些回答中与评论者争吵的情况。其实技术水平高低本身是受很多情况影响的，评价一个人也不是一维的。事实上，没有任何标准可以真正的评价一个人。技术讨论和技术辩论是受欢迎的，因为大家技术水平不在一个等级而无法正常的讨论进而主动拒绝讨论本身也是可以接受的。黑一门技术，则显得狭隘了。
+为了调解自己的思想，再一次阅读了《黑客与画家》“守口如瓶”这一章，并分享一些感悟。
+自由的思考自由的思考，强调的是，不要轻易的被各种论断影响。我们需要去思考一个论点的论证逻辑，了解其论据是否足够充分。信息时代，我们每天都会从各种渠道接...
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2022/06/13">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2022/02/03</span>
+                </div>
+                <!-- tags -->
+                    <div class="abstract-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="thinking">thinking</a>
+</div>
+
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+            
+        <article class="index-post">
+            <a class="abstract-title" href="/2022/01/30/knowledge-breath-and-depth/">
+                <span class="abstract-title-text">知识掌握的广度与深度</span>
+            </a>
+            <div class="abstract-content">
+                什么是广度与深度想要想做一名架构师的同学，大都会听到一句话：“一名架构师要有技术的广度与深度”。很多同学在跟hr交流的时候，或者跟领导、行业大佬交流的时候，也经常会听到这样的建议：“要做一名T&#x2F;π型人才”。
+那么，广度要怎么理解，深度又要怎么理解呢。我们掌握了一些知识或者信息，需要达到一个什么程度，算是覆盖了广度，或是达到了深度。
+我个人的感受是，当我们对知识、信息达到了，
+
+能够理解其中的原理与逻辑，同时能够自己进行复述，则算是达到了广度的覆盖
+能够机遇已有的信息，思考其深层次的逻辑，举一反三的实践或思考总结，并能达到一定效果，则算是深度的掌握。
+
+我们每天会浏览五花八门的信...
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2022/06/13">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2022/01/30</span>
+                </div>
+                <!-- tags -->
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+            
+        <article class="index-post">
+            <a class="abstract-title" href="/2021/12/16/software-design-doc/">
+                <span class="abstract-title-text">如何撰写技术设计文档</span>
+            </a>
+            <div class="abstract-content">
+                前言架构设计与编码，是为了解决问题，是一套解决方案。当我们在设计架构和代码开发的时候，有一份相对应的设计文档，可以有效且快速的让团队更好的理解在解决的问题，以及方案的设计思路。
+为什么要写设计文档
+要解决的问题是什么需要用文档先介绍清楚
+有些问题使用一份设计文档描述思路已经足够
+解决方案的选择（decision）是权衡的结果，我们不仅需要了解结果，也需要知道结果产生的原因，即权衡的过程。只有记录下权衡的过程，在后续偿还技术债的时候，才可以更方便的理解产生的原因或初衷，并有更充分的执行架构演进的依据
+让团队成员对问题和设计有一个共识
+
+设计文档核心内容基于以上原因，我们也可以推论出，设计文...
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2022/06/13">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/12/16</span>
+                </div>
+                <!-- tags -->
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+            
+        <article class="index-post">
+            <a class="abstract-title" href="/2021/11/21/breaking-creation-product/">
+                <span class="abstract-title-text">突破式创新的产品设计</span>
+            </a>
+            <div class="abstract-content">
+                10倍的产品改进《从0到1》介绍了一款产品的推出，如果只是2-3倍的改进，可能可以在一开始吸引用户去使用。如果产品所属的市场价值极大，2-3倍的改进会引来一大群竞争者轻易的介入，这将使得产品在后续的迭代中疲于与其他竞争者斡旋，而丢失了让产品变得更好的目标。如果产品的市场价值有限，那么产品能带来的收益也有限，投入的成本也将有限，并很难再继续做大。事实上，有相当一部分产品的推出，比原来的产品带来的改进少于其带来的麻烦。这样的产品，基本很难吸引到用户。俞军提出的产品价值公式可以很好诠释这一点，即新产品价值 &gt; 旧产品价值 + 迁移成本，这样的新产品才有可能成功。
+一款产品想要在推出的时候...
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2022/06/13">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/11/21</span>
+                </div>
+                <!-- tags -->
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+    <!-- paginator  -->
+        <nav class="page-nav">
+            <a class="extend prev" rel="prev" href="/archives/">&lt; PREV</a><a class="page-number" href="/archives/">1</a><span class="page-number current">2</span><a class="page-number" href="/archives/page/3/">3</a><a class="extend next" rel="next" href="/archives/page/3/">NEXT &gt;</a>
+        </nav>
+</main>
+
+                <!-- profile -->
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+        <div class="social">
+                            <a href="mailto:zhangn661@gmail.com" class="iconfont-archer email" title="email" ></a>
+                <a href="//github.com/Edison-A-N" class="iconfont-archer github" target="_blank" title="github"></a>
+
+        </div>
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    <!-- 不蒜子  -->
+        <div class="busuanzi-container">
+                <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+        </div>
+</footer>
+
+        </div>
+        <!-- toc -->
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 29
+        </div>
+        <!-- search  -->
+    </div>
+    <div class="post-archive">
+            <div class="archive-year"> 2026 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/17</span>
+            <a class="archive-post-title" href="/2026/01/17/trading-drawdown-control-guide/">交易回撤控制指南：认知、守心与仓位管理</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2025 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2025/11/10/mcp-recent-sharing/">MCP 近期内容分享：从 Resources、Tools 到 Prompts 的实践探索</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span>
+            <a class="archive-post-title" href="/2025/10/28/args_doc_format_comparison/">Tool Args Documentation Format Comparison Analysis</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span>
+            <a class="archive-post-title" href="/2025/10/27/asgi_lifespan_complete_guide/">ASGI Lifespan 完整指南</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/mcp-output-schema/">MCP Output Schema：数据验证与结构化输出的技术实现</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/stop-converting-rest-api-to-mcp/">停止转换REST API到MCP：设计AI原生接口的正确方式</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span>
+            <a class="archive-post-title" href="/2025/09/20/llm-consistency-challenges-large-data-processing/">大型语言模型在处理大批量数据时的一致性挑战与解决方案</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/01</span>
+            <a class="archive-post-title" href="/2024/02/01/nextjs-pagination/">nextjs-pagination</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span>
+            <a class="archive-post-title" href="/2023/09/20/smart-contract-demo/">smart-contract-demo</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/30</span>
+            <a class="archive-post-title" href="/2023/08/30/multi-tenant/">多租户应用与架构设计关注点</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2022 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span>
+            <a class="archive-post-title" href="/2022/12/13/go-ddd/">go-ddd</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/07</span>
+            <a class="archive-post-title" href="/2022/12/07/git-rebase/">使用 `git pull --rebase`</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span>
+            <a class="archive-post-title" href="/2022/12/03/opentelemetry-jaeger/">opnetelemetry-jaeger</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/09</span>
+            <a class="archive-post-title" href="/2022/06/09/ddd-thinking/">ddd-thinking</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/23</span>
+            <a class="archive-post-title" href="/2022/05/23/mvc-and-ddd/">mvc-and-ddd</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span>
+            <a class="archive-post-title" href="/2022/02/13/commit-format-and-auto-changelog/">Git commit 规范</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/tight-lipped/">思考与交流</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/30</span>
+            <a class="archive-post-title" href="/2022/01/30/knowledge-breath-and-depth/">知识掌握的广度与深度</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2021 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/16</span>
+            <a class="archive-post-title" href="/2021/12/16/software-design-doc/">如何撰写技术设计文档</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/21</span>
+            <a class="archive-post-title" href="/2021/11/21/breaking-creation-product/">突破式创新的产品设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span>
+            <a class="archive-post-title" href="/2021/07/15/parallel-and-asynchronous-python/">DRF Exception Handle</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/17</span>
+            <a class="archive-post-title" href="/2021/06/17/DRF-Exception/">DRF Exception Handle</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span>
+            <a class="archive-post-title" href="/2021/06/15/Django-With-DDD/">Django With DDD</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/09</span>
+            <a class="archive-post-title" href="/2021/05/09/Agile-Design/">敏捷软件开发：设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span>
+            <a class="archive-post-title" href="/2021/03/30/DRF-Bussiness-Logic/">Django Restful Framework Business Logic</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2021/03/21/graphql-and-restful/">Graphql and Restful API</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/08</span>
+            <a class="archive-post-title" href="/2021/03/08/grpc-hello-world/">grpc hello world</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/03</span>
+            <a class="archive-post-title" href="/2021/01/03/New-Coding-Language/">我如何学一门新的编程语言</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2020 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/08</span>
+            <a class="archive-post-title" href="/2020/11/08/Agile-Dev/">敏捷开发辅助新项目验证与落地</a>
+        </li>
+            </ul>
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+            <span class="sidebar-tag-name" data-tags="agile">
+                <span class="iconfont-archer">&#xe606;</span>
+                agile
+            </span>
+            <span class="sidebar-tag-name" data-tags="LLM">
+                <span class="iconfont-archer">&#xe606;</span>
+                LLM
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Format">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Format
+            </span>
+            <span class="sidebar-tag-name" data-tags="ASGI, Python, FastAPI">
+                <span class="iconfont-archer">&#xe606;</span>
+                ASGI, Python, FastAPI
+            </span>
+            <span class="sidebar-tag-name" data-tags="thinking">
+                <span class="iconfont-archer">&#xe606;</span>
+                thinking
+            </span>
+            <span class="sidebar-tag-name" data-tags="DDD">
+                <span class="iconfont-archer">&#xe606;</span>
+                DDD
+            </span>
+            <span class="sidebar-tag-name" data-tags="MCP">
+                <span class="iconfont-archer">&#xe606;</span>
+                MCP
+            </span>
+            <span class="sidebar-tag-name" data-tags="multi-tenant">
+                <span class="iconfont-archer">&#xe606;</span>
+                multi-tenant
+            </span>
+            <span class="sidebar-tag-name" data-tags="可观测性">
+                <span class="iconfont-archer">&#xe606;</span>
+                可观测性
+            </span>
+            <span class="sidebar-tag-name" data-tags="opentelemetry">
+                <span class="iconfont-archer">&#xe606;</span>
+                opentelemetry
+            </span>
+            <span class="sidebar-tag-name" data-tags="API Design">
+                <span class="iconfont-archer">&#xe606;</span>
+                API Design
+            </span>
+            <span class="sidebar-tag-name" data-tags="交易">
+                <span class="iconfont-archer">&#xe606;</span>
+                交易
+            </span>
+            <span class="sidebar-tag-name" data-tags="投资">
+                <span class="iconfont-archer">&#xe606;</span>
+                投资
+            </span>
+            <span class="sidebar-tag-name" data-tags="风险管理">
+                <span class="iconfont-archer">&#xe606;</span>
+                风险管理
+            </span>
+            <span class="sidebar-tag-name" data-tags="回撤控制">
+                <span class="iconfont-archer">&#xe606;</span>
+                回撤控制
+            </span>
+            <span class="sidebar-tag-name" data-tags="仓位管理">
+                <span class="iconfont-archer">&#xe606;</span>
+                仓位管理
+            </span>
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+        <span class="sidebar-category-name" data-categories="AI Agent">
+            <span class="iconfont-archer">&#xe60a;</span>
+            AI Agent
+        </span>
+        <span class="sidebar-category-name" data-categories="交易策略">
+            <span class="iconfont-archer">&#xe60a;</span>
+            交易策略
+        </span>
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "https://edison-a-n.github.io",
+        root: siteMetaRoot,
+        author: "Edison"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+        <!-- main func -->
+        <script src="/scripts/main.js"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.umd.js" onload="window.Fancybox.bind('[data-fancybox]')" defer></script>
+        <!-- algolia -->
+        <!-- busuanzi -->
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        <!-- async load share.js -->
+        <!-- mermaid -->
+    </body>
+</html>
