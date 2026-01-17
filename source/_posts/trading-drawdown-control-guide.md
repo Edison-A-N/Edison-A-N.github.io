@@ -1,11 +1,7 @@
 ---
 title: 交易回撤控制指南：认知、守心与仓位管理
 tags:
-  - 交易
-  - 投资
-  - 风险管理
-  - 回撤控制
-  - 仓位管理
+  - Trading
 categories:
   - 交易策略
 excerpt: >-
