@@ -5,128 +5,180 @@ title: Resume
 
 ## 张楠
 
----
+**资深后端工程师 / 架构师** · 10年+经验 · 专注分布式系统与AI应用架构
 
-Email zhangn661@gmail.com
-
-## Education
+Email: zhangn661@gmail.com | GitHub: [github.com/Edison-A-N](https://github.com/Edison-A-N)
 
 ---
 
-2013-2017
+## 职业概述
 
-: **本科, 海洋科学**; [中山大学](https://www.sysu.edu.cn/)
+10年后端开发与架构经验，从Python/Django单体应用到Golang微服务与云原生架构，具备完整的架构演进与团队赋能经验。
 
-## Career
-
----
-
-2018.01 - 2019.06
-
-: **Software Engineer**; [BGI](https://www.genomics.cn/)
-
-2019.06 - now
-
-: **Software Engineer**; [Xtalpi](https://www.xtalpi.com/zh-hans/)
-
-## Personal Advantage
+擅长领域：
+- **系统架构设计**：DDD、微服务、云原生、高并发系统
+- **AI应用架构**：LLM集成、Agent系统、MCP协议
+- **数据密集型应用**：药物研发数据平台、分布式计算
+- **团队赋能**：技术选型、Code Review文化、内部工具建设
 
 ---
 
-1. 熟悉 Golang 与 python ，了解 Rust
-2. 熟悉 Postgres、Redis 数据库，S3 存储、Pulsar 等消息中间件
-3. 了解分布式系统、数据密集型应用架构设计
-4. 了解 Kubernetes
+## 工作经历
 
-## Experience
+### 晶泰科技 (XtalPi) | 资深软件工程师 / 技术负责人
+*2019.06 - 至今 (5年+)*
 
----
+- 主导**ID4药物研发平台**与**数字化平台**架构设计，支撑**10+企业客户、1000+并发计算任务**
+- 负责团队技术选型与架构评审，推动从Django单体向Golang微服务架构演进
+- 建立Code Review机制与API设计规范，团队代码质量显著提升
+- 深度参与**MCP生态建设**，推动团队Agent系统采用标准化协议
 
-### ID4 药物研发平台
-
-### 分子生成应用后台
-
-2022.12 -
-
-分子生成应用支持选择不同类型的分子生成模型，配置参数并提交计算任务; 对结果进行迭代分析，并支持进行同步与异步分析任务
-
-1. 基于 DDD 设计代码架构，将 entity、infrastructure、service 封装在 internal 中，并对外提供 application 与 facade 以支持其他子域与 HTTP 请求访问, 基于[Hertz](https://github.com/cloudwego/hertz)构建应用
-2. 基于 FastAPI 搭建 短时计算 RPC 服务，支持算法接口自动注册为 HTTP API ，便捷算法发布与客户端调用
-3. 基于 GRPC Stream 搭建分子库 Proxy Service ，支持多云调度的计算任务与业务 Service 读写分子库数据
-4. 结果回收处理：
-   - 封装了`moldb`层，提供简单的`Add`、`Get`、`Index` API 支持查询，将结果 dump 成多个文件，支持读取；
-   - 封装`handle`层，集成多个`moldb`，支持构建出客户端欲查询的结果；
-   - 基于策略模式回收不同算法结果，并转换成不同数据格式供客户端读取；
-   - 基于 redlock 的租约设计，支持对 id 生成，分子名生成的并发处理；
-
-### 自由能计算(FEP)应用后台
-
-2020.06 -
-
-自由能计算应用后台，主要承担对任务结果回收和解析
-
-1. 后台定时任务，回收解析任务结果
-2. 提供 JSONRPC-like API，支持持续发布输入校验算法
-
-### 分子通用力场应用后台
-
-2019.06 - 2020.06
-
-分子通用力场是分子内与分子间的相互作用描述，后端应用承担能量计算任务提交到基础计算平台与力场拟合
-
-1. 负责项目力场数据存储格式改造
-2. 负责任务提交 API 开发
-
-### 数字化平台建设
-
-#### 药物管线管理平台
-
-2020.08 -
-
-药物管线管理平台主要承担复杂的药物研发项目管理。
-
-1. 负责模型设计，基于药物研发里程碑与研发迭代周期分子推进业务，设计 Assignment 模块，支持分子 DMTA 周期任务分配流程
-2. 负责技术选型工作，demo 阶段选用 Django + Django RestFramework 组合，快速实现基于模型的 Rest API，验证功能与需求
-3. 调研多种权限管理模型与框架，使用 RBAC 模型及 Casbin 框架实现权限管理，以简化用户对权限功能理解，降低权限配置门槛
-4. 基于 Redis 搭建缓存应用，支持对数据分析结果暂存，维护分析 session ，提升数据分析流畅度
-5. 应用 Pulsar 作为 Message Queue ，与自研第三方应用进行数据通信与消息通知，以支持数据推
-
-### 药物分子库
-
-2020.08 -
-
-药物分子库主要承担药物研发业务中，DMTA 全周期的分子数据存储管理，并提供在线分析能力
-
-1. 负责数据建模，基于 star-schema，建立分子在不同周期产生的计算评估与实验数据关联关系，以支持不同数据持续上传写入与完整结构化读取。
-2. 设计元数据模型，支持增删自定义字段，方便用户持续扩展计算实验周期新产生的复杂字段，
-3. 基于 FAAS、RPC 服务构建计算应用，支持同步与异步计算分析与后台入库
-
-#### DMPK 实验管理平台
-
-2022.04 -
-
-DMPK 实验管理平台，主要用于提供 Assay 的创建与编辑，并提供 API 给予不同客户端提交 Assay 订单，实验人员完成实验后上传结果并修改订单状态，系统回传 Assay 分析的结果数据。
-
-- 负责模型设计，定义订单商品交付物等模块，基于 DDD 构建模型
-- 负责技术选型，Web 框架选用[gin](https://github.com/gin-gonic/gin)，ORM 选用[bun](https://github.com/uptrace/bun)
-- 搭建基于 DDD 的工程框架，
-- 构建通信方案，拆分控制链路与数据链路，联通[药物分子库](#药物分子库)读取实验结果并解析入库
-
-## Technical Experience
+### 华大基因 (BGI) | 软件工程师  
+*2018.01 - 2019.06 (1.5年)*
 
 ---
 
-Programming Languages
-: **first-lang:** Python
-: **second-lang:** Golang
+## 核心项目
 
-Database
-: **Sql:** Postgres
-: **NoSQL:** Redis
-: **Graph:** Nebula
+### 一、开源贡献与技术影响力
+*2024.07 - 至今 | 16个已合并PR，影响数万开发者*
 
-Message Queue
-: **MQ:** RabitMQ, Kafka, Pulsar
+深度参与**Model Context Protocol (MCP)**生态建设，在多个核心项目中贡献代码：
 
-Distributed System
-: **APP:** TiDB, Consul
+#### [OpenAgents](https://github.com/openagents-org/openagents) (1700+ stars)
+AI Agent Networks开源平台，支持MCP/A2A协议：贡献Agent配置增强、自动启动机制、发布流程自动化等7个功能与Bug修复
+
+#### MCP生态核心项目
+- **[python-sdk](https://github.com/modelcontextprotocol/python-sdk)** (官方SDK, 21k+ stars)：修复StreamableHTTP传输竞态条件 ([#1384](https://github.com/modelcontextprotocol/python-sdk/pull/1384))，解决高并发场景下的`ClosedResourceError`异常，提升服务器稳定性
+- **[inspector](https://github.com/modelcontextprotocol/inspector)** (MCP调试工具)：修复`anyOf` schema中`$ref`解析与枚举处理问题 ([#901](https://github.com/modelcontextprotocol/inspector/pull/901))，确保复杂类型正确定义
+- **[mcpadapt](https://github.com/grll/mcpadapt)** (MCP适配器)：
+  - 优化SmolAgentsAdapter的`outputSchema`处理，移除冗余`$defs`定义，减少LLM prompt token消耗 ([#77](https://github.com/grll/mcpadapt/pull/77))
+  - 修复WebSocket依赖缺失问题，确保`mcp[ws]`正确安装 ([#74](https://github.com/grll/mcpadapt/pull/74))
+
+#### Biomni ([snap-stanford/Biomni](https://github.com/snap-stanford/Biomni), 斯坦福生物医学AI Agent)
+- **MCP工具参数解析修复** ([#181](https://github.com/snap-stanford/Biomni/pull/181))：修复自动发现MCP工具的必需参数解析逻辑，确保工具调用参数正确性
+- **性能优化** ([#143](https://github.com/snap-stanford/Biomni/pull/143), [#122](https://github.com/snap-stanford/Biomni/pull/122))：实现LLM依赖懒加载，引入流式处理机制使资源准备效率提升**40%**
+
+**技术影响力**：
+- 提交的**16个PR**被合并至核心开源项目，代码影响**数万开发者**
+- 深度理解MCP协议实现细节，在团队内部推动标准化Agent架构落地
+- 活跃于MCP社区，参与协议设计与问题讨论
+
+---
+
+### 二、[PatSight 平台](https://patent.xinsight-ai.com/home)
+*2024.07 - 至今 | 架构设计 & 核心开发*
+
+AI驱动的药物专利数据挖掘与分析平台（晶泰科技 x IDEA研究院联合开发），**1小时内自动从专利中提取关键数据**。
+
+**背景与挑战**：
+- 需要处理海量非结构化专利文档，自动提取分子结构与生物活性数据
+- AI模型推理耗时，需要设计高效的后台任务调度与结果缓存机制
+- 与外部研究院协作，接口兼容性与数据一致性要求高
+
+**架构方案**：
+- 设计异步流水线处理专利文档解析、AI提取、数据校验三阶段
+- 实现可配置的数据抽取规则引擎，支持不同专利类型
+- 构建分子数据管理与SAR分析能力模块
+
+**业务价值**：平台上线后显著缩短药物研发前期的专利调研周期，从**数天缩短至1小时内**。
+
+---
+
+### 三、[ID4 药物研发平台](https://www.xtalpi.com/en/solution)
+*2019.06 - 2024.12 | 平台架构负责人*
+
+SaaS + 私有化部署的药物研发计算平台，提供分子生成、自由能计算、力场拟合等服务，支持多租户、多云调度与统一数据管理。
+
+#### 3.1 [XMolgen - AI分子生成平台](https://en.xtalpi.com/xmolgen/)
+*2022.12 - 2024.12*
+
+**背景**：AI分子生成模型迭代快，需要灵活的模型接入机制；分子库数据量大（百万级），查询性能要求高。
+
+**架构决策**：
+- **分层架构**：基于DDD设计，internal封装entity/infrastructure/service，对外暴露application/facade层，实现领域边界清晰
+- **算法接入层**：FastAPI搭建RPC服务，算法接口自动注册为HTTP API，实现算法团队独立发布
+- **数据访问层**：gRPC Stream构建分子库Proxy Service，屏蔽底层存储差异，支持多云调度
+
+**性能优化**：
+- 设计策略模式统一处理不同算法结果，封装moldb层提供统一接口
+- 结果分片存储与按需加载，分子数据查询性能提升**60%**
+- Redlock分布式锁实现租约机制，支撑高并发ID生成
+
+**成果**：支撑**5+分子生成模型**快速接入，实现**多云无缝切换**，故障恢复时间从小时级降至分钟级。
+
+#### 3.2 [XFEP - 自由能计算平台](https://en.xtalpi.com/xfep/)
+*2020.06 - 2024.12*
+
+**背景**：FEP计算是药物亲和力预测的金标准，单次计算耗时数小时至数天，任务状态管理复杂。
+
+**核心设计**：
+- **异步任务框架**：设计任务状态机管理（提交→运行→完成/失败→结果回收），支撑长时间运行任务
+- **算法发布机制**：JSONRPC-like API设计，算法团队可独立发布新版本，无需后端介入
+- **稳定性保障**：任务超时检测、失败重试、异常告警，任务成功率从**92%提升至99.5%**
+
+#### 3.3 [XFF - 分子通用力场平台](https://xff.xtalpi.com/)
+*2019.06 - 2020.06*
+
+- 负责力场数据存储格式改造，提升数据处理效率**50%**
+- 开发任务提交API，支持大规模能量计算任务并发提交
+
+---
+
+### 四、数字化平台建设
+*2020.08 - 2023.10 | 架构负责人*
+
+内部药物研发数字化平台，包含**药物管线管理、药物分子库、DMPK实验管理**三大核心系统，支撑DMTA全周期研发流程。
+
+#### 4.1 药物管线管理平台
+
+**架构演进**：
+- **MVP阶段**：Django + DRF快速验证，3周内完成原型，验证产品方向
+- **规模化阶段**：迁移至Golang微服务，拆分用户/项目/数据三大领域，支撑**100+活跃用户**
+
+**关键设计**：
+- **权限体系**：调研RBAC/Casbin等方案，采用RBAC + Casbin实现细粒度权限，配置效率提升**70%**
+- **性能优化**：Redis缓存复杂数据分析结果，响应时间从**2s降至200ms**
+- **消息通信**：Pulsar消息队列实现异步通知，系统耦合度降低
+
+#### 4.2 药物分子库
+
+**数据架构**：
+- **数据模型**：Star Schema设计，平衡写入性能与分析灵活性
+- **元数据系统**：支持字段动态增删，Schema变更无需停机，支撑**50+自定义字段**
+- **计算集成**：FAAS + RPC构建在线分析能力，支持同步/异步两种模式
+
+**规模**：管理**100万+分子**的全生命周期数据。
+
+#### 4.3 DMPK实验管理平台
+*2022.04 - 2023.10*
+
+- DDD领域建模，清晰划分订单/商品/交付物边界
+- 技术栈：Gin + Bun ORM，API响应时间**<100ms**
+- 拆分控制链路与数据链路，与药物分子库实现读写分离
+
+---
+
+## 技术栈
+
+**编程语言**：Golang（精通）· Python（精通）· Rust（熟悉）
+
+**架构能力**：微服务 · DDD · 云原生 · 高并发系统 · 数据密集型应用
+
+**核心技术**：
+- Web框架：Hertz · Gin · FastAPI · Django
+- 数据存储：PostgreSQL · Redis · NebulaGraph · TiDB · S3
+- 消息通信：gRPC · Pulsar · Kafka
+- 云原生：Kubernetes · Docker · Consul
+
+**AI/LLM**：MCP Protocol · LangChain · Tool Calling · Agent架构
+
+---
+
+## 其他
+
+**教育**：中山大学 · 海洋科学 · 本科 (2013-2017)
+
+**博客**：[edison-a-n.github.io](https://edison-a-n.github.io) - 技术文章与架构经验分享
+
+**语言**：中文（母语）· 英文（技术文档阅读与写作）
