@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Allow: /resume/
+Allow: /about/
+Allow: /archives/
+Allow: /categories/
+Allow: /tags/
+
+Sitemap: https://edison-a-n.github.io/sitemap.xml

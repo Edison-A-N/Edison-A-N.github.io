@@ -53,6 +53,8 @@ profile_icons:
   search: 'fas fa-search'
 # Additional profile links
 profile_links:
+  - name: RESUME
+    url: /resume/
   # - name: GOOGLE
   #   url: //www.google.com
   #   icon: 'fab fa-google'

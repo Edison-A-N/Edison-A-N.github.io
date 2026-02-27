@@ -134,3 +134,11 @@ jsonContent:
     excerpt: false
     categories: true
     tags: true
+
+# Sitemap Configuration
+sitemap:
+  path: sitemap.xml
+  template: ./sitemap_template.xml
+  rel: false
+  tags: true
+  categories: true
