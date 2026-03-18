@@ -13,7 +13,7 @@
     <meta name="description" content="Thinking, writing and sharing&#39;&#39;">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Edison">
-<meta property="og:url" content="https://edison-a-n.github.io/tags/multi-tenant/index.html">
+<meta property="og:url" content="https://edison-a-n.github.io/page/4/index.html">
 <meta property="og:site_name" content="Edison">
 <meta property="og:description" content="Thinking, writing and sharing&#39;&#39;">
 <meta property="og:locale" content="en_US">
@@ -228,8 +228,9 @@
             document.write('<script src="/lib/jquery.min.js" />')
         }
     </script>
+        <body class="home-body">
         <!-- header -->
-        <header class="header header-mobile">
+        <header class="header header-mobile index-header">
     <!-- top read progress line -->
     <div class="header-element">
         <div class="read-progress"></div>
@@ -263,7 +264,7 @@
 </header>
 
         <!-- fixed footer -->
-        <footer class="footer-fixed">
+        <footer class="footer-fixed index-footer-fixed">
     <!-- donate button -->
 
     <!-- back to top button -->
@@ -274,18 +275,24 @@
 
         <!-- wrapper -->
         <div class="wrapper">
-            <div class="site-intro" style="">
+            <div class="site-intro" style="    height:50vh;
+">
     <!-- 主页  -->
+    <!-- 文章页  -->
     <div class="site-intro-placeholder"></div>
-    <div class="site-intro-img" style="background-image: url(/)"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/index-bg.jpg)"></div>
     <div class="site-intro-meta">
         <!-- 标题  -->
         <h1 class="intro-title">
             <!-- 主页  -->
+                Edison's Studio.
+            <!-- 文章页  -->
         </h1>
         <!-- 副标题 -->
         <p class="intro-subtitle">
             <!-- 主页副标题  -->
+                    Thinking, writing and sharing
+            <!-- 文章页  -->
         </p>
         <!-- 文章页 meta -->
     </div>
@@ -419,39 +426,53 @@
                 <main class="main index-page">
             
         <article class="index-post">
-            <a class="abstract-title" href="/2023/08/30/multi-tenant/">
-                <span class="abstract-title-text">多租户应用与架构设计关注点</span>
+            <a class="abstract-title" href="/2020/11/08/Agile-Dev/">
+                <span class="abstract-title-text">敏捷开发辅助新项目验证与落地</span>
             </a>
             <div class="abstract-content">
-                
-本篇是关于多租户应用与架构设计关注点的一些自己的思考。本篇强调多租户本质是支持共享与隔离。同时提到应用架构可能的形式以及多租户集成的设计。核心的关注点强调了对业务未来长期的判断决定了隔离粒度，最终决定了业务应用的产品架构与技术架构设计。 本篇更多是提供一些启发，供商业规划、业务负责人、技术解决方案提供方在做多租户集成时，进行参考。本篇不作为多租户服务提供者的设计建议。
-
-什么是多租户多租户是一种实现资源共享与隔离的架构。
-一、共享用户不可直接触达的资源必然是共享。
-
-共享是为降本增效，最重要还是为了增效。
-计算资源有效运行时间
-存储空间有效利用
-降低应用维护、多集群维护、观测系统搭建、...
+                精益创业中的反馈循环在《精益创业》这本书中提到的一个反馈循环为开发-测量-认知。即，使用最小的力量开发一个产品，将其投入到小范围的市场中进行假设验证，最后收集反馈进行认知更新，并迭代到开发中。在这个循环中，如果一切顺利的话，我们会将产品逐渐优化。如果测量验证出现非期望的结果，我们可以及时终止投入，减少沉没成本。
+何为MVPMVP，英文为：Minimum Viable Product。即最小有价值（可用）产品。许多人将关注点放在可用，却忽视了验证可用。部分产品经理在设计产品及进行排期的时候，是按产品的功能堆迭进行排期的。即一期包含了什么功能，二期包含了什么功能。却从来没有去想一期验证了用户...
             </div>
             <!-- read more -->
             <div class="abstract-post-meta">
                 <!-- date -->
                 <div class="abstract-date" title="Last updated: 2026/03/14">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2023/08/30</span>
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/11/08</span>
                 </div>
                 <!-- tags -->
-                    <div class="abstract-tags" >
-        <a class="post-tag" href="javascript:void(0);" data-tags="multi-tenant">multi-tenant</a>
-</div>
-
             </div>
         </article>
         <div class="index-post-divider"></div>
     <!-- paginator  -->
+        <nav class="page-nav">
+            <a class="extend prev" rel="prev" href="/page/3/">&lt; PREV</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><span class="page-number current">4</span>
+        </nav>
 </main>
 
                 <!-- profile -->
+                    <div class="profile">
+    <img class="profile-avatar" alt="avatar" src="/avatar/avatar.jpg" >
+    <div class="profile-name">Edison</div>
+        <div class="profile-signature">
+            Romantic
+        </div>
+        <div class="profile-social">
+                            <a href="mailto:zhangn661@gmail.com" class="iconfont-archer email" title="email" ></a>
+                <a href="//github.com/Edison-A-N" class="iconfont-archer github" target="_blank" title="github"></a>
+
+        </div>
+        <div class="profile-link-item">
+            <a href="/about" class="about-me">
+                ABOUT ME
+            </a>
+        </div>
+            <div class="profile-link-item">
+                <a href="/resume/" class="profile-link-RESUME">
+                    RESUME
+                </a>
+            </div>
+</div>
+
             </div>
             <footer class="footer footer-unloaded">
     <!-- social  -->
