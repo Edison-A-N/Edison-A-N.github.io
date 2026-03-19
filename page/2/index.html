@@ -426,6 +426,34 @@
                 <main class="main index-page">
             
         <article class="index-post">
+            <a class="abstract-title" href="/2024/02/01/nextjs-pagination/">
+                <span class="abstract-title-text">nextjs-pagination</span>
+            </a>
+            <div class="abstract-content">
+                环境123node: v20.11.0npm: 10.2.4next: 14.1.0
+
+初始化应用1npx create-next-app
+
+客户端渲染
+客户端渲染要求自身及子组件都是客户端渲染，即都需要上声明 &#39;use client&#39;
+state 触发整个 DOM 重新渲染，所以使用必须是客户端渲染
+客户端重新渲染，页面内容也要更新，所以描述页面的 DOM 也被当作客户端渲染组件，也需要声明 &#39;use client&#39;; 所以该组件不能以 children 组件传入。
+
+理解了客户端渲染的方式，就可以很容易的实现分页了。
+实现123456789101112...
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2026/03/14">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2024/02/01</span>
+                </div>
+                <!-- tags -->
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+            
+        <article class="index-post">
             <a class="abstract-title" href="/2023/09/20/smart-contract-demo/">
                 <span class="abstract-title-text">smart-contract-demo</span>
             </a>
@@ -661,31 +689,6 @@ conf: 仅配置变化，Spring配置、propert...
             </div>
         </article>
         <div class="index-post-divider"></div>
-            
-        <article class="index-post">
-            <a class="abstract-title" href="/2022/01/30/knowledge-breath-and-depth/">
-                <span class="abstract-title-text">知识掌握的广度与深度</span>
-            </a>
-            <div class="abstract-content">
-                什么是广度与深度想要想做一名架构师的同学，大都会听到一句话：“一名架构师要有技术的广度与深度”。很多同学在跟hr交流的时候，或者跟领导、行业大佬交流的时候，也经常会听到这样的建议：“要做一名T&#x2F;π型人才”。
-那么，广度要怎么理解，深度又要怎么理解呢。我们掌握了一些知识或者信息，需要达到一个什么程度，算是覆盖了广度，或是达到了深度。
-我个人的感受是，当我们对知识、信息达到了，
-
-能够理解其中的原理与逻辑，同时能够自己进行复述，则算是达到了广度的覆盖
-能够机遇已有的信息，思考其深层次的逻辑，举一反三的实践或思考总结，并能达到一定效果，则算是深度的掌握。
-
-我们每天会浏览五花八门的信...
-            </div>
-            <!-- read more -->
-            <div class="abstract-post-meta">
-                <!-- date -->
-                <div class="abstract-date" title="Last updated: 2026/03/14">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2022/01/30</span>
-                </div>
-                <!-- tags -->
-            </div>
-        </article>
-        <div class="index-post-divider"></div>
     <!-- paginator  -->
         <nav class="page-nav">
             <a class="extend prev" rel="prev" href="/">&lt; PREV</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/3/">NEXT &gt;</a>
@@ -778,9 +781,10 @@ conf: 仅配置变化，Spring配置、propert...
         
         
         
+        
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 31
+        Total : 32
         </div>
         <!-- search  -->
     </div>
@@ -788,12 +792,12 @@ conf: 仅配置变化，Spring配置、propert...
             <div class="archive-year"> 2026 </div>
             <ul class="year-list">
         <li class="archive-post-item">
-            <span class="archive-post-date">03/14</span>
-            <a class="archive-post-title" href="/2026/03/14/harness-engineering-practical-guide/">Harness Engineering 实践指南：来自 OpenAI、Stripe、Anthropic 等团队的一线经验</a>
+            <span class="archive-post-date">03/16</span>
+            <a class="archive-post-title" href="/2026/03/16/agent-loop-study/">Agent Loop 技术调研报告</a>
         </li>
         <li class="archive-post-item">
             <span class="archive-post-date">03/14</span>
-            <a class="archive-post-title" href="/2026/03/14/agent-loop-study/">Agent Loop 技术调研报告</a>
+            <a class="archive-post-title" href="/2026/03/14/harness-engineering-practical-guide/">Harness Engineering 实践指南：来自 OpenAI、Stripe、Anthropic 等团队的一线经验</a>
         </li>
         <li class="archive-post-item">
             <span class="archive-post-date">01/17</span>
@@ -802,6 +806,10 @@ conf: 仅配置变化，Spring配置、propert...
                 </ul>
             <div class="archive-year"> 2025 </div>
             <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/28</span>
+            <a class="archive-post-title" href="/2025/12/28/code-execution-sandbox-mcp/">LLM-Driven Agent Architecture with Sandbox and MCP Integration</a>
+        </li>
         <li class="archive-post-item">
             <span class="archive-post-date">11/10</span>
             <a class="archive-post-title" href="/2025/11/10/mcp-recent-sharing/">MCP 近期内容分享：从 Resources、Tools 到 Prompts 的实践探索</a>
@@ -947,6 +955,10 @@ conf: 仅配置变化，Spring配置、propert...
                 <span class="iconfont-archer">&#xe606;</span>
                 AI Agent
             </span>
+            <span class="sidebar-tag-name" data-tags="Agent Loop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent Loop
+            </span>
             <span class="sidebar-tag-name" data-tags="Tool Format">
                 <span class="iconfont-archer">&#xe606;</span>
                 Tool Format
@@ -954,6 +966,22 @@ conf: 仅配置变化，Spring配置、propert...
             <span class="sidebar-tag-name" data-tags="ASGI, Python, FastAPI">
                 <span class="iconfont-archer">&#xe606;</span>
                 ASGI, Python, FastAPI
+            </span>
+            <span class="sidebar-tag-name" data-tags="Architecture">
+                <span class="iconfont-archer">&#xe606;</span>
+                Architecture
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="Sandbox">
+                <span class="iconfont-archer">&#xe606;</span>
+                Sandbox
+            </span>
+            <span class="sidebar-tag-name" data-tags="MCP">
+                <span class="iconfont-archer">&#xe606;</span>
+                MCP
             </span>
             <span class="sidebar-tag-name" data-tags="thinking">
                 <span class="iconfont-archer">&#xe606;</span>
@@ -966,10 +994,6 @@ conf: 仅配置变化，Spring配置、propert...
             <span class="sidebar-tag-name" data-tags="Harness Engineering">
                 <span class="iconfont-archer">&#xe606;</span>
                 Harness Engineering
-            </span>
-            <span class="sidebar-tag-name" data-tags="MCP">
-                <span class="iconfont-archer">&#xe606;</span>
-                MCP
             </span>
             <span class="sidebar-tag-name" data-tags="multi-tenant">
                 <span class="iconfont-archer">&#xe606;</span>
@@ -990,10 +1014,6 @@ conf: 仅配置变化，Spring配置、propert...
             <span class="sidebar-tag-name" data-tags="Trading">
                 <span class="iconfont-archer">&#xe606;</span>
                 Trading
-            </span>
-            <span class="sidebar-tag-name" data-tags="Agent Loop">
-                <span class="iconfont-archer">&#xe606;</span>
-                Agent Loop
             </span>
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
