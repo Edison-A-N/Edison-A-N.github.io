@@ -6,7 +6,7 @@ tags:
   - Agent Loop
 categories:
   - AI Agent
-date: 2026-03-14 00:00:00
+date: 2026-03-16 00:00:00
 excerpt: >-
   本文对四大平台的 Agent Loop 实现进行了系统性调研与对比分析，涵盖 Anthropic Agent SDK、OpenAI Codex
   CLI、OpenClaw 运行时与 Google ADK Loop Agents。从控制论视角剖析 Agent Loop
