@@ -10,15 +10,15 @@
     <meta name="copyright" content="Edison">
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog,Edison,DDD">
     <meta name="description" content="Thinking, writing and sharing''">
-    <meta name="description" content="本文对四大平台的 Agent Loop 实现进行了系统性调研与对比分析，涵盖 Anthropic Agent SDK、OpenAI Codex CLI、OpenClaw 运行时与 Google ADK Loop Agents。从控制论视角剖析 Agent Loop 的本质，并对 ReAct、Reflection 等扩展范式的工程价值进行了审视。">
+    <meta name="description" content="本文对五大平台的 Agent Loop 实现进行了系统性调研与对比分析，涵盖 Anthropic Agent SDK、OpenAI Codex CLI、OpenClaw 运行时、Google ADK Loop Agents 与 LangChain Deep Agents。从控制论视角剖析 Agent Loop 的本质，并对 ReAct、Reflection 等扩展范式的工程价值进行了审视。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Agent Loop 技术调研报告">
 <meta property="og:url" content="https://edison-a-n.github.io/2026/03/16/agent-loop-study/index.html">
 <meta property="og:site_name" content="Edison">
-<meta property="og:description" content="本文对四大平台的 Agent Loop 实现进行了系统性调研与对比分析，涵盖 Anthropic Agent SDK、OpenAI Codex CLI、OpenClaw 运行时与 Google ADK Loop Agents。从控制论视角剖析 Agent Loop 的本质，并对 ReAct、Reflection 等扩展范式的工程价值进行了审视。">
+<meta property="og:description" content="本文对五大平台的 Agent Loop 实现进行了系统性调研与对比分析，涵盖 Anthropic Agent SDK、OpenAI Codex CLI、OpenClaw 运行时、Google ADK Loop Agents 与 LangChain Deep Agents。从控制论视角剖析 Agent Loop 的本质，并对 ReAct、Reflection 等扩展范式的工程价值进行了审视。">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2026-03-15T16:00:00.000Z">
-<meta property="article:modified_time" content="2026-03-19T01:03:43.898Z">
+<meta property="article:modified_time" content="2026-03-19T01:16:23.506Z">
 <meta property="article:author" content="Edison">
 <meta property="article:tag" content="LLM">
 <meta property="article:tag" content="AI Agent">
@@ -309,7 +309,7 @@
 
                 <!-- 文章字数统计 -->
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">4.4k</span>Reading time: <span class="post-count reading-time">16 min</span></span>
+                        <span>Word count: <span class="post-count word-count">5.9k</span>Reading time: <span class="post-count reading-time">22 min</span></span>
                     </div>
                 <div class="post-intro-meta">
                     <!-- 撰写日期 -->
@@ -471,19 +471,20 @@
 </div>
 
 <blockquote>
-<p>对 Anthropic Agent SDK、OpenAI Codex CLI、OpenClaw 运行时与 Google ADK Loop Agents 四大平台的 Agent Loop 实现进行系统性调研与对比分析，从控制论视角剖析其本质，并对 ReAct、Reflection 等扩展范式的工程价值进行审视。</p>
+<p>对 Anthropic Agent SDK、OpenAI Codex CLI、OpenClaw 运行时、Google ADK Loop Agents 与 LangChain Deep Agents 五大平台的 Agent Loop 实现进行系统性调研与对比分析，从控制论视角剖析其本质，并对 ReAct、Reflection 等扩展范式的工程价值进行审视。</p>
 <p>整理时间：2026 年 3 月</p>
 </blockquote>
 <hr>
 <h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>大语言模型（LLM）从”单轮问答”走向”自主执行任务”，核心转变在于引入了 <strong>Agent Loop</strong>——一个让模型持续感知环境、调用工具、获取反馈、再次决策的闭环结构。</p>
-<p>本报告选取了四个代表性平台的 Agent Loop 文档进行调研：</p>
+<p>本报告选取了五个代表性平台的 Agent Loop 文档进行调研：</p>
 <ul>
 <li><strong>Anthropic Agent SDK</strong>：面向开发者的客户端 SDK，侧重易用性与安全控制</li>
 <li><strong>OpenAI Codex CLI</strong>：本地编码助手，侧重推理性能优化</li>
 <li><strong>OpenClaw</strong>：服务端 Agent 运行时，侧重多会话与会话级&#x2F;全局并发控制、插件扩展</li>
 <li><strong>Google ADK Loop Agents</strong>：工作流式 Agent 编排，侧重「循环执行子 Agent」的确定性流程</li>
+<li><strong>LangChain Deep Agents</strong>：Agent Harness，侧重长时间运行的复杂任务，内置规划、虚拟文件系统与子 Agent 能力</li>
 </ul>
-<p>四者定位不同，但 Agent Loop 的核心结构高度一致。本文在梳理各平台实现细节的基础上，从控制论视角提炼 Agent Loop 的本质，并对 ReAct、Reflection 等学术界常见的扩展范式进行工程价值评估。</p>
+<p>五者定位不同，但 Agent Loop 的核心结构高度一致。本文在梳理各平台实现细节的基础上，从控制论视角提炼 Agent Loop 的本质，并对 ReAct、Reflection 等学术界常见的扩展范式进行工程价值评估。</p>
 <hr>
 <h2 id="文献来源"><a href="#文献来源" class="headerlink" title="文献来源"></a>文献来源</h2><table>
 <thead>
@@ -517,6 +518,12 @@
 <td>Google</td>
 <td>Loop agents</td>
 <td><a target="_blank" rel="noopener" href="https://google.github.io/adk-docs/agents/workflow-agents/loop-agents/">https://google.github.io/adk-docs/agents/workflow-agents/loop-agents/</a></td>
+</tr>
+<tr>
+<td>[5]</td>
+<td>LangChain</td>
+<td>Deep Agents overview</td>
+<td><a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/deepagents/overview">https://docs.langchain.com/oss/python/deepagents/overview</a></td>
 </tr>
 </tbody></table>
 <hr>
@@ -623,7 +630,7 @@
 <li><strong>Skills 加载</strong>：将 Markdown 格式的技能文件注入 prompt</li>
 <li><strong>Prompt 组装</strong>：系统指令 + 技能上下文 + 会话历史</li>
 </ul>
-<h3 id="Hook-系统"><a href="#Hook-系统" class="headerlink" title="Hook 系统"></a>Hook 系统</h3><p>OpenClaw 拥有三个平台中 <strong>最丰富的 Hook 系统</strong> [3]：</p>
+<h3 id="Hook-系统"><a href="#Hook-系统" class="headerlink" title="Hook 系统"></a>Hook 系统</h3><p>OpenClaw 拥有五个平台中 <strong>最丰富的 Hook 系统</strong> [3]：</p>
 <ul>
 <li><strong>内部 hooks</strong>：框架自带的生命周期钩子</li>
 <li><strong>Plugin hooks</strong>：15+ 扩展点，覆盖完整的 Agent 生命周期：</li>
@@ -710,6 +717,136 @@
 </tr>
 </tbody></table>
 <hr>
+<h2 id="LangChain-Deep-Agents"><a href="#LangChain-Deep-Agents" class="headerlink" title="LangChain Deep Agents"></a>LangChain Deep Agents</h2><h3 id="定位与架构"><a href="#定位与架构" class="headerlink" title="定位与架构"></a>定位与架构</h3><p>LangChain Deep Agents 是一个 <strong>Agent Harness（Agent 运行套件）</strong>——在标准工具调用循环之上，预置了规划、虚拟文件系统、子 Agent 派生与自动上下文管理等能力，专为长时间运行的复杂任务设计 [5]。</p>
+<p>Deep Agents 构建于 LangChain 的核心 Agent 构建块之上，使用 <strong>LangGraph</strong> 运行时实现持久化执行、流式输出与 human-in-the-loop。其核心入口为 <code>create_deep_agent()</code> 函数，返回一个编译好的 LangGraph 状态图 [5]：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> deepagents <span class="keyword">import</span> create_deep_agent</span><br><span class="line"></span><br><span class="line">agent = create_deep_agent(</span><br><span class="line">    model=<span class="string">&quot;openai:gpt-5&quot;</span>,</span><br><span class="line">    tools=[my_tool],</span><br><span class="line">    system_prompt=<span class="string">&quot;You are a helpful assistant&quot;</span>,</span><br><span class="line">)</span><br><span class="line">agent.invoke(&#123;<span class="string">&quot;messages&quot;</span>: [&#123;<span class="string">&quot;role&quot;</span>: <span class="string">&quot;user&quot;</span>, <span class="string">&quot;content&quot;</span>: <span class="string">&quot;...&quot;</span>&#125;]&#125;)</span><br></pre></td></tr></table></figure>
+
+<h3 id="核心循环-2"><a href="#核心循环-2" class="headerlink" title="核心循环"></a>核心循环</h3><p>Deep Agents 的底层循环与其他平台一致——LLM 在循环中调用工具。但 LangChain 将其定义为 <strong>Harness 而非 Framework</strong>：核心算法相同，区别在于围绕循环预置的能力层 [5]。</p>
+<p>循环由 LangGraph 的图执行引擎驱动，<code>recursion_limit</code> 默认设置为 1000 轮。循环在模型不再发出工具调用时终止。</p>
+<h3 id="Middleware-系统"><a href="#Middleware-系统" class="headerlink" title="Middleware 系统"></a>Middleware 系统</h3><p>Deep Agents 的关键设计是 <strong>中间件栈（Middleware Stack）</strong>，每个中间件为循环注入特定能力。默认栈按以下顺序组装 [5]：</p>
+<ol>
+<li><strong>TodoListMiddleware</strong>：规划与任务分解</li>
+<li><strong>MemoryMiddleware</strong>（可选）：跨会话长期记忆</li>
+<li><strong>SkillsMiddleware</strong>（可选）：渐进式能力加载</li>
+<li><strong>FilesystemMiddleware</strong>：虚拟文件系统操作</li>
+<li><strong>SubAgentMiddleware</strong>：子 Agent 派生</li>
+<li><strong>SummarizationMiddleware</strong>：自动上下文压缩</li>
+<li><strong>AnthropicPromptCachingMiddleware</strong>：Anthropic 模型的 Prompt 缓存优化</li>
+<li><strong>PatchToolCallsMiddleware</strong>：工具调用修补</li>
+</ol>
+<p>开发者可通过 <code>middleware</code> 参数追加自定义中间件。</p>
+<h3 id="工具系统-1"><a href="#工具系统-1" class="headerlink" title="工具系统"></a>工具系统</h3><p>Deep Agents 内置以下工具 [5]：</p>
+<table>
+<thead>
+<tr>
+<th>工具</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>write_todos</code></td>
+<td>任务规划与进度追踪（todo list）</td>
+</tr>
+<tr>
+<td><code>ls</code>、<code>read_file</code>、<code>write_file</code>、<code>edit_file</code></td>
+<td>虚拟文件系统操作</td>
+</tr>
+<tr>
+<td><code>glob</code>、<code>grep</code></td>
+<td>文件搜索与内容搜索</td>
+</tr>
+<tr>
+<td><code>execute</code></td>
+<td>Shell 命令执行（仅沙箱后端）</td>
+</tr>
+<tr>
+<td><code>task</code></td>
+<td>派生子 Agent</td>
+</tr>
+<tr>
+<td>自定义工具</td>
+<td>开发者定义的函数或 MCP 工具</td>
+</tr>
+</tbody></table>
+<p>值得注意的是，<code>write_todos</code> 工具本质上是一个 <strong>no-op（无实际副作用操作）</strong>——它不执行任何外部动作，仅作为上下文工程策略，帮助 Agent 在长任务中保持方向感。这一设计直接借鉴了 Claude Code 的 todo list 工具 [5]。</p>
+<h3 id="子-Agent-系统"><a href="#子-Agent-系统" class="headerlink" title="子 Agent 系统"></a>子 Agent 系统</h3><p>Deep Agents 的子 Agent 是实现 <strong>上下文隔离</strong> 的核心机制 [5]：</p>
+<ul>
+<li>主 Agent 通过内置的 <code>task</code> 工具派生子 Agent</li>
+<li>每个子 Agent 拥有独立的上下文窗口，避免主 Agent 上下文膨胀</li>
+<li>子 Agent 可配置不同模型（如主 Agent 用强模型，子 Agent 用轻量模型）</li>
+<li>支持并行执行多个子 Agent</li>
+<li>子 Agent 执行完毕后返回单一结果报告给主 Agent</li>
+<li>内置「通用子 Agent」，默认可用，具备与主 Agent 相同的工具集</li>
+</ul>
+<h3 id="上下文管理-1"><a href="#上下文管理-1" class="headerlink" title="上下文管理"></a>上下文管理</h3><p>Deep Agents 的上下文管理是其核心差异化能力 [5]：</p>
+<p><strong>1. 大工具结果卸载</strong></p>
+<p>当工具调用的输入或输出超过 20,000 token 时，自动将内容卸载到虚拟文件系统，在消息历史中仅保留文件路径引用和前 10 行预览。</p>
+<p><strong>2. 自动摘要</strong></p>
+<p>当上下文使用量达到模型上下文窗口的 85% 时触发自动摘要：</p>
+<ul>
+<li>LLM 生成结构化摘要替换历史消息</li>
+<li>完整原始消息保存到文件系统（<code>/conversation_history/&#123;thread_id&#125;.md</code>）</li>
+<li>保留最近 10% 的消息作为近期上下文</li>
+<li>支持 <code>ContextOverflowError</code> 时的降级重试</li>
+</ul>
+<p><strong>3. 虚拟文件系统后端</strong></p>
+<p>文件系统采用可插拔后端架构：</p>
+<table>
+<thead>
+<tr>
+<th>后端</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>StateBackend</code></td>
+<td>内存中的临时存储（默认）</td>
+</tr>
+<tr>
+<td><code>FilesystemBackend</code></td>
+<td>本地磁盘存储</td>
+</tr>
+<tr>
+<td><code>StoreBackend</code></td>
+<td>LangGraph Store，跨线程持久化</td>
+</tr>
+<tr>
+<td><code>CompositeBackend</code></td>
+<td>混合路由（如 <code>/memories/</code> 持久化，工作文件临时存储）</td>
+</tr>
+<tr>
+<td>沙箱后端</td>
+<td>Modal、Daytona、Deno 等隔离执行环境</td>
+</tr>
+</tbody></table>
+<h3 id="Skills-系统"><a href="#Skills-系统" class="headerlink" title="Skills 系统"></a>Skills 系统</h3><p>Deep Agents 支持 <strong>渐进式技能披露（Progressive Disclosure）</strong>，遵循 <a target="_blank" rel="noopener" href="https://agentskills.io/">Agent Skills</a> 规范 [5]：</p>
+<ul>
+<li>每个 Skill 是一个包含 <code>SKILL.md</code> 的目录</li>
+<li>Agent 启动时仅加载各 Skill 的前置元数据（frontmatter）</li>
+<li>仅当 Agent 判断某 Skill 与当前任务相关时，才加载完整内容</li>
+<li>避免了将所有指令一次性灌入 prompt 导致的 token 浪费</li>
+</ul>
+<h3 id="Prompt-构建-1"><a href="#Prompt-构建-1" class="headerlink" title="Prompt 构建"></a>Prompt 构建</h3><p>Deep Agents 的 system prompt 由多段拼接而成 [5]：</p>
+<ol>
+<li>用户自定义 <code>system_prompt</code>（可选）</li>
+<li>内置 Base Agent Prompt（核心行为指令）</li>
+<li>Todo list 使用说明</li>
+<li>Memory prompt（AGENTS.md 文件内容）</li>
+<li>Skills prompt（技能列表与使用说明）</li>
+<li>虚拟文件系统工具说明</li>
+<li>子 Agent 使用说明</li>
+<li>用户中间件提供的额外 prompt</li>
+<li>Human-in-the-loop 说明</li>
+<li>本地上下文（当前目录、项目信息等）</li>
+</ol>
+<h3 id="特殊设计-1"><a href="#特殊设计-1" class="headerlink" title="特殊设计"></a>特殊设计</h3><ul>
+<li><strong>模型无关</strong>：支持任意工具调用 LLM（Claude、GPT、Gemini 等），通过 <code>provider:model</code> 格式快速切换 [5]</li>
+<li><strong>LangSmith 集成</strong>：原生支持 LangSmith 追踪与可观测性</li>
+<li><strong>Human-in-the-loop</strong>：通过 <code>interrupt_on</code> 参数配置需要人工审批的工具调用</li>
+<li><strong>AGENTS.md 记忆</strong>：支持跨会话的持久记忆文件，存储用户偏好与项目规范</li>
+<li><strong>CLI 工具</strong>：提供终端编码 Agent（<code>deepagents-cli</code>），在 Terminal Bench 2.0 上使用 Claude Sonnet 4.5 得分约 42.65%，与同模型的 Claude Code 持平</li>
+</ul>
+<hr>
 <h2 id="横向对比"><a href="#横向对比" class="headerlink" title="横向对比"></a>横向对比</h2><h3 id="核心架构对比"><a href="#核心架构对比" class="headerlink" title="核心架构对比"></a>核心架构对比</h3><table>
 <thead>
 <tr>
@@ -718,6 +855,7 @@
 <th>OpenAI Codex CLI [2]</th>
 <th>OpenClaw [3]</th>
 <th>Google ADK Loop [4]</th>
+<th>LangChain Deep Agents [5]</th>
 </tr>
 </thead>
 <tbody><tr>
@@ -726,6 +864,7 @@
 <td>本地 CLI 编码助手</td>
 <td>服务端运行时</td>
 <td>工作流编排</td>
+<td>Agent Harness（运行套件）</td>
 </tr>
 <tr>
 <td><strong>状态管理</strong></td>
@@ -733,6 +872,7 @@
 <td>完全无状态（客户端维护）</td>
 <td>服务端 Session 队列</td>
 <td>工作流状态 + 子 Agent 状态</td>
+<td>LangGraph 状态图 + 可插拔后端</td>
 </tr>
 <tr>
 <td><strong>核心优化</strong></td>
@@ -740,6 +880,7 @@
 <td>Prompt 前缀缓存</td>
 <td>会话级&#x2F;全局 lane 并发、Plugin 扩展</td>
 <td>确定性循环 + 子 Agent 终止信号</td>
+<td>中间件栈、渐进式技能披露、上下文隔离</td>
 </tr>
 <tr>
 <td><strong>Compaction</strong></td>
@@ -747,6 +888,7 @@
 <td><code>/responses/compact</code> 端点</td>
 <td>自动压缩 + 重试</td>
 <td>依赖子 Agent 实现</td>
+<td>自动摘要（85% 阈值）+ 大结果卸载</td>
 </tr>
 <tr>
 <td><strong>Hook&#x2F;扩展</strong></td>
@@ -754,6 +896,7 @@
 <td>无（极简设计）</td>
 <td>15+ Plugin hooks</td>
 <td>工作流节点级配置</td>
+<td>Middleware 栈 + Skills 系统</td>
 </tr>
 <tr>
 <td><strong>工具权限</strong></td>
@@ -761,6 +904,7 @@
 <td>沙箱隔离</td>
 <td>Workspace 隔离</td>
 <td>子 Agent 内建</td>
+<td>Human-in-the-loop（interrupt_on）</td>
 </tr>
 <tr>
 <td><strong>流式输出</strong></td>
@@ -768,6 +912,7 @@
 <td>Server-Sent Events</td>
 <td>三通道并行 stream</td>
 <td>工作流&#x2F;子 Agent 流</td>
+<td>LangGraph 流式 + LangSmith 追踪</td>
 </tr>
 <tr>
 <td><strong>适用场景</strong></td>
@@ -775,12 +920,13 @@
 <td>开发者本地编码</td>
 <td>平台级 Agent 服务</td>
 <td>迭代式多步任务编排</td>
+<td>长时间运行的复杂任务（研究、编码、分析）</td>
 </tr>
 </tbody></table>
-<h3 id="共性"><a href="#共性" class="headerlink" title="共性"></a>共性</h3><p>尽管四者定位各异，其 Agent Loop（或编排层 Loop）的基本结构在「单 Agent + 工具」场景下一致：</p>
+<h3 id="共性"><a href="#共性" class="headerlink" title="共性"></a>共性</h3><p>尽管五者定位各异，其 Agent Loop（或编排层 Loop）的基本结构在「单 Agent + 工具」场景下一致：</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    response = model.call(messages)</span><br><span class="line">    <span class="keyword">if</span> response.has_tool_calls():</span><br><span class="line">        results = execute_tools(response.tool_calls)</span><br><span class="line">        messages.extend(results)</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="keyword">return</span> response.text</span><br></pre></td></tr></table></figure>
 
-<p>各平台均实现了以下共性机制（ADK 在子 Agent 内部）：</p>
+<p>各平台均实现了以下共性机制（ADK 在子 Agent 内部，Deep Agents 通过中间件栈实现）：</p>
 <ul>
 <li><strong>工具调用作为唯一的环境交互方式</strong>：模型不直接操作外部系统，而是通过结构化的工具调用 + 结果回传完成闭环</li>
 <li><strong>上下文压缩（Compaction）</strong>：应对长对话的上下文窗口限制（ADK 由子 Agent 自行处理）</li>
@@ -792,6 +938,7 @@
 <li><strong>OpenAI</strong> 服务于本地 CLI 场景 → 强调推理性能（prompt 前缀缓存是第一优先级）</li>
 <li><strong>OpenClaw</strong> 服务于平台运营 → 强调可运维性（并发控制、插件扩展、多通道流式）</li>
 <li><strong>Google ADK</strong> 服务于工作流编排 → 强调确定性循环与子 Agent 终止信号，适合迭代式任务</li>
+<li><strong>LangChain Deep Agents</strong> 服务于长时间复杂任务 → 强调上下文管理（虚拟文件系统、自动摘要、子 Agent 上下文隔离）与生态集成（模型无关、LangSmith 可观测）</li>
 </ul>
 <hr>
 <h2 id="分析与讨论"><a href="#分析与讨论" class="headerlink" title="分析与讨论"></a>分析与讨论</h2><h3 id="Agent-Loop-的控制论本质"><a href="#Agent-Loop-的控制论本质" class="headerlink" title="Agent Loop 的控制论本质"></a>Agent Loop 的控制论本质</h3><p>Agent Loop 本质上是 <strong>控制论（Cybernetics）中的负反馈控制回路</strong>。其结构直接对应经典的 OODA 循环（Observe-Orient-Decide-Act）：</p>
@@ -825,7 +972,7 @@
 <li><strong>决策者（LLM）具备足够的推理能力</strong>：能从反馈信号中提取有效信息并调整策略</li>
 <li><strong>反馈通道（工具系统）提供高质量信号</strong>：工具执行结果是确定性的、可验证的</li>
 </ol>
-<h3 id="Agent-Loop-与-ReAct-的关系"><a href="#Agent-Loop-与-ReAct-的关系" class="headerlink" title="Agent Loop 与 ReAct 的关系"></a>Agent Loop 与 ReAct 的关系</h3><p>ReAct（Reason + Act）模式由 Yao et al. [5] 提出，要求模型在每次行动前显式输出推理过程（Thought），形成 <code>Thought → Action → Observation</code> 的交替序列。</p>
+<h3 id="Agent-Loop-与-ReAct-的关系"><a href="#Agent-Loop-与-ReAct-的关系" class="headerlink" title="Agent Loop 与 ReAct 的关系"></a>Agent Loop 与 ReAct 的关系</h3><p>ReAct（Reason + Act）模式由 Yao et al. [6] 提出，要求模型在每次行动前显式输出推理过程（Thought），形成 <code>Thought → Action → Observation</code> 的交替序列。</p>
 <p><strong>Agent Loop 与 ReAct 没有本质区别</strong>。ReAct 是 Agent Loop 的一个具体实例化：</p>
 <table>
 <thead>
@@ -851,7 +998,7 @@
 <td>学术论文中的命名</td>
 </tr>
 </tbody></table>
-<p>值得注意的是，<strong>本报告调研的平台均未强制 ReAct 格式</strong> [1][2][3][4]。原因在于：当前主流模型（Claude 3.5+、GPT-4+）的推理能力已足够强，模型在内部完成推理后直接输出工具调用指令，无需外部强制 Thought 步骤。ReAct 论文的核心贡献——“让模型在行动前显式推理”——已被模型能力本身所吸收。</p>
+<p>值得注意的是，<strong>本报告调研的平台均未强制 ReAct 格式</strong> [1][2][3][4][5]。原因在于：当前主流模型（Claude 3.5+、GPT-4+）的推理能力已足够强，模型在内部完成推理后直接输出工具调用指令，无需外部强制 Thought 步骤。ReAct 论文的核心贡献——“让模型在行动前显式推理”——已被模型能力本身所吸收。</p>
 <h3 id="Reflection-及其他扩展范式的工程价值"><a href="#Reflection-及其他扩展范式的工程价值" class="headerlink" title="Reflection 及其他扩展范式的工程价值"></a>Reflection 及其他扩展范式的工程价值</h3><p>学术界在基础 Agent Loop 之上提出了多种扩展范式：</p>
 <table>
 <thead>
@@ -862,7 +1009,7 @@
 </tr>
 </thead>
 <tbody><tr>
-<td>Reflection [6]</td>
+<td>Reflection [7]</td>
 <td>模型生成结果后自我审查</td>
 <td>额外的循环迭代</td>
 </tr>
@@ -883,7 +1030,7 @@
 </tr>
 </tbody></table>
 <p>这些扩展的共同特点是：<strong>在基础循环之上增加额外的模型调用轮次</strong>。</p>
-<h4 id="工程实践中的评估"><a href="#工程实践中的评估" class="headerlink" title="工程实践中的评估"></a>工程实践中的评估</h4><p>从本次调研的工业级实现来看，<strong>没有任何一个在核心 Agent Loop 中内置 Reflection 机制</strong> [1][2][3]。这一现象背后有清晰的工程逻辑：</p>
+<h4 id="工程实践中的评估"><a href="#工程实践中的评估" class="headerlink" title="工程实践中的评估"></a>工程实践中的评估</h4><p>从本次调研的工业级实现来看，<strong>没有任何一个在核心 Agent Loop 中内置 Reflection 机制</strong> [1][2][3][5]。这一现象背后有清晰的工程逻辑：</p>
 <p><strong>1. 工具反馈优于自我反思</strong></p>
 <p>Agent Loop 的威力来源于 <strong>外部工具提供的确定性反馈</strong>，而非模型的自我审视。编译错误信息、测试执行结果、API 返回状态码——这些信号的可靠性远高于模型对自身输出的主观评估。在工具反馈充分的场景下，Reflection 是冗余的。</p>
 <p><strong>2. 模型自我反思的可靠性有限</strong></p>
@@ -912,7 +1059,7 @@
 </li>
 <li><p><strong>Reflection 等扩展范式应按需引入</strong>，而非作为默认配置。在工具反馈充分的场景下，额外的自我审查轮次往往是冗余的。</p>
 </li>
-<li><p><strong>各平台的差异源于产品定位而非技术分歧</strong>：Anthropic 优化易用性，OpenAI 优化推理性能，OpenClaw 优化运维能力，Google ADK 优化工作流编排与迭代流程。选择参考对象时应匹配自身场景。</p>
+<li><p><strong>各平台的差异源于产品定位而非技术分歧</strong>：Anthropic 优化易用性，OpenAI 优化推理性能，OpenClaw 优化运维能力，Google ADK 优化工作流编排与迭代流程，LangChain Deep Agents 优化长时间复杂任务的上下文管理与生态集成。选择参考对象时应匹配自身场景。</p>
 </li>
 </ol>
 <hr>
@@ -956,13 +1103,20 @@
 </tr>
 <tr>
 <td>[5]</td>
+<td>LangChain (Harrison Chase)</td>
+<td>Deep Agents</td>
+<td>2025</td>
+<td><a target="_blank" rel="noopener" href="https://blog.langchain.com/deep-agents/">https://blog.langchain.com/deep-agents/</a></td>
+</tr>
+<tr>
+<td>[6]</td>
 <td>Yao, S. et al.</td>
 <td>ReAct: Synergizing Reasoning and Acting in Language Models</td>
 <td>ICLR 2023</td>
 <td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2210.03629">https://arxiv.org/abs/2210.03629</a></td>
 </tr>
 <tr>
-<td>[6]</td>
+<td>[7]</td>
 <td>Shinn, N. et al.</td>
 <td>Reflexion: Language Agents with Verbal Reinforcement Learning</td>
 <td>NeurIPS 2023</td>
@@ -976,7 +1130,7 @@
             <p>Author：<a href="https://edison-a-n.github.io">Edison</a>
             <p>Link：<a href="https://edison-a-n.github.io/2026/03/16/agent-loop-study/">https://edison-a-n.github.io/2026/03/16/agent-loop-study/</a>
             <p>Publish date：<a href="https://edison-a-n.github.io/2026/03/16/agent-loop-study/">March 16th 2026, 12:00:00 am</a>
-            <p>Update date：<a href="https://edison-a-n.github.io/2026/03/16/agent-loop-study/">March 19th 2026, 9:03:43 am</a>
+            <p>Update date：<a href="https://edison-a-n.github.io/2026/03/16/agent-loop-study/">March 19th 2026, 9:16:23 am</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     <!-- paginator -->
@@ -1038,7 +1192,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%95%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">引言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%87%E7%8C%AE%E6%9D%A5%E6%BA%90"><span class="toc-number">2.</span> <span class="toc-text">文献来源</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Anthropic-Agent-SDK"><span class="toc-number">3.</span> <span class="toc-text">Anthropic Agent SDK</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%BE%AA%E7%8E%AF"><span class="toc-number">3.1.</span> <span class="toc-text">核心循环</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Turn-%E4%B8%8E-Message-%E6%A8%A1%E5%9E%8B"><span class="toc-number">3.2.</span> <span class="toc-text">Turn 与 Message 模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%A5%E5%85%B7%E7%B3%BB%E7%BB%9F"><span class="toc-number">3.3.</span> <span class="toc-text">工具系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AE%A1%E7%90%86"><span class="toc-number">3.4.</span> <span class="toc-text">上下文管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%A9%E5%B1%95%E6%9C%BA%E5%88%B6"><span class="toc-number">3.5.</span> <span class="toc-text">扩展机制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#OpenAI-Codex-CLI"><span class="toc-number">4.</span> <span class="toc-text">OpenAI Codex CLI</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%BE%AA%E7%8E%AF-1"><span class="toc-number">4.1.</span> <span class="toc-text">核心循环</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Prompt-%E6%9E%84%E5%BB%BA"><span class="toc-number">4.2.</span> <span class="toc-text">Prompt 构建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Prompt-%E5%89%8D%E7%BC%80%E7%BC%93%E5%AD%98%EF%BC%88%E6%A0%B8%E5%BF%83%E4%BC%98%E5%8C%96%EF%BC%89"><span class="toc-number">4.3.</span> <span class="toc-text">Prompt 前缀缓存（核心优化）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Compaction"><span class="toc-number">4.4.</span> <span class="toc-text">Compaction</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%B9%E6%AE%8A%E8%AE%BE%E8%AE%A1"><span class="toc-number">4.5.</span> <span class="toc-text">特殊设计</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#OpenClaw-Agent-Runtime"><span class="toc-number">5.</span> <span class="toc-text">OpenClaw Agent Runtime</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9A%E4%BD%8D%E4%B8%8E%E5%85%A5%E5%8F%A3"><span class="toc-number">5.1.</span> <span class="toc-text">定位与入口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%9A%E8%AF%9D%E5%B9%B6%E5%8F%91%E6%8E%A7%E5%88%B6"><span class="toc-number">5.2.</span> <span class="toc-text">会话并发控制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BE%AA%E7%8E%AF%E5%89%8D%E5%87%86%E5%A4%87"><span class="toc-number">5.3.</span> <span class="toc-text">循环前准备</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hook-%E7%B3%BB%E7%BB%9F"><span class="toc-number">5.4.</span> <span class="toc-text">Hook 系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%81%E5%BC%8F%E8%BE%93%E5%87%BA"><span class="toc-number">5.5.</span> <span class="toc-text">流式输出</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B6%E4%BB%96%E6%9C%BA%E5%88%B6"><span class="toc-number">5.6.</span> <span class="toc-text">其他机制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Google-ADK-Loop-Agents"><span class="toc-number">6.</span> <span class="toc-text">Google ADK Loop Agents</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9A%E4%BD%8D%E4%B8%8E%E6%A6%82%E5%BF%B5"><span class="toc-number">6.1.</span> <span class="toc-text">定位与概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B"><span class="toc-number">6.2.</span> <span class="toc-text">执行流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B8%E5%9E%8B%E7%A4%BA%E4%BE%8B%EF%BC%9A%E8%BF%AD%E4%BB%A3%E5%BC%8F%E6%96%87%E6%A1%A3%E6%94%B9%E8%BF%9B"><span class="toc-number">6.3.</span> <span class="toc-text">典型示例：迭代式文档改进</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BE%E8%AE%A1%E8%A6%81%E7%82%B9%E5%B0%8F%E7%BB%93"><span class="toc-number">6.4.</span> <span class="toc-text">设计要点小结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A8%AA%E5%90%91%E5%AF%B9%E6%AF%94"><span class="toc-number">7.</span> <span class="toc-text">横向对比</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E6%9E%B6%E6%9E%84%E5%AF%B9%E6%AF%94"><span class="toc-number">7.1.</span> <span class="toc-text">核心架构对比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B1%E6%80%A7"><span class="toc-number">7.2.</span> <span class="toc-text">共性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%AE%E5%BC%82%E6%A0%B9%E6%BA%90"><span class="toc-number">7.3.</span> <span class="toc-text">差异根源</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E6%9E%90%E4%B8%8E%E8%AE%A8%E8%AE%BA"><span class="toc-number">8.</span> <span class="toc-text">分析与讨论</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Agent-Loop-%E7%9A%84%E6%8E%A7%E5%88%B6%E8%AE%BA%E6%9C%AC%E8%B4%A8"><span class="toc-number">8.1.</span> <span class="toc-text">Agent Loop 的控制论本质</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Agent-Loop-%E4%B8%8E-ReAct-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">8.2.</span> <span class="toc-text">Agent Loop 与 ReAct 的关系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Reflection-%E5%8F%8A%E5%85%B6%E4%BB%96%E6%89%A9%E5%B1%95%E8%8C%83%E5%BC%8F%E7%9A%84%E5%B7%A5%E7%A8%8B%E4%BB%B7%E5%80%BC"><span class="toc-number">8.3.</span> <span class="toc-text">Reflection 及其他扩展范式的工程价值</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5%E4%B8%AD%E7%9A%84%E8%AF%84%E4%BC%B0"><span class="toc-number">8.3.1.</span> <span class="toc-text">工程实践中的评估</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%95%E6%97%B6-Reflection-%E5%8F%AF%E8%83%BD%E6%9C%89%E4%BB%B7%E5%80%BC"><span class="toc-number">8.3.2.</span> <span class="toc-text">何时 Reflection 可能有价值</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-number">8.3.3.</span> <span class="toc-text">小结</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%93%E8%AE%BA"><span class="toc-number">9.</span> <span class="toc-text">结论</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="toc-number">10.</span> <span class="toc-text">参考文献</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BC%95%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">引言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%87%E7%8C%AE%E6%9D%A5%E6%BA%90"><span class="toc-number">2.</span> <span class="toc-text">文献来源</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Anthropic-Agent-SDK"><span class="toc-number">3.</span> <span class="toc-text">Anthropic Agent SDK</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%BE%AA%E7%8E%AF"><span class="toc-number">3.1.</span> <span class="toc-text">核心循环</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Turn-%E4%B8%8E-Message-%E6%A8%A1%E5%9E%8B"><span class="toc-number">3.2.</span> <span class="toc-text">Turn 与 Message 模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%A5%E5%85%B7%E7%B3%BB%E7%BB%9F"><span class="toc-number">3.3.</span> <span class="toc-text">工具系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AE%A1%E7%90%86"><span class="toc-number">3.4.</span> <span class="toc-text">上下文管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%A9%E5%B1%95%E6%9C%BA%E5%88%B6"><span class="toc-number">3.5.</span> <span class="toc-text">扩展机制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#OpenAI-Codex-CLI"><span class="toc-number">4.</span> <span class="toc-text">OpenAI Codex CLI</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%BE%AA%E7%8E%AF-1"><span class="toc-number">4.1.</span> <span class="toc-text">核心循环</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Prompt-%E6%9E%84%E5%BB%BA"><span class="toc-number">4.2.</span> <span class="toc-text">Prompt 构建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Prompt-%E5%89%8D%E7%BC%80%E7%BC%93%E5%AD%98%EF%BC%88%E6%A0%B8%E5%BF%83%E4%BC%98%E5%8C%96%EF%BC%89"><span class="toc-number">4.3.</span> <span class="toc-text">Prompt 前缀缓存（核心优化）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Compaction"><span class="toc-number">4.4.</span> <span class="toc-text">Compaction</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%B9%E6%AE%8A%E8%AE%BE%E8%AE%A1"><span class="toc-number">4.5.</span> <span class="toc-text">特殊设计</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#OpenClaw-Agent-Runtime"><span class="toc-number">5.</span> <span class="toc-text">OpenClaw Agent Runtime</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9A%E4%BD%8D%E4%B8%8E%E5%85%A5%E5%8F%A3"><span class="toc-number">5.1.</span> <span class="toc-text">定位与入口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%9A%E8%AF%9D%E5%B9%B6%E5%8F%91%E6%8E%A7%E5%88%B6"><span class="toc-number">5.2.</span> <span class="toc-text">会话并发控制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BE%AA%E7%8E%AF%E5%89%8D%E5%87%86%E5%A4%87"><span class="toc-number">5.3.</span> <span class="toc-text">循环前准备</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hook-%E7%B3%BB%E7%BB%9F"><span class="toc-number">5.4.</span> <span class="toc-text">Hook 系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%81%E5%BC%8F%E8%BE%93%E5%87%BA"><span class="toc-number">5.5.</span> <span class="toc-text">流式输出</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B6%E4%BB%96%E6%9C%BA%E5%88%B6"><span class="toc-number">5.6.</span> <span class="toc-text">其他机制</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Google-ADK-Loop-Agents"><span class="toc-number">6.</span> <span class="toc-text">Google ADK Loop Agents</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9A%E4%BD%8D%E4%B8%8E%E6%A6%82%E5%BF%B5"><span class="toc-number">6.1.</span> <span class="toc-text">定位与概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B"><span class="toc-number">6.2.</span> <span class="toc-text">执行流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B8%E5%9E%8B%E7%A4%BA%E4%BE%8B%EF%BC%9A%E8%BF%AD%E4%BB%A3%E5%BC%8F%E6%96%87%E6%A1%A3%E6%94%B9%E8%BF%9B"><span class="toc-number">6.3.</span> <span class="toc-text">典型示例：迭代式文档改进</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%BE%E8%AE%A1%E8%A6%81%E7%82%B9%E5%B0%8F%E7%BB%93"><span class="toc-number">6.4.</span> <span class="toc-text">设计要点小结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LangChain-Deep-Agents"><span class="toc-number">7.</span> <span class="toc-text">LangChain Deep Agents</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9A%E4%BD%8D%E4%B8%8E%E6%9E%B6%E6%9E%84"><span class="toc-number">7.1.</span> <span class="toc-text">定位与架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%BE%AA%E7%8E%AF-2"><span class="toc-number">7.2.</span> <span class="toc-text">核心循环</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Middleware-%E7%B3%BB%E7%BB%9F"><span class="toc-number">7.3.</span> <span class="toc-text">Middleware 系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%A5%E5%85%B7%E7%B3%BB%E7%BB%9F-1"><span class="toc-number">7.4.</span> <span class="toc-text">工具系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%90-Agent-%E7%B3%BB%E7%BB%9F"><span class="toc-number">7.5.</span> <span class="toc-text">子 Agent 系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AE%A1%E7%90%86-1"><span class="toc-number">7.6.</span> <span class="toc-text">上下文管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Skills-%E7%B3%BB%E7%BB%9F"><span class="toc-number">7.7.</span> <span class="toc-text">Skills 系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Prompt-%E6%9E%84%E5%BB%BA-1"><span class="toc-number">7.8.</span> <span class="toc-text">Prompt 构建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%B9%E6%AE%8A%E8%AE%BE%E8%AE%A1-1"><span class="toc-number">7.9.</span> <span class="toc-text">特殊设计</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A8%AA%E5%90%91%E5%AF%B9%E6%AF%94"><span class="toc-number">8.</span> <span class="toc-text">横向对比</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E6%9E%B6%E6%9E%84%E5%AF%B9%E6%AF%94"><span class="toc-number">8.1.</span> <span class="toc-text">核心架构对比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B1%E6%80%A7"><span class="toc-number">8.2.</span> <span class="toc-text">共性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%AE%E5%BC%82%E6%A0%B9%E6%BA%90"><span class="toc-number">8.3.</span> <span class="toc-text">差异根源</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E6%9E%90%E4%B8%8E%E8%AE%A8%E8%AE%BA"><span class="toc-number">9.</span> <span class="toc-text">分析与讨论</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Agent-Loop-%E7%9A%84%E6%8E%A7%E5%88%B6%E8%AE%BA%E6%9C%AC%E8%B4%A8"><span class="toc-number">9.1.</span> <span class="toc-text">Agent Loop 的控制论本质</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Agent-Loop-%E4%B8%8E-ReAct-%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">9.2.</span> <span class="toc-text">Agent Loop 与 ReAct 的关系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Reflection-%E5%8F%8A%E5%85%B6%E4%BB%96%E6%89%A9%E5%B1%95%E8%8C%83%E5%BC%8F%E7%9A%84%E5%B7%A5%E7%A8%8B%E4%BB%B7%E5%80%BC"><span class="toc-number">9.3.</span> <span class="toc-text">Reflection 及其他扩展范式的工程价值</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5%E4%B8%AD%E7%9A%84%E8%AF%84%E4%BC%B0"><span class="toc-number">9.3.1.</span> <span class="toc-text">工程实践中的评估</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%95%E6%97%B6-Reflection-%E5%8F%AF%E8%83%BD%E6%9C%89%E4%BB%B7%E5%80%BC"><span class="toc-number">9.3.2.</span> <span class="toc-text">何时 Reflection 可能有价值</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-number">9.3.3.</span> <span class="toc-text">小结</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%93%E8%AE%BA"><span class="toc-number">10.</span> <span class="toc-text">结论</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="toc-number">11.</span> <span class="toc-text">参考文献</span></a></li></ol>
             </div>
         <!-- sidebar -->
         <div class="sidebar sidebar-hide">
@@ -1255,17 +1409,21 @@
                 <span class="iconfont-archer">&#xe606;</span>
                 AI Agent
             </span>
-            <span class="sidebar-tag-name" data-tags="Agent Loop">
-                <span class="iconfont-archer">&#xe606;</span>
-                Agent Loop
-            </span>
             <span class="sidebar-tag-name" data-tags="Tool Format">
                 <span class="iconfont-archer">&#xe606;</span>
                 Tool Format
             </span>
+            <span class="sidebar-tag-name" data-tags="Agent Loop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent Loop
+            </span>
             <span class="sidebar-tag-name" data-tags="ASGI, Python, FastAPI">
                 <span class="iconfont-archer">&#xe606;</span>
                 ASGI, Python, FastAPI
+            </span>
+            <span class="sidebar-tag-name" data-tags="thinking">
+                <span class="iconfont-archer">&#xe606;</span>
+                thinking
             </span>
             <span class="sidebar-tag-name" data-tags="Architecture">
                 <span class="iconfont-archer">&#xe606;</span>
@@ -1282,10 +1440,6 @@
             <span class="sidebar-tag-name" data-tags="MCP">
                 <span class="iconfont-archer">&#xe606;</span>
                 MCP
-            </span>
-            <span class="sidebar-tag-name" data-tags="thinking">
-                <span class="iconfont-archer">&#xe606;</span>
-                thinking
             </span>
             <span class="sidebar-tag-name" data-tags="DDD">
                 <span class="iconfont-archer">&#xe606;</span>

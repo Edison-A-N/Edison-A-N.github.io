@@ -347,13 +347,6 @@
   </url>
   
   <url>
-    <loc>https://edison-a-n.github.io/tags/Agent-Loop/</loc>
-    <lastmod>2026-03-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://edison-a-n.github.io/tags/Tool-Format/</loc>
     <lastmod>2026-03-19</lastmod>
     <changefreq>weekly</changefreq>
@@ -361,7 +354,21 @@
   </url>
   
   <url>
+    <loc>https://edison-a-n.github.io/tags/Agent-Loop/</loc>
+    <lastmod>2026-03-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>https://edison-a-n.github.io/tags/ASGI-Python-FastAPI/</loc>
+    <lastmod>2026-03-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/thinking/</loc>
     <lastmod>2026-03-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -390,13 +397,6 @@
   
   <url>
     <loc>https://edison-a-n.github.io/tags/MCP/</loc>
-    <lastmod>2026-03-19</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/tags/thinking/</loc>
     <lastmod>2026-03-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
