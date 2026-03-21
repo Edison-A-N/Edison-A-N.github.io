@@ -6,7 +6,7 @@
   <link href="https://edison-a-n.github.io/atom.xml" rel="self"/>
   
   <link href="https://edison-a-n.github.io/"/>
-  <updated>2026-03-19T01:16:23.506Z</updated>
+  <updated>2026-03-21T09:54:22.673Z</updated>
   <id>https://edison-a-n.github.io/</id>
   
   <author>
@@ -15,6 +15,33 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>用 OpenAgents Workspace 协调多 Agent 投研</title>
+    <link href="https://edison-a-n.github.io/2026/03/21/multi-agent-investment-research/"/>
+    <id>https://edison-a-n.github.io/2026/03/21/multi-agent-investment-research/</id>
+    <published>2026-03-20T16:00:00.000Z</published>
+    <updated>2026-03-21T09:54:22.673Z</updated>
+    
+    <content type="html"><![CDATA[<div style="color: #666; font-style: italic; font-size: 0.9em; margin-bottom: 1em;">本文内容由 AI 协助生成</div><blockquote><p>一个人研究一家公司，需要收数据、做分析、建模型、写报告。<br>如果每个环节都是一个专职 Agent，你只需要说一句话。</p></blockquote><p>项目地址：<a href="https://github.com/Edison-A-N/investment-research-os">Edison-A-N&#x2F;investment-research-os</a></p><hr><h2 id="前置准备"><a href="#前置准备" class="headerlink" title="前置准备"></a>前置准备</h2><h3 id="安装-OpenCode"><a href="#安装-OpenCode" class="headerlink" title="安装 OpenCode"></a>安装 OpenCode</h3><p>自行安装 <a href="https://opencode.ai/">OpenCode</a>，此处不展开。</p><h3 id="选择对话客户端"><a href="#选择对话客户端" class="headerlink" title="选择对话客户端"></a>选择对话客户端</h3><p>OpenAgents workspace 不绑定特定客户端。你可以用 OpenCode、OpenClaw、Claude 等任何兼容客户端与 agent 对话。本文以 OpenCode 为例。</p><p>目前有两个上游 PR 需要关注：</p><ul><li><a href="https://github.com/openagents-org/openagents/pull/319">fix: route all @mentions in messages, not just leading mention</a> — 对话中 <code>@agent-name</code> 提及其他 agent 时能正确路由。<strong>所有客户端都需要</strong>，这是多 agent 协作的基础能力。</li><li><a href="https://github.com/openagents-org/openagents/pull/316">feat: add OpenCode as builtin agent</a> — 让 OpenCode 作为内置 agent 接入 workspace。仅 OpenCode 用户需要。</li></ul><blockquote><p>用 OpenClaw 或 Claude 客户端的话，只需关注第一个 @mention 修复。</p></blockquote><h3 id="配置-Agent-Memory"><a href="#配置-Agent-Memory" class="headerlink" title="配置 Agent Memory"></a>配置 Agent Memory</h3><p>安装 <a href="https://github.com/Edison-A-N/opencode-agent-memory">opencode-agent-memory</a>（从主 repo fork，增加了关闭 global memory 的能力）：</p><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ~/.config/opencode/opencode.json</span></span><br><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;plugin&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;@Edison-A-N/opencode-agent-memory@0.2.0-a1&quot;</span><span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure><p>然后关闭 global memory：</p><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ~/.config/opencode/agent-memory.json</span></span><br><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;memory&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;disable_global&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">true</span></span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure><p><strong>为什么要关 global？</strong> 多 agent 场景下，每个 agent 的记忆必须隔离。global scope 的 memory block（<code>persona</code>、<code>human</code>）会在所有项目、所有 agent 间共享——Research Agent 写入的记忆会污染 Analysis Agent 的上下文。关掉 global 后，每个 agent 只保留 project scope 的 memory（存在各自的 <code>.opencode/memory/</code> 下），互不干扰。</p><blockquote><p>记忆共享是个有意思的话题，但不在本文范围内。以后单独聊。</p></blockquote><h3 id="启动-Workspace"><a href="#启动-Workspace" class="headerlink" title="启动 Workspace"></a>启动 Workspace</h3><p>按 <a href="https://github.com/openagents-org/openagents">OpenAgents 官方文档</a> 配置好 workspace，然后：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openagents up</span><br></pre></td></tr></table></figure><p>具体配置方式这里不做介绍——项目还在快速迭代，写死了容易过时。请以官方文档为准。</p><h2 id="核心思路"><a href="#核心思路" class="headerlink" title="核心思路"></a>核心思路</h2><p>OpenAgents 的 workspace 把多个 OpenCode agent 拉进同一个工作空间。每个 agent 有独立的 SKILL.md 定义角色边界，共享 <code>workspace/</code> 目录交换数据。人类只做两件事：<strong>发起任务</strong> 和 <strong>做决策</strong>。</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">你 (OpenCode)</span><br><span class="line"> │</span><br><span class="line"> ├─→ Data Agent        收数据（PDF、RSS、财报）</span><br><span class="line"> ├─→ Research Agent    深度研究（行业、公司）</span><br><span class="line"> ├─→ Analysis Agent    财务建模（DCF、估值）</span><br><span class="line"> ├─→ Memory Agent      知识管理（存储、检索）</span><br><span class="line"> ├─→ Decision Agent    投资决策（评估、风险）</span><br><span class="line"> └─→ Report Agent      报告输出（图表、Excel）</span><br></pre></td></tr></table></figure><h2 id="关键设计"><a href="#关键设计" class="headerlink" title="关键设计"></a>关键设计</h2><table><thead><tr><th>设计点</th><th>做法</th></tr></thead><tbody><tr><td><strong>角色隔离</strong></td><td>每个 agent 的 SKILL.md 明确写了「✅ 做什么」和「❌ 不做什么」</td></tr><tr><td><strong>数据共享</strong></td><td>统一用 <code>workspace/</code> 目录，<code>inbox/</code> 存原始数据，<code>output/</code> 存产出</td></tr><tr><td><strong>工具即脚本</strong></td><td>所有工具都是独立 Python 脚本，<code>uv run</code> 一行运行，零配置</td></tr><tr><td><strong>人在回路</strong></td><td>Agent 做分析，人做决策。Decision Agent 提供建议而非替你下单</td></tr></tbody></table><h2 id="为什么是-Workspace-而不是单个-Agent"><a href="#为什么是-Workspace-而不是单个-Agent" class="headerlink" title="为什么是 Workspace 而不是单个 Agent"></a>为什么是 Workspace 而不是单个 Agent</h2><p>单个全能 Agent 的问题：上下文爆炸、角色混乱、输出不可控。</p><p>Workspace 的做法：每个 agent 专注一件事，通过文件系统松耦合协作。你可以单独跟任何一个 agent 对话，也可以让它们串联工作。就像一个投研团队——数据员、分析师、基金经理各司其职。</p>]]></content>
+    
+    
+    <summary type="html">通过 OpenAgents workspace 将多个 OpenCode agent 拉进同一工作空间，各司其职完成数据收集、深度研究、财务建模、投资决策和报告生成，实现多 agent 协作投研。</summary>
+    
+    
+    
+    <category term="AI Agent" scheme="https://edison-a-n.github.io/categories/AI-Agent/"/>
+    
+    
+    <category term="AI Agent" scheme="https://edison-a-n.github.io/tags/AI-Agent/"/>
+    
+    <category term="OpenAgents" scheme="https://edison-a-n.github.io/tags/OpenAgents/"/>
+    
+    <category term="投研" scheme="https://edison-a-n.github.io/tags/%E6%8A%95%E7%A0%94/"/>
+    
+    <category term="Multi-Agent" scheme="https://edison-a-n.github.io/tags/Multi-Agent/"/>
+    
+  </entry>
   
   <entry>
     <title>Agent Loop 技术调研报告</title>
@@ -450,28 +477,6 @@
       
       
     <summary type="html">&lt;h3 id=&quot;commit-message-format&quot;&gt;&lt;a href=&quot;#commit-message-format&quot; class=&quot;headerlink&quot; title=&quot;commit message format&quot;&gt;&lt;/a&gt;commit message format&lt;/</summary>
-      
-    
-    
-    
-    
-    <category term="thinking" scheme="https://edison-a-n.github.io/tags/thinking/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>思考与交流</title>
-    <link href="https://edison-a-n.github.io/2022/02/03/tight-lipped/"/>
-    <id>https://edison-a-n.github.io/2022/02/03/tight-lipped/</id>
-    <published>2022-02-02T16:44:49.000Z</published>
-    <updated>2026-03-14T10:58:43.122Z</updated>
-    
-    <content type="html"><![CDATA[<h3 id="题记"><a href="#题记" class="headerlink" title="题记"></a>题记</h3><p>想写这篇文章，是因为在某平台看某用户的一篇文章，想了解一下作者的背景，进而看到其在一些回答中与评论者争吵的情况。其实技术水平高低本身是受很多情况影响的，评价一个人也不是一维的。事实上，没有任何标准可以真正的评价一个人。技术讨论和技术辩论是受欢迎的，因为大家技术水平不在一个等级而无法正常的讨论进而主动拒绝讨论本身也是可以接受的。黑一门技术，则显得狭隘了。</p><p>为了调解自己的思想，再一次阅读了《黑客与画家》“守口如瓶”这一章，并分享一些感悟。</p><h3 id="自由的思考"><a href="#自由的思考" class="headerlink" title="自由的思考"></a>自由的思考</h3><p>自由的思考，强调的是，不要轻易的被各种论断影响。我们需要去思考一个论点的论证逻辑，了解其论据是否足够充分。信息时代，我们每天都会从各种渠道接受到各种各样的信息。当我们可以自由的思考的时候，我们可以让思考变得更加理性客观。所以我们要减少跟别人辩个明白的行为。辩论，是为了信息和思考进行交换，是为了让我们有更多的角度来思考，是为了更自由的思考。</p><p>思考一个话题的时候，该话题本身是没有正确与否的区别的，只有是否合逻辑，合情理。当然这些逻辑和情理也是预置的。所以我们需要交流，来持续拓展我们预先存储的对逻辑和情理的认识，让我们的思考更加自由和理性。</p><h3 id="选择可以交流的人"><a href="#选择可以交流的人" class="headerlink" title="选择可以交流的人"></a>选择可以交流的人</h3><p>很多时候，我们会遇到非要辩个明白的人。这其实已经算是一件幸事。至少他只是要强调他的观点是正确的，不一定会攻击我们。有时候，我们还会遇到，直接对自己进行攻击的人。</p><p>因为，我们跟别人讨论甚至辩论，是为了启发思考，是为了避免自己呆在一个井底。所以，我们要找可以交流的人。可以交流的人，是那些可以只对观点发表看法，并同时尊重你的观点，最重要的是不会因为观点不一致而气急败坏的人。</p><p>这样的人很多也很少。我们可以多跟不同的人交流，去试探他们是不是这样的人。如果一个人始终处于“不能交流”的状态，那么就要远离他。因为，一旦我们跟他辩论，我们的思考就很容易陷入偏颇，此时只想着辩赢，而不是自由的思考。</p><p>无论如何，我们一定要积极去结识，更多的结识可以交流的朋友，因为“观点不讨论，就什么观点也没有了。”</p><p>还有一种方法是看书，看书，就是与作者交流的过程。</p><h3 id="接受不一样的观点"><a href="#接受不一样的观点" class="headerlink" title="接受不一样的观点"></a>接受不一样的观点</h3><p>与可以交流的人交流，我们就可以兴平气和的讨论一个与自己原先理解不一样的观点。有时候，我们可能在讨论之后，仍然不认可该观点。但是，因为我们的交流，是为了自由的思考，所以，一个不一样的观点是可以被接受的。在未来与更多的人交流，自己思考的更多的时候，或许，会有更充分的论据和更严谨的论证，来说服自己不认可该观点，当然也可能让自己认可了该观点。</p><p>地心说，在提出的年代可能都不被认可，但是我们可以先存着，在后来的认知不断提高的过程，逐渐认可这个观点。如果我们只是去跟哥白尼“争论”，如果我们不能接受不一样的观点，那我们的思考也将不自由。</p>]]></content>
-    
-    
-      
-      
-    <summary type="html">&lt;h3 id=&quot;题记&quot;&gt;&lt;a href=&quot;#题记&quot; class=&quot;headerlink&quot; title=&quot;题记&quot;&gt;&lt;/a&gt;题记&lt;/h3&gt;&lt;p&gt;想写这篇文章，是因为在某平台看某用户的一篇文章，想了解一下作者的背景，进而看到其在一些回答中与评论者争吵的情况。其实技术水平高低本身是受很多</summary>
       
     
     

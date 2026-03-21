@@ -10,21 +10,25 @@
     <meta name="copyright" content="Edison">
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog,Edison,DDD">
     <meta name="description" content="Thinking, writing and sharing''">
-    <meta name="description" content="张楠Software Engineer | 6+ 年后端开发经验 | 专注 Agent 应用开发  关于我拥有丰富的后端系统开发经验，擅长使用 Golang 和 Python 构建分布式、数据密集型应用。目前专注于 Agent 应用开发，在 LLM 应用、工具调用、多 Agent 协作等领域有实践经验。熟悉 DDD 架构设计、微服务架构和云原生技术栈，能够快速构建稳定、可扩展的 Agent 应用系">
-<meta property="og:type" content="website">
-<meta property="og:title" content="About">
-<meta property="og:url" content="https://edison-a-n.github.io/about/index.html">
+    <meta name="description" content="通过 OpenAgents workspace 将多个 OpenCode agent 拉进同一工作空间，各司其职完成数据收集、深度研究、财务建模、投资决策和报告生成，实现多 agent 协作投研。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="用 OpenAgents Workspace 协调多 Agent 投研">
+<meta property="og:url" content="https://edison-a-n.github.io/2026/03/21/multi-agent-investment-research/index.html">
 <meta property="og:site_name" content="Edison">
-<meta property="og:description" content="张楠Software Engineer | 6+ 年后端开发经验 | 专注 Agent 应用开发  关于我拥有丰富的后端系统开发经验，擅长使用 Golang 和 Python 构建分布式、数据密集型应用。目前专注于 Agent 应用开发，在 LLM 应用、工具调用、多 Agent 协作等领域有实践经验。熟悉 DDD 架构设计、微服务架构和云原生技术栈，能够快速构建稳定、可扩展的 Agent 应用系">
+<meta property="og:description" content="通过 OpenAgents workspace 将多个 OpenCode agent 拉进同一工作空间，各司其职完成数据收集、深度研究、财务建模、投资决策和报告生成，实现多 agent 协作投研。">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2026-03-14T10:58:43.122Z">
-<meta property="article:modified_time" content="2026-03-14T10:58:43.122Z">
+<meta property="article:published_time" content="2026-03-20T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-03-21T09:54:22.673Z">
 <meta property="article:author" content="Edison">
+<meta property="article:tag" content="AI Agent">
+<meta property="article:tag" content="OpenAgents">
+<meta property="article:tag" content="投研">
+<meta property="article:tag" content="Multi-Agent">
 <meta name="twitter:card" content="summary">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/avatar/avatar.jpg">
-    <title>About · Edison&#39;s Blog</title>
+    <title>用 OpenAgents Workspace 协调多 Agent 投研 · Edison&#39;s Blog</title>
     <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
 /* This file is meant as a standalone workflow for
 - testing support for link[rel=preload]
@@ -230,7 +234,7 @@
             document.write('<script src="/lib/jquery.min.js" />')
         }
     </script>
-        <body class="about-body">
+        <body class="post-body">
         <!-- header -->
         <header class="header header-mobile">
     <!-- top read progress line -->
@@ -260,7 +264,7 @@
             <a href="/">Edison&#39;s Studio.</a>
         </div>
         <div class="post-title header-element">
-            <a href="#" class="post-name">About</a>
+            <a href="#" class="post-name">用 OpenAgents Workspace 协调多 Agent 投研</a>
         </div>
     </div>
 </header>
@@ -280,19 +284,60 @@
             <div class="site-intro" style="    height:50vh;
 ">
     <!-- 主页  -->
+    <!-- 404页  -->
     <div class="site-intro-placeholder"></div>
-    <div class="site-intro-img" style="background-image: url(/intro/about-bg.jpg)"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
     <div class="site-intro-meta">
         <!-- 标题  -->
         <h1 class="intro-title">
             <!-- 主页  -->
-                About
+                用 OpenAgents Workspace 协调多 Agent 投研
+            <!-- 404 -->
         </h1>
         <!-- 副标题 -->
         <p class="intro-subtitle">
             <!-- 主页副标题  -->
+            <!-- 404 -->
         </p>
         <!-- 文章页 meta -->
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                    <div class="post-intro-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="OpenAgents">OpenAgents</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="投研">投研</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Multi-Agent">Multi-Agent</a>
+</div>
+
+                <!-- 文章字数统计 -->
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">770</span>Reading time: <span class="post-count reading-time">3 min</span></span>
+                    </div>
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2026/03/21</span>
+                    <!-- busuanzi -->
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
     </div>
 </div>
 
@@ -421,71 +466,110 @@
 
             <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" alt="loading">
             <div class="container container-unloaded">
-                <!-- 不可以删除，否则会调用 post 的 layout -->
-<main class="main about-page">
+                <main class="main post-page">
     <article class="article-entry">
-        <h2 id="张楠"><a href="#张楠" class="headerlink" title="张楠"></a>张楠</h2><p><strong>Software Engineer</strong> | 6+ 年后端开发经验 | 专注 Agent 应用开发</p>
+        <div style="color: #666; font-style: italic; font-size: 0.9em; margin-bottom: 1em;">
+本文内容由 AI 协助生成
+</div>
+
+<blockquote>
+<p>一个人研究一家公司，需要收数据、做分析、建模型、写报告。<br>如果每个环节都是一个专职 Agent，你只需要说一句话。</p>
+</blockquote>
+<p>项目地址：<a target="_blank" rel="noopener" href="https://github.com/Edison-A-N/investment-research-os">Edison-A-N&#x2F;investment-research-os</a></p>
 <hr>
-<h3 id="关于我"><a href="#关于我" class="headerlink" title="关于我"></a>关于我</h3><p>拥有丰富的后端系统开发经验，擅长使用 Golang 和 Python 构建分布式、数据密集型应用。目前专注于 Agent 应用开发，在 LLM 应用、工具调用、多 Agent 协作等领域有实践经验。熟悉 DDD 架构设计、微服务架构和云原生技术栈，能够快速构建稳定、可扩展的 Agent 应用系统。</p>
-<h3 id="教育背景"><a href="#教育背景" class="headerlink" title="教育背景"></a>教育背景</h3><p><strong>2013-2017</strong> | <strong>本科, 海洋科学</strong> | <a target="_blank" rel="noopener" href="https://www.sysu.edu.cn/">中山大学</a></p>
-<h3 id="工作经历"><a href="#工作经历" class="headerlink" title="工作经历"></a>工作经历</h3><p><strong>2019.06 - 至今</strong> | <strong>Software Engineer</strong> | <a target="_blank" rel="noopener" href="https://www.xtalpi.com/zh-hans/">Xtalpi</a></p>
-<p><strong>2018.01 - 2019.06</strong> | <strong>Software Engineer</strong> | <a target="_blank" rel="noopener" href="https://www.genomics.cn/">BGI</a></p>
-<h3 id="技术栈"><a href="#技术栈" class="headerlink" title="技术栈"></a>技术栈</h3><p><strong>编程语言</strong></p>
+<h2 id="前置准备"><a href="#前置准备" class="headerlink" title="前置准备"></a>前置准备</h2><h3 id="安装-OpenCode"><a href="#安装-OpenCode" class="headerlink" title="安装 OpenCode"></a>安装 OpenCode</h3><p>自行安装 <a target="_blank" rel="noopener" href="https://opencode.ai/">OpenCode</a>，此处不展开。</p>
+<h3 id="选择对话客户端"><a href="#选择对话客户端" class="headerlink" title="选择对话客户端"></a>选择对话客户端</h3><p>OpenAgents workspace 不绑定特定客户端。你可以用 OpenCode、OpenClaw、Claude 等任何兼容客户端与 agent 对话。本文以 OpenCode 为例。</p>
+<p>目前有两个上游 PR 需要关注：</p>
 <ul>
-<li><strong>主要语言</strong>: Python, Golang</li>
-<li><strong>了解</strong>: Rust</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/openagents-org/openagents/pull/319">fix: route all @mentions in messages, not just leading mention</a> — 对话中 <code>@agent-name</code> 提及其他 agent 时能正确路由。<strong>所有客户端都需要</strong>，这是多 agent 协作的基础能力。</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/openagents-org/openagents/pull/316">feat: add OpenCode as builtin agent</a> — 让 OpenCode 作为内置 agent 接入 workspace。仅 OpenCode 用户需要。</li>
 </ul>
-<p><strong>数据库</strong></p>
-<ul>
-<li><strong>关系型</strong>: Postgres</li>
-<li><strong>NoSQL</strong>: Redis</li>
-<li><strong>图数据库</strong>: Nebula</li>
-</ul>
-<p><strong>消息队列</strong></p>
-<ul>
-<li>RabbitMQ, Kafka, Pulsar</li>
-</ul>
-<p><strong>分布式系统</strong></p>
-<ul>
-<li>TiDB, Consul</li>
-</ul>
-<p><strong>其他</strong></p>
-<ul>
-<li>Kubernetes</li>
-<li>S3 存储</li>
-<li>Agent 框架（LangChain、LangGraph 等）</li>
-<li>MCP 协议</li>
-</ul>
-<h3 id="主要项目经验"><a href="#主要项目经验" class="headerlink" title="主要项目经验"></a>主要项目经验</h3><h4 id="一、开源贡献"><a href="#一、开源贡献" class="headerlink" title="一、开源贡献"></a>一、开源贡献</h4><p><strong>MCP 生态贡献</strong> (2025.07 -)</p>
-<p>深度参与 Model Context Protocol (MCP) 生态建设，在多个核心项目中贡献代码：</p>
-<ul>
-<li><strong><a target="_blank" rel="noopener" href="https://github.com/modelcontextprotocol/python-sdk">python-sdk</a></strong> (官方 MCP Python SDK, 20k+ stars): 修复 StreamableHTTP 传输中的竞态条件问题，处理 <code>ClosedResourceError</code> (<a target="_blank" rel="noopener" href="https://github.com/modelcontextprotocol/python-sdk/pull/1384">#1384</a>，已合并)；报告并修复 StreamableHTTP GET 请求连接问题</li>
-<li><strong><a target="_blank" rel="noopener" href="https://github.com/grll/mcpadapt">mcpadapt</a></strong>: 修复 <code>outputSchema</code> 处理逻辑，优化 LLM prompt token 使用；添加 WebSocket 依赖支持</li>
-<li><strong><a target="_blank" rel="noopener" href="https://github.com/tadata-org/fastapi_mcp">fastapi_mcp</a></strong>: 在 FastAPI 转 MCP 方向进行深入探索与实践，修复循环引用递归、实现 stateless HTTP 传输、集成请求上下文，总结 REST API 转 MCP 的设计思考与实践经验</li>
-<li><strong><a target="_blank" rel="noopener" href="https://github.com/huggingface/smolagents">smolagents</a></strong>: 添加嵌套参数格式化支持</li>
-<li><strong><a target="_blank" rel="noopener" href="https://github.com/modelcontextprotocol/inspector">inspector</a></strong>: 增强 <code>anyOf</code> schema 解析和枚举处理</li>
-</ul>
-<p><strong><a target="_blank" rel="noopener" href="https://github.com/snap-stanford/Biomni">Biomni</a></strong> (2025.07 - 2025.09)</p>
-<p>通用生物医学 AI Agent 项目</p>
-<ul>
-<li>修复 MCP 工具自动发现中的必需参数解析问题</li>
-<li>实现依赖懒加载，优化 LLM 依赖导入性能</li>
-<li>重构资源准备逻辑，引入流式处理机制</li>
-</ul>
-<h4 id="二、PatSight-平台-2024-07"><a href="#二、PatSight-平台-2024-07" class="headerlink" title="二、PatSight 平台 (2024.07 -)"></a>二、<a target="_blank" rel="noopener" href="https://patent.xinsight-ai.com/home">PatSight 平台</a> (2024.07 -)</h4><p>AI 驱动的药物专利数据挖掘与分析平台，由晶泰科技与 IDEA 研究院联合开发，1 小时内自动从专利中提取关键数据，并提供分子数据管理与 SAR 分析能力。</p>
-<p>作为主要开发者，负责项目后台架构设计与研发。</p>
-<h4 id="三、ID4-药物研发平台-2019-06-2024-12"><a href="#三、ID4-药物研发平台-2019-06-2024-12" class="headerlink" title="三、ID4 药物研发平台 (2019.06 - 2024.12)"></a>三、ID4 药物研发平台 (2019.06 - 2024.12)</h4><p>SaaS + 私有化部署的药物研发计算平台，提供分子生成、自由能计算、力场拟合等计算服务，支持多租户、多云调度与统一数据管理。</p>
-<p>负责平台微服务架构设计与核心服务研发，包括：</p>
-<ul>
-<li>**<a target="_blank" rel="noopener" href="https://en.xtalpi.com/xmolgen/">XMolgen</a>**（AI 分子生成平台）</li>
-<li>**<a target="_blank" rel="noopener" href="https://en.xtalpi.com/xfep/">XFEP</a>**（自由能微扰计算平台）</li>
-<li><strong>XFF</strong>（专有力场平台）</li>
-</ul>
-<h4 id="四、数字化平台建设-2020-08-2023-10"><a href="#四、数字化平台建设-2020-08-2023-10" class="headerlink" title="四、数字化平台建设 (2020.08 - 2023.10)"></a>四、数字化平台建设 (2020.08 - 2023.10)</h4><p>内部药物研发数字化平台，包含项目管理、数据管理与实验管理三大核心系统，支持 DMTA 全周期研发流程。</p>
-<p>负责平台架构设计与核心系统研发，包括药物管线管理平台、药物分子库、DMPK 实验管理平台等。</p>
-<h3 id="联系方式"><a href="#联系方式" class="headerlink" title="联系方式"></a>联系方式</h3><p><strong>Email</strong>: <a href="mailto:&#x7a;&#104;&#97;&#110;&#103;&#110;&#x36;&#x36;&#49;&#x40;&#103;&#109;&#97;&#x69;&#x6c;&#x2e;&#99;&#x6f;&#x6d;">&#x7a;&#104;&#97;&#110;&#103;&#110;&#x36;&#x36;&#49;&#x40;&#103;&#109;&#97;&#x69;&#x6c;&#x2e;&#99;&#x6f;&#x6d;</a><br><strong>GitHub</strong>: <a target="_blank" rel="noopener" href="https://github.com/Edison-A-N">github.com&#x2F;Edison-A-N</a></p>
+<blockquote>
+<p>用 OpenClaw 或 Claude 客户端的话，只需关注第一个 @mention 修复。</p>
+</blockquote>
+<h3 id="配置-Agent-Memory"><a href="#配置-Agent-Memory" class="headerlink" title="配置 Agent Memory"></a>配置 Agent Memory</h3><p>安装 <a target="_blank" rel="noopener" href="https://github.com/Edison-A-N/opencode-agent-memory">opencode-agent-memory</a>（从主 repo fork，增加了关闭 global memory 的能力）：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ~/.config/opencode/opencode.json</span></span><br><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;plugin&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;@Edison-A-N/opencode-agent-memory@0.2.0-a1&quot;</span><span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>然后关闭 global memory：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ~/.config/opencode/agent-memory.json</span></span><br><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;memory&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;disable_global&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">true</span></span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p><strong>为什么要关 global？</strong> 多 agent 场景下，每个 agent 的记忆必须隔离。global scope 的 memory block（<code>persona</code>、<code>human</code>）会在所有项目、所有 agent 间共享——Research Agent 写入的记忆会污染 Analysis Agent 的上下文。关掉 global 后，每个 agent 只保留 project scope 的 memory（存在各自的 <code>.opencode/memory/</code> 下），互不干扰。</p>
+<blockquote>
+<p>记忆共享是个有意思的话题，但不在本文范围内。以后单独聊。</p>
+</blockquote>
+<h3 id="启动-Workspace"><a href="#启动-Workspace" class="headerlink" title="启动 Workspace"></a>启动 Workspace</h3><p>按 <a target="_blank" rel="noopener" href="https://github.com/openagents-org/openagents">OpenAgents 官方文档</a> 配置好 workspace，然后：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openagents up</span><br></pre></td></tr></table></figure>
+
+<p>具体配置方式这里不做介绍——项目还在快速迭代，写死了容易过时。请以官方文档为准。</p>
+<h2 id="核心思路"><a href="#核心思路" class="headerlink" title="核心思路"></a>核心思路</h2><p>OpenAgents 的 workspace 把多个 OpenCode agent 拉进同一个工作空间。每个 agent 有独立的 SKILL.md 定义角色边界，共享 <code>workspace/</code> 目录交换数据。人类只做两件事：<strong>发起任务</strong> 和 <strong>做决策</strong>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">你 (OpenCode)</span><br><span class="line"> │</span><br><span class="line"> ├─→ Data Agent        收数据（PDF、RSS、财报）</span><br><span class="line"> ├─→ Research Agent    深度研究（行业、公司）</span><br><span class="line"> ├─→ Analysis Agent    财务建模（DCF、估值）</span><br><span class="line"> ├─→ Memory Agent      知识管理（存储、检索）</span><br><span class="line"> ├─→ Decision Agent    投资决策（评估、风险）</span><br><span class="line"> └─→ Report Agent      报告输出（图表、Excel）</span><br></pre></td></tr></table></figure>
+
+<h2 id="关键设计"><a href="#关键设计" class="headerlink" title="关键设计"></a>关键设计</h2><table>
+<thead>
+<tr>
+<th>设计点</th>
+<th>做法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>角色隔离</strong></td>
+<td>每个 agent 的 SKILL.md 明确写了「✅ 做什么」和「❌ 不做什么」</td>
+</tr>
+<tr>
+<td><strong>数据共享</strong></td>
+<td>统一用 <code>workspace/</code> 目录，<code>inbox/</code> 存原始数据，<code>output/</code> 存产出</td>
+</tr>
+<tr>
+<td><strong>工具即脚本</strong></td>
+<td>所有工具都是独立 Python 脚本，<code>uv run</code> 一行运行，零配置</td>
+</tr>
+<tr>
+<td><strong>人在回路</strong></td>
+<td>Agent 做分析，人做决策。Decision Agent 提供建议而非替你下单</td>
+</tr>
+</tbody></table>
+<h2 id="为什么是-Workspace-而不是单个-Agent"><a href="#为什么是-Workspace-而不是单个-Agent" class="headerlink" title="为什么是 Workspace 而不是单个 Agent"></a>为什么是 Workspace 而不是单个 Agent</h2><p>单个全能 Agent 的问题：上下文爆炸、角色混乱、输出不可控。</p>
+<p>Workspace 的做法：每个 agent 专注一件事，通过文件系统松耦合协作。你可以单独跟任何一个 agent 对话，也可以让它们串联工作。就像一个投研团队——数据员、分析师、基金经理各司其职。</p>
 
     </article>
+    <!-- license -->
+        <div class="license-wrapper">
+            <p>Author：<a href="https://edison-a-n.github.io">Edison</a>
+            <p>Link：<a href="https://edison-a-n.github.io/2026/03/21/multi-agent-investment-research/">https://edison-a-n.github.io/2026/03/21/multi-agent-investment-research/</a>
+            <p>Publish date：<a href="https://edison-a-n.github.io/2026/03/21/multi-agent-investment-research/">March 21st 2026, 12:00:00 am</a>
+            <p>Update date：<a href="https://edison-a-n.github.io/2026/03/21/multi-agent-investment-research/">March 21st 2026, 5:54:22 pm</a>
+            <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+        </li>
+        <li class="previous">
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2026/03/16/agent-loop-study/" title="Agent Loop 技术调研报告">
+                    <div class="prevTitle">Agent Loop 技术调研报告</div>
+                </a>
+        </li>
+    </ul>
+    <!-- comment -->
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+            
+            
+            
+            <!-- utteranc评论 -->
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+            
+            
+            
+        </div>
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    <!-- Mathjax -->
 </main>
 
                 <!-- profile -->
@@ -510,6 +594,13 @@
 
         </div>
         <!-- toc -->
+            <div class="toc-wrapper toc-wrapper-loding" style=    top:50vh;
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E7%BD%AE%E5%87%86%E5%A4%87"><span class="toc-number">1.</span> <span class="toc-text">前置准备</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E8%A3%85-OpenCode"><span class="toc-number">1.1.</span> <span class="toc-text">安装 OpenCode</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%89%E6%8B%A9%E5%AF%B9%E8%AF%9D%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="toc-number">1.2.</span> <span class="toc-text">选择对话客户端</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%85%8D%E7%BD%AE-Agent-Memory"><span class="toc-number">1.3.</span> <span class="toc-text">配置 Agent Memory</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8-Workspace"><span class="toc-number">1.4.</span> <span class="toc-text">启动 Workspace</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E6%80%9D%E8%B7%AF"><span class="toc-number">2.</span> <span class="toc-text">核心思路</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E8%AE%BE%E8%AE%A1"><span class="toc-number">3.</span> <span class="toc-text">关键设计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E6%98%AF-Workspace-%E8%80%8C%E4%B8%8D%E6%98%AF%E5%8D%95%E4%B8%AA-Agent"><span class="toc-number">4.</span> <span class="toc-text">为什么是 Workspace 而不是单个 Agent</span></a></li></ol>
+            </div>
         <!-- sidebar -->
         <div class="sidebar sidebar-hide">
     <ul class="sidebar-tabs sidebar-tabs-active-0">
@@ -852,6 +943,7 @@
         <!-- busuanzi -->
             <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
         <!-- async load share.js -->
+            <script src="/scripts/share.js" async></script>
         <!-- mermaid -->
     </body>
 </html>
