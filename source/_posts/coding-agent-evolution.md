@@ -11,7 +11,7 @@ categories:
 excerpt: >-
   本文梳理了 Coding Agent 从 GitHub Copilot 到 Claude Code，再到 Universal Agent 的完整演进历程，
   重点探讨了 MCP 协议、Skill 系统、Harness Engineering 等关键概念，揭示了 AI 从「会说话」到「会行动」的范式转移。
-date: 2025-03-30 12:00:00
+date: 2026-03-30 12:00:00
 ---
 
 <div style="color: #666; font-style: italic; font-size: 0.9em; margin-bottom: 1em;">
@@ -426,7 +426,7 @@ Claude Code 的发布引发了整个行业的快速跟进，验证了「Agentic 
 **2025年全年**：
 - Cursor 从「AI 编辑器」转向「Agentic IDE」
 - Windsurf、Kilo Code 等工具加入 Agent 能力
-- OpenCode 成为主流开源替代（GitHub 7万+ stars）
+- OpenClaw 等开源 Agent 工具成为主流替代方案
 
 **行业共识形成**：Terminal-based Agent + MCP + Subagents 成为标准架构。
 
@@ -435,7 +435,7 @@ Claude Code 的发布引发了整个行业的快速跟进，验证了「Agentic 
 Claude Code 的商业表现证明了这一模式的盈利能力：
 
 - **发布后3个月**：使用增长 **10 倍以上**
-- **年化收入**：突破 **5 亿美元**（截至2025年9月，后续增长至数十亿美元级别）
+- **商业化表现**：用户采用率显著提升，成为 Anthropic 重要收入来源
 - **用户群体**：从专业开发者扩展到非技术人员
 
 对于一个「Terminal 里的黑屏白字」工具，这些数据是惊人的。它说明：
