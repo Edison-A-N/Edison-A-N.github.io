@@ -11,6 +11,9 @@
   "hexo": {
     "version": "6.3.0"
   },
+  "devDependencies": {
+    "baseline-browser-mapping": "^2.2.0"
+  },
   "dependencies": {
     "hexo": "^6.3.0",
     "hexo-deployer-git": "^3.0.0",
