@@ -8,9 +8,9 @@ categories:
   - AI Agent
 date: 2026-03-16 00:00:00
 excerpt: >-
-  本文对五大平台的 Agent Loop 实现进行了系统性调研与对比分析，涵盖 Anthropic Agent SDK、OpenAI Codex
-  CLI、OpenClaw 运行时、Google ADK Loop Agents 与 LangChain Deep Agents。从控制论视角剖析
-  Agent Loop 的本质，并对 ReAct、Reflection 等扩展范式的工程价值进行了审视。
+  Agent Loop 是让 LLM 从"单轮问答"变成"自主执行任务"的核心机制。本文从一个最小模型出发建立直觉，
+  然后对 Anthropic Agent SDK、OpenAI Codex CLI、OpenClaw、Google ADK Loop Agents 与
+  LangChain Deep Agents 五大平台的实现进行横向对比，从控制论视角剖析其本质，并评估 ReAct、Reflection 等扩展范式的工程价值。
 toc: true
 ---
 
@@ -28,19 +28,122 @@ toc: true
 
 大语言模型（LLM）从"单轮问答"走向"自主执行任务"，核心转变在于引入了 **Agent Loop**——一个让模型持续感知环境、调用工具、获取反馈、再次决策的闭环结构。
 
-本报告选取了五个代表性平台的 Agent Loop 文档进行调研：
+单轮调用的局限很明显：你让 LLM "帮我修这个 bug"，它只能给你一段建议文本。但如果它能读代码、改代码、跑测试、看报错、再改——这就是 Agent Loop 赋予的能力。**核心不是模型变聪明了，而是模型被放进了一个有反馈的循环里。**
+
+本文首先从一个最小示例出发，建立 Agent Loop 的直觉认知；然后调研五个代表性平台的具体实现（Anthropic Agent SDK、OpenAI Codex CLI、OpenClaw、Google ADK Loop Agents、LangChain Deep Agents）；最后从控制论视角提炼本质，并评估 ReAct、Reflection 等学术扩展范式的工程价值。
+
+**阅读导航**：
+- 想快速理解 Agent Loop 是什么 → 读下一节「Agent Loop 的最小模型」
+- 想看各平台实现细节 → 跳到「Anthropic Agent SDK」至「LangChain Deep Agents」
+- 想看分析观点 → 直接跳到「分析与讨论」
+
+---
+
+## Agent Loop 的最小模型
+
+### 从一个例子说起
+
+假设你让一个 LLM Agent "帮我修复这个 Python 项目的测试失败"。
+
+**没有 Agent Loop 的世界（单轮调用）**：
+- 你把报错贴给 LLM → LLM 回复一段修复建议 → 结束。
+- 你需要自己动手改代码、跑测试、把新报错再贴回去……
+
+**有 Agent Loop 的世界**：
+1. LLM 读到你的请求，决定先看看测试报错 → 调用 `run_tests` 工具
+2. 工具返回：`FAILED test_auth.py::test_login - AssertionError`
+3. LLM 看到报错，决定读一下源文件 → 调用 `read_file("auth.py")`
+4. 工具返回文件内容，LLM 发现第 42 行有拼写错误 → 调用 `edit_file("auth.py", ...)`
+5. 修改完成，LLM 决定验证一下 → 再次调用 `run_tests`
+6. 工具返回：`ALL PASSED` → LLM 判断任务完成，输出最终回复
+
+关键区别：**LLM 不再是一次性给答案，而是在一个循环里不断「决策 → 行动 → 观察结果 → 再决策」，直到任务完成。**
+
+### 最小伪代码
+
+把上面的过程抽象成代码，Agent Loop 的核心结构出奇地简单：
+
+```python
+while True:
+    response = llm.call(messages)        # LLM 基于全部历史做决策
+    if response.has_tool_calls():        # 模型决定调用工具？
+        results = execute(response.tool_calls)  # 执行工具
+        messages.append(results)         # 把结果追加到历史
+    else:                                # 模型决定不调工具了？
+        return response.text             # 任务完成，返回最终回复
+```
+
+就这么几行。所有平台——无论 Anthropic、OpenAI、Google 还是 LangChain——其核心循环都是这个结构的变体。
+
+### 三个核心要素
+
+```
+              ┌─────────────┐
+              │   用户输入    │
+              └──────┬───────┘
+                     ▼
+         ┌──────────────────────┐
+         │                      │
+         │   ① 决策者（LLM）    │◄──────────────┐
+         │   阅读全部历史，     │                │
+         │   决定下一步行动     │                │
+         │                      │                │
+         └──────┬───────────────┘                │
+                │                                │
+        ┌───────┴────────┐                       │
+        ▼                ▼                       │
+   输出文本         调用工具                      │
+   （结束）              │                       │
+                         ▼                       │
+              ┌─────────────────┐                │
+              │                 │                │
+              │ ② 执行器（工具）│                │
+              │ 读文件/跑命令/  │                │
+              │ 调 API/...     │                │
+              │                 │                │
+              └────────┬────────┘                │
+                       │                         │
+                       ▼                         │
+              ┌─────────────────┐                │
+              │                 │                │
+              │ ③ 反馈回路      │────────────────┘
+              │ 工具结果回注    │
+              │ 到消息历史      │
+              │                 │
+              └─────────────────┘
+```
+
+1. **决策者（LLM）**：阅读全部上下文历史，输出"调用工具"或"最终回复"
+2. **执行器（工具系统）**：执行 LLM 指定的操作——读文件、跑命令、调 API 等
+3. **反馈回路**：工具执行的结果（成功/失败/报错信息）被追加到消息历史，成为 LLM 下一轮决策的输入
+
+这三个要素缺一不可。没有工具，LLM 只能说不能做；没有反馈回路，LLM 做了也不知道结果；没有循环，LLM 做一步就停了。
+
+> 如果你学过控制论，会发现这就是一个经典的 **负反馈控制回路**——Agent Loop 并非 AI 领域的新发明，而是控制论在 LLM 场景下的自然应用。后文「分析与讨论」一节会详细展开这一视角。
+
+### 各平台围绕最小模型做了什么
+
+理解了最小模型之后，后续五个平台的调研可以用一句话概括：**核心循环都一样，差异全在循环"周围"的工程设施上。**
+
+| 平台 | 在循环周围重点建设了什么 |
+|------|--------------------------|
+| **Anthropic Agent SDK** | 工具权限控制、子 Agent、会话持久化 |
+| **OpenAI Codex CLI** | Prompt 前缀缓存（推理性能优化） |
+| **OpenClaw** | 多会话并发控制、15+ 生命周期 Hook |
+| **Google ADK Loop Agents** | 编排层循环（子 Agent 的确定性迭代） |
+| **LangChain Deep Agents** | 中间件栈、虚拟文件系统、上下文自动管理 |
+
+---
+
+## 文献来源
+
+本报告选取了五个代表性平台进行调研：
 
 - **Anthropic Agent SDK**：面向开发者的客户端 SDK，侧重易用性与安全控制
 - **OpenAI Codex CLI**：本地编码助手，侧重推理性能优化
 - **OpenClaw**：服务端 Agent 运行时，侧重多会话与会话级/全局并发控制、插件扩展
 - **Google ADK Loop Agents**：工作流式 Agent 编排，侧重「循环执行子 Agent」的确定性流程
 - **LangChain Deep Agents**：Agent Harness，侧重长时间运行的复杂任务，内置规划、虚拟文件系统与子 Agent 能力
-
-五者定位不同，但 Agent Loop 的核心结构高度一致。本文在梳理各平台实现细节的基础上，从控制论视角提炼 Agent Loop 的本质，并对 ReAct、Reflection 等学术界常见的扩展范式进行工程价值评估。
-
----
-
-## 文献来源
 
 | 编号 | 来源 | 标题 | URL |
 |------|------|------|-----|
@@ -116,7 +219,7 @@ Codex CLI 同样采用 while 循环模式，但强调 **无状态设计** [2]：
 
 循环结构 [2]：
 
-```
+```python
 while True:
     response = responses_api.create(instructions, tools, input)
     if response.has_tool_calls():
