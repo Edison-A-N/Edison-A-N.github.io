@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+<!-- keywords -->
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Edison">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Edison">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,Edison,DDD">
+    <meta name="description" content="Thinking, writing and sharing''">
+    <meta name="description" content="张楠资深后端工程师 &#x2F; 架构师 · 10年+经验 · 专注分布式系统与AI应用架构 Email: &amp;#122;&amp;#104;&amp;#x61;&amp;#110;&amp;#x67;&amp;#x6e;&amp;#x36;&amp;#x36;&amp;#x31;&amp;#x40;&amp;#x67;&amp;#109;&amp;#x61;&amp;#105;&amp;#x6c;&amp;#46;&amp;#x63;&amp;#111;&amp;#x6d; | GitHub: github.com&#x2F;Edison">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Resume">
+<meta property="og:url" content="https://edison-a-n.github.io/resume/index.html">
+<meta property="og:site_name" content="Edison">
+<meta property="og:description" content="张楠资深后端工程师 &#x2F; 架构师 · 10年+经验 · 专注分布式系统与AI应用架构 Email: &amp;#122;&amp;#104;&amp;#x61;&amp;#110;&amp;#x67;&amp;#x6e;&amp;#x36;&amp;#x36;&amp;#x31;&amp;#x40;&amp;#x67;&amp;#109;&amp;#x61;&amp;#105;&amp;#x6c;&amp;#46;&amp;#x63;&amp;#111;&amp;#x6d; | GitHub: github.com&#x2F;Edison">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-03-14T10:58:43.126Z">
+<meta property="article:modified_time" content="2026-03-14T10:58:43.126Z">
+<meta property="article:author" content="Edison">
+<meta name="twitter:card" content="summary">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/avatar/avatar.jpg">
+    <title>Resume · Edison&#39;s Blog</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .footer-fixed-btn,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(
+            -45deg,
+            #444 0,
+            #444 80px,
+            #333 80px,
+            #333 160px
+        );
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link id="stylesheet-fancybox" rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link id="stylesheet-base" rel="preload" href="/css/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link id="stylesheet-mobile" rel="preload" href="/css/mobile.css" as="style" onload="this.onload=null;this.rel='stylesheet';this.media='screen and (max-width: 960px)'">
+    <link id="stylesheet-theme-dark" rel="preload" href="/css/dark.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    <!-- 百度统计  -->
+    <!-- 谷歌统计  -->
+        <script>
+            var cnzz_s_tag = document.createElement('script');
+            cnzz_s_tag.type = 'text/javascript';
+            cnzz_s_tag.async = true;
+            cnzz_s_tag.charset = 'utf-8';
+            cnzz_s_tag.src = 'https://w.cnzz.com/c.php?id=&async=1';
+            var root_s = document.getElementsByTagName('script')[0];
+            root_s.parentNode.insertBefore(cnzz_s_tag, root_s);
+        </script>
+    <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-188648772-3"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-188648772-3');
+        </script>
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Edison" type="application/atom+xml">
+</head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+        <body class="about-body">
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        <div class="header-sidebar-menu">
+            <div style="padding-left: 1px;">&#xe775;</div>
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href="/">Edison's Studio.</a>
+        </span>
+    </div>
+    <!-- toggle banner -->
+    <div class="banner">
+        <div class="blog-title header-element">
+            <a href="/">Edison&#39;s Studio.</a>
+        </div>
+        <div class="post-title header-element">
+            <a href="#" class="post-name">Resume</a>
+        </div>
+    </div>
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- donate button -->
+
+    <!-- back to top button -->
+    <div class="footer-fixed-btn footer-fixed-btn--hidden back-top">
+        <div>&#xe639;</div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="    height:50vh;
+">
+    <!-- 主页  -->
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/about-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+                Resume
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+        </p>
+        <!-- 文章页 meta -->
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" alt="loading">
+            <div class="container container-unloaded">
+                <!-- 不可以删除，否则会调用 post 的 layout -->
+<main class="main about-page">
+    <article class="article-entry">
+        <h2 id="张楠"><a href="#张楠" class="headerlink" title="张楠"></a>张楠</h2><p><strong>资深后端工程师 &#x2F; 架构师</strong> · 10年+经验 · 专注分布式系统与AI应用架构</p>
+<p>Email: <a href="mailto:&#122;&#104;&#x61;&#110;&#x67;&#x6e;&#x36;&#x36;&#x31;&#x40;&#x67;&#109;&#x61;&#105;&#x6c;&#46;&#x63;&#111;&#x6d;">&#122;&#104;&#x61;&#110;&#x67;&#x6e;&#x36;&#x36;&#x31;&#x40;&#x67;&#109;&#x61;&#105;&#x6c;&#46;&#x63;&#111;&#x6d;</a> | GitHub: <a target="_blank" rel="noopener" href="https://github.com/Edison-A-N">github.com&#x2F;Edison-A-N</a></p>
+<hr>
+<h2 id="职业概述"><a href="#职业概述" class="headerlink" title="职业概述"></a>职业概述</h2><p>10年后端开发与架构经验，从Python&#x2F;Django单体应用到Golang微服务与云原生架构，具备完整的架构演进与团队赋能经验。</p>
+<p>擅长领域：</p>
+<ul>
+<li><strong>系统架构设计</strong>：DDD、微服务、云原生、高并发系统</li>
+<li><strong>AI应用架构</strong>：LLM集成、Agent系统、MCP协议</li>
+<li><strong>数据密集型应用</strong>：药物研发数据平台、分布式计算</li>
+<li><strong>团队赋能</strong>：技术选型、Code Review文化、内部工具建设</li>
+</ul>
+<hr>
+<h2 id="工作经历"><a href="#工作经历" class="headerlink" title="工作经历"></a>工作经历</h2><h3 id="晶泰科技-XtalPi-资深软件工程师-x2F-技术负责人"><a href="#晶泰科技-XtalPi-资深软件工程师-x2F-技术负责人" class="headerlink" title="晶泰科技 (XtalPi) | 资深软件工程师 &#x2F; 技术负责人"></a>晶泰科技 (XtalPi) | 资深软件工程师 &#x2F; 技术负责人</h3><p><em>2019.06 - 至今 (5年+)</em></p>
+<ul>
+<li>主导<strong>ID4药物研发平台</strong>与<strong>数字化平台</strong>架构设计，支撑<strong>10+企业客户、1000+并发计算任务</strong></li>
+<li>负责团队技术选型与架构评审，推动从Django单体向Golang微服务架构演进</li>
+<li>建立Code Review机制与API设计规范，团队代码质量显著提升</li>
+<li>深度参与<strong>MCP生态建设</strong>，推动团队Agent系统采用标准化协议</li>
+</ul>
+<h3 id="华大基因-BGI-软件工程师"><a href="#华大基因-BGI-软件工程师" class="headerlink" title="华大基因 (BGI) | 软件工程师"></a>华大基因 (BGI) | 软件工程师</h3><p><em>2018.01 - 2019.06 (1.5年)</em></p>
+<hr>
+<h2 id="核心项目"><a href="#核心项目" class="headerlink" title="核心项目"></a>核心项目</h2><h3 id="一、开源贡献与技术影响力"><a href="#一、开源贡献与技术影响力" class="headerlink" title="一、开源贡献与技术影响力"></a>一、开源贡献与技术影响力</h3><p><em>2024.07 - 至今 | 16个已合并PR，影响数万开发者</em></p>
+<p>深度参与**Model Context Protocol (MCP)**生态建设，在多个核心项目中贡献代码：</p>
+<h4 id="OpenAgents-1700-stars"><a href="#OpenAgents-1700-stars" class="headerlink" title="OpenAgents (1700+ stars)"></a><a target="_blank" rel="noopener" href="https://github.com/openagents-org/openagents">OpenAgents</a> (1700+ stars)</h4><p>AI Agent Networks开源平台，支持MCP&#x2F;A2A协议：贡献Agent配置增强、自动启动机制、发布流程自动化等7个功能与Bug修复</p>
+<h4 id="MCP生态核心项目"><a href="#MCP生态核心项目" class="headerlink" title="MCP生态核心项目"></a>MCP生态核心项目</h4><ul>
+<li><strong><a target="_blank" rel="noopener" href="https://github.com/modelcontextprotocol/python-sdk">python-sdk</a></strong> (官方SDK, 21k+ stars)：修复StreamableHTTP传输竞态条件 (<a target="_blank" rel="noopener" href="https://github.com/modelcontextprotocol/python-sdk/pull/1384">#1384</a>)，解决高并发场景下的<code>ClosedResourceError</code>异常，提升服务器稳定性</li>
+<li><strong><a target="_blank" rel="noopener" href="https://github.com/modelcontextprotocol/inspector">inspector</a></strong> (MCP调试工具)：修复<code>anyOf</code> schema中<code>$ref</code>解析与枚举处理问题 (<a target="_blank" rel="noopener" href="https://github.com/modelcontextprotocol/inspector/pull/901">#901</a>)，确保复杂类型正确定义</li>
+<li><strong><a target="_blank" rel="noopener" href="https://github.com/grll/mcpadapt">mcpadapt</a></strong> (MCP适配器)：<ul>
+<li>优化SmolAgentsAdapter的<code>outputSchema</code>处理，移除冗余<code>$defs</code>定义，减少LLM prompt token消耗 (<a target="_blank" rel="noopener" href="https://github.com/grll/mcpadapt/pull/77">#77</a>)</li>
+<li>修复WebSocket依赖缺失问题，确保<code>mcp[ws]</code>正确安装 (<a target="_blank" rel="noopener" href="https://github.com/grll/mcpadapt/pull/74">#74</a>)</li>
+</ul>
+</li>
+</ul>
+<h4 id="Biomni-snap-stanford-x2F-Biomni-斯坦福生物医学AI-Agent"><a href="#Biomni-snap-stanford-x2F-Biomni-斯坦福生物医学AI-Agent" class="headerlink" title="Biomni (snap-stanford&#x2F;Biomni, 斯坦福生物医学AI Agent)"></a>Biomni (<a target="_blank" rel="noopener" href="https://github.com/snap-stanford/Biomni">snap-stanford&#x2F;Biomni</a>, 斯坦福生物医学AI Agent)</h4><ul>
+<li><strong>MCP工具参数解析修复</strong> (<a target="_blank" rel="noopener" href="https://github.com/snap-stanford/Biomni/pull/181">#181</a>)：修复自动发现MCP工具的必需参数解析逻辑，确保工具调用参数正确性</li>
+<li><strong>性能优化</strong> (<a target="_blank" rel="noopener" href="https://github.com/snap-stanford/Biomni/pull/143">#143</a>, <a target="_blank" rel="noopener" href="https://github.com/snap-stanford/Biomni/pull/122">#122</a>)：实现LLM依赖懒加载，引入流式处理机制使资源准备效率提升<strong>40%</strong></li>
+</ul>
+<p><strong>技术影响力</strong>：</p>
+<ul>
+<li>提交的<strong>16个PR</strong>被合并至核心开源项目，代码影响<strong>数万开发者</strong></li>
+<li>深度理解MCP协议实现细节，在团队内部推动标准化Agent架构落地</li>
+<li>活跃于MCP社区，参与协议设计与问题讨论</li>
+</ul>
+<hr>
+<h3 id="二、PatSight-平台"><a href="#二、PatSight-平台" class="headerlink" title="二、PatSight 平台"></a>二、<a target="_blank" rel="noopener" href="https://patent.xinsight-ai.com/home">PatSight 平台</a></h3><p><em>2024.07 - 至今 | 架构设计 &amp; 核心开发</em></p>
+<p>AI驱动的药物专利数据挖掘与分析平台（晶泰科技 x IDEA研究院联合开发），<strong>1小时内自动从专利中提取关键数据</strong>。</p>
+<p><strong>背景与挑战</strong>：</p>
+<ul>
+<li>需要处理海量非结构化专利文档，自动提取分子结构与生物活性数据</li>
+<li>AI模型推理耗时，需要设计高效的后台任务调度与结果缓存机制</li>
+<li>与外部研究院协作，接口兼容性与数据一致性要求高</li>
+</ul>
+<p><strong>架构方案</strong>：</p>
+<ul>
+<li>设计异步流水线处理专利文档解析、AI提取、数据校验三阶段</li>
+<li>实现可配置的数据抽取规则引擎，支持不同专利类型</li>
+<li>构建分子数据管理与SAR分析能力模块</li>
+</ul>
+<p><strong>业务价值</strong>：平台上线后显著缩短药物研发前期的专利调研周期，从<strong>数天缩短至1小时内</strong>。</p>
+<hr>
+<h3 id="三、ID4-药物研发平台"><a href="#三、ID4-药物研发平台" class="headerlink" title="三、ID4 药物研发平台"></a>三、<a target="_blank" rel="noopener" href="https://www.xtalpi.com/en/solution">ID4 药物研发平台</a></h3><p><em>2019.06 - 2024.12 | 平台架构负责人</em></p>
+<p>SaaS + 私有化部署的药物研发计算平台，提供分子生成、自由能计算、力场拟合等服务，支持多租户、多云调度与统一数据管理。</p>
+<h4 id="3-1-XMolgen-AI分子生成平台"><a href="#3-1-XMolgen-AI分子生成平台" class="headerlink" title="3.1 XMolgen - AI分子生成平台"></a>3.1 <a target="_blank" rel="noopener" href="https://en.xtalpi.com/xmolgen/">XMolgen - AI分子生成平台</a></h4><p><em>2022.12 - 2024.12</em></p>
+<p><strong>背景</strong>：AI分子生成模型迭代快，需要灵活的模型接入机制；分子库数据量大（百万级），查询性能要求高。</p>
+<p><strong>架构决策</strong>：</p>
+<ul>
+<li><strong>分层架构</strong>：基于DDD设计，internal封装entity&#x2F;infrastructure&#x2F;service，对外暴露application&#x2F;facade层，实现领域边界清晰</li>
+<li><strong>算法接入层</strong>：FastAPI搭建RPC服务，算法接口自动注册为HTTP API，实现算法团队独立发布</li>
+<li><strong>数据访问层</strong>：gRPC Stream构建分子库Proxy Service，屏蔽底层存储差异，支持多云调度</li>
+</ul>
+<p><strong>性能优化</strong>：</p>
+<ul>
+<li>设计策略模式统一处理不同算法结果，封装moldb层提供统一接口</li>
+<li>结果分片存储与按需加载，分子数据查询性能提升<strong>60%</strong></li>
+<li>Redlock分布式锁实现租约机制，支撑高并发ID生成</li>
+</ul>
+<p><strong>成果</strong>：支撑<strong>5+分子生成模型</strong>快速接入，实现<strong>多云无缝切换</strong>，故障恢复时间从小时级降至分钟级。</p>
+<h4 id="3-2-XFEP-自由能计算平台"><a href="#3-2-XFEP-自由能计算平台" class="headerlink" title="3.2 XFEP - 自由能计算平台"></a>3.2 <a target="_blank" rel="noopener" href="https://en.xtalpi.com/xfep/">XFEP - 自由能计算平台</a></h4><p><em>2020.06 - 2024.12</em></p>
+<p><strong>背景</strong>：FEP计算是药物亲和力预测的金标准，单次计算耗时数小时至数天，任务状态管理复杂。</p>
+<p><strong>核心设计</strong>：</p>
+<ul>
+<li><strong>异步任务框架</strong>：设计任务状态机管理（提交→运行→完成&#x2F;失败→结果回收），支撑长时间运行任务</li>
+<li><strong>算法发布机制</strong>：JSONRPC-like API设计，算法团队可独立发布新版本，无需后端介入</li>
+<li><strong>稳定性保障</strong>：任务超时检测、失败重试、异常告警，任务成功率从<strong>92%提升至99.5%</strong></li>
+</ul>
+<h4 id="3-3-XFF-分子通用力场平台"><a href="#3-3-XFF-分子通用力场平台" class="headerlink" title="3.3 XFF - 分子通用力场平台"></a>3.3 <a target="_blank" rel="noopener" href="https://xff.xtalpi.com/">XFF - 分子通用力场平台</a></h4><p><em>2019.06 - 2020.06</em></p>
+<ul>
+<li>负责力场数据存储格式改造，提升数据处理效率<strong>50%</strong></li>
+<li>开发任务提交API，支持大规模能量计算任务并发提交</li>
+</ul>
+<hr>
+<h3 id="四、数字化平台建设"><a href="#四、数字化平台建设" class="headerlink" title="四、数字化平台建设"></a>四、数字化平台建设</h3><p><em>2020.08 - 2023.10 | 架构负责人</em></p>
+<p>内部药物研发数字化平台，包含<strong>药物管线管理、药物分子库、DMPK实验管理</strong>三大核心系统，支撑DMTA全周期研发流程。</p>
+<h4 id="4-1-药物管线管理平台"><a href="#4-1-药物管线管理平台" class="headerlink" title="4.1 药物管线管理平台"></a>4.1 药物管线管理平台</h4><p><strong>架构演进</strong>：</p>
+<ul>
+<li><strong>MVP阶段</strong>：Django + DRF快速验证，3周内完成原型，验证产品方向</li>
+<li><strong>规模化阶段</strong>：迁移至Golang微服务，拆分用户&#x2F;项目&#x2F;数据三大领域，支撑<strong>100+活跃用户</strong></li>
+</ul>
+<p><strong>关键设计</strong>：</p>
+<ul>
+<li><strong>权限体系</strong>：调研RBAC&#x2F;Casbin等方案，采用RBAC + Casbin实现细粒度权限，配置效率提升<strong>70%</strong></li>
+<li><strong>性能优化</strong>：Redis缓存复杂数据分析结果，响应时间从<strong>2s降至200ms</strong></li>
+<li><strong>消息通信</strong>：Pulsar消息队列实现异步通知，系统耦合度降低</li>
+</ul>
+<h4 id="4-2-药物分子库"><a href="#4-2-药物分子库" class="headerlink" title="4.2 药物分子库"></a>4.2 药物分子库</h4><p><strong>数据架构</strong>：</p>
+<ul>
+<li><strong>数据模型</strong>：Star Schema设计，平衡写入性能与分析灵活性</li>
+<li><strong>元数据系统</strong>：支持字段动态增删，Schema变更无需停机，支撑<strong>50+自定义字段</strong></li>
+<li><strong>计算集成</strong>：FAAS + RPC构建在线分析能力，支持同步&#x2F;异步两种模式</li>
+</ul>
+<p><strong>规模</strong>：管理<strong>100万+分子</strong>的全生命周期数据。</p>
+<h4 id="4-3-DMPK实验管理平台"><a href="#4-3-DMPK实验管理平台" class="headerlink" title="4.3 DMPK实验管理平台"></a>4.3 DMPK实验管理平台</h4><p><em>2022.04 - 2023.10</em></p>
+<ul>
+<li>DDD领域建模，清晰划分订单&#x2F;商品&#x2F;交付物边界</li>
+<li>技术栈：Gin + Bun ORM，API响应时间**&lt;100ms**</li>
+<li>拆分控制链路与数据链路，与药物分子库实现读写分离</li>
+</ul>
+<hr>
+<h2 id="技术栈"><a href="#技术栈" class="headerlink" title="技术栈"></a>技术栈</h2><p><strong>编程语言</strong>：Golang（精通）· Python（精通）· Rust（熟悉）</p>
+<p><strong>架构能力</strong>：微服务 · DDD · 云原生 · 高并发系统 · 数据密集型应用</p>
+<p><strong>核心技术</strong>：</p>
+<ul>
+<li>Web框架：Hertz · Gin · FastAPI · Django</li>
+<li>数据存储：PostgreSQL · Redis · NebulaGraph · TiDB · S3</li>
+<li>消息通信：gRPC · Pulsar · Kafka</li>
+<li>云原生：Kubernetes · Docker · Consul</li>
+</ul>
+<p><strong>AI&#x2F;LLM</strong>：MCP Protocol · LangChain · Tool Calling · Agent架构</p>
+<hr>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><p><strong>教育</strong>：中山大学 · 海洋科学 · 本科 (2013-2017)</p>
+<p><strong>博客</strong>：<a href="https://edison-a-n.github.io/">edison-a-n.github.io</a> - 技术文章与架构经验分享</p>
+<p><strong>语言</strong>：中文（母语）· 英文（技术文档阅读与写作）</p>
+
+    </article>
+</main>
+
+                <!-- profile -->
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+        <div class="social">
+                            <a href="mailto:zhangn661@gmail.com" class="iconfont-archer email" title="email" ></a>
+                <a href="//github.com/Edison-A-N" class="iconfont-archer github" target="_blank" title="github"></a>
+
+        </div>
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    <!-- 不蒜子  -->
+        <div class="busuanzi-container">
+                <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+        </div>
+</footer>
+
+        </div>
+        <!-- toc -->
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 36
+        </div>
+        <!-- search  -->
+    </div>
+    <div class="post-archive">
+            <div class="archive-year"> 2026 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/14</span>
+            <a class="archive-post-title" href="/2026/04/14/llm-tool-calling-decision-bias/">LLM Agent 中 Skill/Tool 调用决策偏差：技术调研报告</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span>
+            <a class="archive-post-title" href="/2026/04/12/harness-engineering/">Harness Engineering：当 AI 的缰绳比 AI 本身更重要</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span>
+            <a class="archive-post-title" href="/2026/03/30/coding-agent-evolution/">从代码到行动：Coding Agent 如何演变为通用数字助手</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2026/03/21/multi-agent-investment-research/">用 OpenAgents Workspace 协调多 Agent 投研</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/16</span>
+            <a class="archive-post-title" href="/2026/03/16/agent-loop-study/">Agent Loop 技术调研报告</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/14</span>
+            <a class="archive-post-title" href="/2026/03/14/harness-engineering-practical-guide/">Harness Engineering 实践指南：来自 OpenAI、Stripe、Anthropic 等团队的一线经验</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/17</span>
+            <a class="archive-post-title" href="/2026/01/17/trading-drawdown-control-guide/">交易回撤控制指南：认知、守心与仓位管理</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2025 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/28</span>
+            <a class="archive-post-title" href="/2025/12/28/code-execution-sandbox-mcp/">LLM-Driven Agent Architecture with Sandbox and MCP Integration</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2025/11/10/mcp-recent-sharing/">MCP 近期内容分享：从 Resources、Tools 到 Prompts 的实践探索</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span>
+            <a class="archive-post-title" href="/2025/10/28/args_doc_format_comparison/">Tool Args Documentation Format Comparison Analysis</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span>
+            <a class="archive-post-title" href="/2025/10/27/asgi_lifespan_complete_guide/">ASGI Lifespan 完整指南</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/mcp-output-schema/">MCP Output Schema：数据验证与结构化输出的技术实现</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/stop-converting-rest-api-to-mcp/">停止转换REST API到MCP：设计AI原生接口的正确方式</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span>
+            <a class="archive-post-title" href="/2025/09/20/llm-consistency-challenges-large-data-processing/">大型语言模型在处理大批量数据时的一致性挑战与解决方案</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/01</span>
+            <a class="archive-post-title" href="/2024/02/01/nextjs-pagination/">nextjs-pagination</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span>
+            <a class="archive-post-title" href="/2023/09/20/smart-contract-demo/">smart-contract-demo</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/30</span>
+            <a class="archive-post-title" href="/2023/08/30/multi-tenant/">多租户应用与架构设计关注点</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2022 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span>
+            <a class="archive-post-title" href="/2022/12/13/go-ddd/">go-ddd</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/07</span>
+            <a class="archive-post-title" href="/2022/12/07/git-rebase/">使用 `git pull --rebase`</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span>
+            <a class="archive-post-title" href="/2022/12/03/opentelemetry-jaeger/">opnetelemetry-jaeger</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/09</span>
+            <a class="archive-post-title" href="/2022/06/09/ddd-thinking/">ddd-thinking</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/23</span>
+            <a class="archive-post-title" href="/2022/05/23/mvc-and-ddd/">mvc-and-ddd</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span>
+            <a class="archive-post-title" href="/2022/02/13/commit-format-and-auto-changelog/">Git commit 规范</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/tight-lipped/">思考与交流</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/30</span>
+            <a class="archive-post-title" href="/2022/01/30/knowledge-breath-and-depth/">知识掌握的广度与深度</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2021 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/16</span>
+            <a class="archive-post-title" href="/2021/12/16/software-design-doc/">如何撰写技术设计文档</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/21</span>
+            <a class="archive-post-title" href="/2021/11/21/breaking-creation-product/">突破式创新的产品设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span>
+            <a class="archive-post-title" href="/2021/07/15/parallel-and-asynchronous-python/">DRF Exception Handle</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/17</span>
+            <a class="archive-post-title" href="/2021/06/17/DRF-Exception/">DRF Exception Handle</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span>
+            <a class="archive-post-title" href="/2021/06/15/Django-With-DDD/">Django With DDD</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/09</span>
+            <a class="archive-post-title" href="/2021/05/09/Agile-Design/">敏捷软件开发：设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span>
+            <a class="archive-post-title" href="/2021/03/30/DRF-Bussiness-Logic/">Django Restful Framework Business Logic</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2021/03/21/graphql-and-restful/">Graphql and Restful API</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/08</span>
+            <a class="archive-post-title" href="/2021/03/08/grpc-hello-world/">grpc hello world</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/03</span>
+            <a class="archive-post-title" href="/2021/01/03/New-Coding-Language/">我如何学一门新的编程语言</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2020 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/08</span>
+            <a class="archive-post-title" href="/2020/11/08/Agile-Dev/">敏捷开发辅助新项目验证与落地</a>
+        </li>
+            </ul>
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+            <span class="sidebar-tag-name" data-tags="agile">
+                <span class="iconfont-archer">&#xe606;</span>
+                agile
+            </span>
+            <span class="sidebar-tag-name" data-tags="LLM">
+                <span class="iconfont-archer">&#xe606;</span>
+                LLM
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent Loop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent Loop
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Format">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Format
+            </span>
+            <span class="sidebar-tag-name" data-tags="ASGI, Python, FastAPI">
+                <span class="iconfont-archer">&#xe606;</span>
+                ASGI, Python, FastAPI
+            </span>
+            <span class="sidebar-tag-name" data-tags="Architecture">
+                <span class="iconfont-archer">&#xe606;</span>
+                Architecture
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="Sandbox">
+                <span class="iconfont-archer">&#xe606;</span>
+                Sandbox
+            </span>
+            <span class="sidebar-tag-name" data-tags="MCP">
+                <span class="iconfont-archer">&#xe606;</span>
+                MCP
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI
+            </span>
+            <span class="sidebar-tag-name" data-tags="Claude Code">
+                <span class="iconfont-archer">&#xe606;</span>
+                Claude Code
+            </span>
+            <span class="sidebar-tag-name" data-tags="Harness Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Harness Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="thinking">
+                <span class="iconfont-archer">&#xe606;</span>
+                thinking
+            </span>
+            <span class="sidebar-tag-name" data-tags="DDD">
+                <span class="iconfont-archer">&#xe606;</span>
+                DDD
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Calling">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Calling
+            </span>
+            <span class="sidebar-tag-name" data-tags="Prompt Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Prompt Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="OpenAgents">
+                <span class="iconfont-archer">&#xe606;</span>
+                OpenAgents
+            </span>
+            <span class="sidebar-tag-name" data-tags="投研">
+                <span class="iconfont-archer">&#xe606;</span>
+                投研
+            </span>
+            <span class="sidebar-tag-name" data-tags="Multi-Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                Multi-Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="multi-tenant">
+                <span class="iconfont-archer">&#xe606;</span>
+                multi-tenant
+            </span>
+            <span class="sidebar-tag-name" data-tags="可观测性">
+                <span class="iconfont-archer">&#xe606;</span>
+                可观测性
+            </span>
+            <span class="sidebar-tag-name" data-tags="opentelemetry">
+                <span class="iconfont-archer">&#xe606;</span>
+                opentelemetry
+            </span>
+            <span class="sidebar-tag-name" data-tags="API Design">
+                <span class="iconfont-archer">&#xe606;</span>
+                API Design
+            </span>
+            <span class="sidebar-tag-name" data-tags="Trading">
+                <span class="iconfont-archer">&#xe606;</span>
+                Trading
+            </span>
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+        <span class="sidebar-category-name" data-categories="AI Agent">
+            <span class="iconfont-archer">&#xe60a;</span>
+            AI Agent
+        </span>
+        <span class="sidebar-category-name" data-categories="交易策略">
+            <span class="iconfont-archer">&#xe60a;</span>
+            交易策略
+        </span>
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "https://edison-a-n.github.io",
+        root: siteMetaRoot,
+        author: "Edison"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+        <!-- main func -->
+        <script src="/scripts/main.js"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.umd.js" onload="window.Fancybox.bind('[data-fancybox]')" defer></script>
+        <!-- algolia -->
+        <!-- busuanzi -->
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        <!-- async load share.js -->
+        <!-- mermaid -->
+    </body>
+</html>

@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+<!-- keywords -->
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Edison">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Edison">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,Edison,DDD">
+    <meta name="description" content="Thinking, writing and sharing''">
+    <meta name="description" content="基于 OpenAI、Stripe、Anthropic、LangChain、Mitchell Hashimoto 等团队的一线经验，系统整理 Harness Engineering 的十大实践，涵盖 AGENTS.md、架构约束、闭环验证、会话间记忆、熵治理等核心主题，附量化证据与 16 篇参考文献。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Harness Engineering 实践指南：来自 OpenAI、Stripe、Anthropic 等团队的一线经验">
+<meta property="og:url" content="https://edison-a-n.github.io/2026/03/14/harness-engineering-practical-guide/index.html">
+<meta property="og:site_name" content="Edison">
+<meta property="og:description" content="基于 OpenAI、Stripe、Anthropic、LangChain、Mitchell Hashimoto 等团队的一线经验，系统整理 Harness Engineering 的十大实践，涵盖 AGENTS.md、架构约束、闭环验证、会话间记忆、熵治理等核心主题，附量化证据与 16 篇参考文献。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-03-13T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-03-14T11:22:28.739Z">
+<meta property="article:author" content="Edison">
+<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="AI Agent">
+<meta property="article:tag" content="Harness Engineering">
+<meta name="twitter:card" content="summary">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/avatar/avatar.jpg">
+    <title>Harness Engineering 实践指南：来自 OpenAI、Stripe、Anthropic 等团队的一线经验 · Edison&#39;s Blog</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .footer-fixed-btn,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(
+            -45deg,
+            #444 0,
+            #444 80px,
+            #333 80px,
+            #333 160px
+        );
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link id="stylesheet-fancybox" rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link id="stylesheet-base" rel="preload" href="/css/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link id="stylesheet-mobile" rel="preload" href="/css/mobile.css" as="style" onload="this.onload=null;this.rel='stylesheet';this.media='screen and (max-width: 960px)'">
+    <link id="stylesheet-theme-dark" rel="preload" href="/css/dark.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    <!-- 百度统计  -->
+    <!-- 谷歌统计  -->
+        <script>
+            var cnzz_s_tag = document.createElement('script');
+            cnzz_s_tag.type = 'text/javascript';
+            cnzz_s_tag.async = true;
+            cnzz_s_tag.charset = 'utf-8';
+            cnzz_s_tag.src = 'https://w.cnzz.com/c.php?id=&async=1';
+            var root_s = document.getElementsByTagName('script')[0];
+            root_s.parentNode.insertBefore(cnzz_s_tag, root_s);
+        </script>
+    <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-188648772-3"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-188648772-3');
+        </script>
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Edison" type="application/atom+xml">
+</head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+        <body class="post-body">
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        <div class="header-sidebar-menu">
+            <div style="padding-left: 1px;">&#xe775;</div>
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href="/">Edison's Studio.</a>
+        </span>
+    </div>
+    <!-- toggle banner -->
+    <div class="banner">
+        <div class="blog-title header-element">
+            <a href="/">Edison&#39;s Studio.</a>
+        </div>
+        <div class="post-title header-element">
+            <a href="#" class="post-name">Harness Engineering 实践指南：来自 OpenAI、Stripe、Anthropic 等团队的一线经验</a>
+        </div>
+    </div>
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- donate button -->
+
+    <!-- back to top button -->
+    <div class="footer-fixed-btn footer-fixed-btn--hidden back-top">
+        <div>&#xe639;</div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="    height:50vh;
+">
+    <!-- 主页  -->
+    <!-- 404页  -->
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+                Harness Engineering 实践指南：来自 OpenAI、Stripe、Anthropic 等团队的一线经验
+            <!-- 404 -->
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            <!-- 404 -->
+        </p>
+        <!-- 文章页 meta -->
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                    <div class="post-intro-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="LLM">LLM</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Harness Engineering">Harness Engineering</a>
+</div>
+
+                <!-- 文章字数统计 -->
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">4.7k</span>Reading time: <span class="post-count reading-time">19 min</span></span>
+                    </div>
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2026/03/14</span>
+                    <!-- busuanzi -->
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" alt="loading">
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <div style="color: #666; font-style: italic; font-size: 0.9em; margin-bottom: 1em;">
+本文内容由 AI 协助生成
+</div>
+
+<blockquote>
+<p>基于 OpenAI、Stripe、Anthropic、LangChain、Mitchell Hashimoto 等团队的一线经验整理。</p>
+<p>整理时间：2026 年 3 月</p>
+</blockquote>
+<hr>
+<h2 id="总论：一个核心认知转变"><a href="#总论：一个核心认知转变" class="headerlink" title="总论：一个核心认知转变"></a>总论：一个核心认知转变</h2><blockquote>
+<p>“Our most difficult challenges now center on designing environments, feedback loops, and control systems.”<br>— OpenAI Harness Engineering 团队 [1]</p>
+</blockquote>
+<p>Harness Engineering 的核心认知转变是：<strong>当 Agent 犯错时，问题几乎不是”代码写错了”，而是”环境缺了什么”。</strong> 修复方式不是”再试一次”，而是”诊断缺少的能力，然后让 Agent 自己把这个能力补上”。[1]</p>
+<p>工程师的角色从 <strong>代码作者</strong> 变为 <strong>系统设计师</strong>：设计约束、构建反馈回路、维护文档基础设施、管理 Agent 工作流。[2][3]</p>
+<hr>
+<h2 id="实践一：AGENTS-md-—-把文档变成免疫系统"><a href="#实践一：AGENTS-md-—-把文档变成免疫系统" class="headerlink" title="实践一：AGENTS.md — 把文档变成免疫系统"></a>实践一：AGENTS.md — 把文档变成免疫系统</h2><h3 id="核心原则"><a href="#核心原则" class="headerlink" title="核心原则"></a>核心原则</h3><p>Mitchell Hashimoto 的定义最为精炼：</p>
+<blockquote>
+<p>“Anytime you find an agent makes a mistake, you take the time to engineer a solution such that the agent never makes that mistake again.”<br>— Mitchell Hashimoto [4]</p>
+</blockquote>
+<p>AGENTS.md 不是写一次就忘的文档。它是一个<strong>免疫系统</strong>：每次 Agent 犯错，就增加一条规则防止再犯。</p>
+<h3 id="具体做法"><a href="#具体做法" class="headerlink" title="具体做法"></a>具体做法</h3><p><strong>做法 A：渐进式披露（Progressive Disclosure）</strong></p>
+<p>不要写一个巨大的单一文件。OpenAI 团队的经验教训：[1]</p>
+<ul>
+<li>❌ 巨型 AGENTS.md → 上下文拥挤（挤掉了真正的任务和代码）、过度指导（所有东西都标记”重要”则等于没有重要的）、即时腐烂（无法机械验证）。</li>
+<li>✅ AGENTS.md 作为<strong>目录表</strong>（约 100 行），指向深层文档。OpenAI 仓库有 <strong>88 个 AGENTS.md 文件</strong>，每个子系统一个。[1]</li>
+</ul>
+<p>推荐结构（来自 OpenAI）：[1]</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">AGENTS.md               ← 目录表（~100 行）</span><br><span class="line">ARCHITECTURE.md         ← 顶层领域地图</span><br><span class="line">docs/</span><br><span class="line">├── design-docs/        ← 带索引的架构决策</span><br><span class="line">├── exec-plans/</span><br><span class="line">│   ├── active/</span><br><span class="line">│   ├── completed/</span><br><span class="line">│   └── tech-debt-tracker.md</span><br><span class="line">├── generated/</span><br><span class="line">│   └── db-schema.md</span><br><span class="line">├── product-specs/</span><br><span class="line">├── references/         ← 外部库文档（为 LLM 重新格式化）</span><br><span class="line">└── ...</span><br></pre></td></tr></table></figure>
+
+<p><strong>做法 B：每一行对应一个具体的过去错误</strong></p>
+<p>Hashimoto 的 Ghostty 项目 AGENTS.md [4] 中，每一行都对应一次具体的 Agent 失败。示例：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="section"># Inspector AGENTS.md</span></span><br><span class="line"><span class="bullet">-</span> 使用 <span class="code">`zig build test`</span> 而不是 <span class="code">`zig test`</span></span><br><span class="line"><span class="bullet">-</span> Inspector 模块使用 wasm target，不要用 native target 测试</span><br><span class="line"><span class="bullet">-</span> 不要修改 build.zig，除非明确要求</span><br></pre></td></tr></table></figure>
+
+<p><strong>做法 C：命令优先、代码示例优于文字解释</strong></p>
+<p>GitHub 对 2500+ 仓库的分析发现：[8] 表现最好的 AGENTS.md 文件具有以下特征：</p>
+<ul>
+<li>把命令放在最前面</li>
+<li>使用代码示例而非文字解释</li>
+<li>设置清晰的边界</li>
+<li>精确指定技术栈</li>
+<li>覆盖六个核心领域：命令、测试、项目结构、代码风格、git 工作流、边界</li>
+</ul>
+<hr>
+<h2 id="实践二：架构约束机械化执行"><a href="#实践二：架构约束机械化执行" class="headerlink" title="实践二：架构约束机械化执行"></a>实践二：架构约束机械化执行</h2><h3 id="核心原则-1"><a href="#核心原则-1" class="headerlink" title="核心原则"></a>核心原则</h3><blockquote>
+<p>Agent 擅长模式复制 — 包括坏模式。文档记录的规则不够，必须用 linter 和 CI 门禁机械强制执行。[1][2]</p>
+</blockquote>
+<h3 id="具体做法-1"><a href="#具体做法-1" class="headerlink" title="具体做法"></a>具体做法</h3><p><strong>做法 A：分层依赖强制（OpenAI）</strong></p>
+<p>OpenAI 在每个业务域内定义了严格的分层依赖方向：[1]</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Types → Config → Repo → Service → Runtime → UI</span><br><span class="line"></span><br><span class="line">横切关注点（auth, connectors, telemetry, feature flags）</span><br><span class="line">只能通过 Providers 进入。其他路径被禁止。</span><br></pre></td></tr></table></figure>
+
+<p>依赖方向由 CI 级别的 linter 强制检查。<strong>linter 本身也是 Codex 写的。</strong> [1]</p>
+<p><strong>做法 B：Linter 错误消息 &#x3D; 修复指令</strong></p>
+<p>OpenAI 和 Stripe 的 linter 错误消息不仅标记违规，还<strong>告诉 Agent 如何修复</strong>。[2][7] 工具在阻止错误的同时训练 Agent。</p>
+<p><strong>做法 C：工具数量控制（Stripe）</strong></p>
+<p>Stripe 的 Toolshed 包含近 500 个工具，但不会把全部暴露给 Agent。确定性编排器扫描任务，筛选出约 15 个相关工具。[7] 工具太多会导致”token 瘫痪”— Agent 浪费时间选择工具而非做事。</p>
+<p><strong>做法 D：选择”无聊”的技术</strong></p>
+<p>OpenAI 团队倾向于使用”无聊的”技术 — 稳定 API 的可组合库，且在模型训练数据中有充分表示。[2] Birgitta Böckeler 指出了反直觉的结论：提高 AI 生成代码的信任度需要<strong>约束</strong>解决方案空间，而非扩展它。[5]</p>
+<hr>
+<h2 id="实践三：让应用对-Agent-可见"><a href="#实践三：让应用对-Agent-可见" class="headerlink" title="实践三：让应用对 Agent 可见"></a>实践三：让应用对 Agent 可见</h2><h3 id="核心原则-2"><a href="#核心原则-2" class="headerlink" title="核心原则"></a>核心原则</h3><blockquote>
+<p>“Because the fixed constraint has been human time and attention, we’ve worked to add more capabilities to the agent by making things like the application UI, logs, and app metrics themselves directly legible to Codex.”<br>— OpenAI [1]</p>
+</blockquote>
+<p>Agent 只看代码是不够的。它还需要能”看到”运行中的应用。</p>
+<h3 id="具体做法-2"><a href="#具体做法-2" class="headerlink" title="具体做法"></a>具体做法</h3><p><strong>做法 A：Chrome DevTools Protocol 集成</strong></p>
+<p>OpenAI 将 Chrome DevTools Protocol 直接接入 Agent 运行时：[1]</p>
+<ul>
+<li>DOM 快照</li>
+<li>截图捕获</li>
+<li>浏览器导航</li>
+</ul>
+<p>Agent 的反馈循环变成：选择目标 → 快照前状态 → 触发 UI 路径 → 观察运行时事件 → 修复 → 重启 → 再快照 → 循环直到通过。</p>
+<p><strong>做法 B：每个 worktree 独立的可观测性栈</strong></p>
+<p>OpenAI 为每个 git worktree 提供独立的观测管道：[1]</p>
+<ul>
+<li>Vector 作为扇出路由器</li>
+<li>Victoria Logs（LogQL 查询）</li>
+<li>Victoria Metrics（PromQL 查询）</li>
+<li>分布式追踪</li>
+</ul>
+<p>这使得像 <strong>“确保服务启动在 800ms 内完成”</strong> 或 <strong>“关键用户旅程中没有 span 超过 2 秒”</strong> 这类指令变得可执行。[1]</p>
+<p><strong>做法 C：浏览器自动化测试（Anthropic）</strong></p>
+<p>Anthropic 发现，Agent 倾向于用 <code>curl</code> 或单元测试声称功能完成，但不会进行端到端验证。[6] 显式提示 Agent 使用 Puppeteer MCP 做浏览器自动化测试后，性能显著提升。[6]</p>
+<p>已知局限：Agent 无法通过 Puppeteer 看到浏览器原生 alert 弹窗，依赖这类弹窗的功能 bug 率更高。[6]</p>
+<hr>
+<h2 id="实践四：闭环自验证（Build-Verify-Loop）"><a href="#实践四：闭环自验证（Build-Verify-Loop）" class="headerlink" title="实践四：闭环自验证（Build-Verify Loop）"></a>实践四：闭环自验证（Build-Verify Loop）</h2><h3 id="核心原则-3"><a href="#核心原则-3" class="headerlink" title="核心原则"></a>核心原则</h3><blockquote>
+<p>“The most common failure pattern was that the agent wrote a solution, re-read its own code, confirmed it looks ok, and stopped.”<br>— LangChain [9]</p>
+</blockquote>
+<p>模型有对第一个看起来合理的方案产生偏见的倾向（first plausible solution bias）。不主动验证，就等于开环控制。</p>
+<h3 id="具体做法-3"><a href="#具体做法-3" class="headerlink" title="具体做法"></a>具体做法</h3><p><strong>做法 A：四步循环（LangChain）</strong></p>
+<p>LangChain 在系统提示中加入结构化的问题解决流程：[9]</p>
+<ol>
+<li><strong>规划与发现（Planning &amp; Discovery）</strong>：读取任务 → 扫描代码库 → 基于任务规范和验证方法构建计划</li>
+<li><strong>构建（Build）</strong>：实现计划，同时构建测试</li>
+<li><strong>验证（Verify）</strong>：运行测试 → 读取完整输出 → 对照原始需求（而非自己的代码）比较</li>
+<li><strong>修复（Fix）</strong>：分析错误 → 回溯原始规范 → 修复问题</li>
+</ol>
+<p><strong>做法 B：退出前检查清单中间件</strong></p>
+<p>LangChain 使用 <code>PreCompletionChecklistMiddleware</code>：在 Agent 尝试退出前拦截，强制它对照任务规范运行验证。[9] 类似”Ralph Wiggum Loop”— 一个 hook 在退出时强制 Agent 继续执行验证。</p>
+<p><strong>做法 C：循环检测中间件</strong></p>
+<p>LangChain 使用 <code>LoopDetectionMiddleware</code> 追踪每个文件的编辑次数。[9] 同一文件编辑超过 N 次后，注入上下文：”考虑重新审视你的方案”。帮助 Agent 从 doom loop（同一个坏方案反复微调 10+ 次）中恢复。</p>
+<p><strong>做法 D：推理计算的”三明治”策略</strong></p>
+<p>LangChain 发现最优的推理预算分配是 <strong>“高-中-高”三明治</strong>：[9]</p>
+<ul>
+<li>规划阶段：高推理（充分理解问题）</li>
+<li>实现阶段：中等推理（节省时间&#x2F;token）</li>
+<li>验证阶段：高推理（捕获错误）</li>
+</ul>
+<p>纯高推理反而得分低（53.9%），因为 Agent 超时。中等推理得到 63.6%，三明治策略达到 66.5%。[9]</p>
+<hr>
+<h2 id="实践五：长时运行-Agent-的会话间记忆"><a href="#实践五：长时运行-Agent-的会话间记忆" class="headerlink" title="实践五：长时运行 Agent 的会话间记忆"></a>实践五：长时运行 Agent 的会话间记忆</h2><h3 id="核心原则-4"><a href="#核心原则-4" class="headerlink" title="核心原则"></a>核心原则</h3><blockquote>
+<p>想象一个软件项目由轮班工程师负责，每个新工程师到达时对之前班次发生的事情毫无记忆。<br>— Anthropic [6]</p>
+</blockquote>
+<h3 id="具体做法-4"><a href="#具体做法-4" class="headerlink" title="具体做法"></a>具体做法</h3><p><strong>做法 A：初始化 Agent + 编码 Agent 双体架构（Anthropic）</strong></p>
+<p>Anthropic 的方案：[6]</p>
+<ol>
+<li><p><strong>初始化 Agent</strong>：第一次会话专用，职责：</p>
+<ul>
+<li>从高级 prompt 生成<strong>全面的功能列表</strong>（JSON 格式，200+ 个具体功能，每个都有明确的测试步骤）</li>
+<li>所有功能初始标记为 <code>&quot;passes&quot;: false</code></li>
+<li>创建 <code>init.sh</code> 脚本</li>
+<li>创建 <code>claude-progress.txt</code> 进度日志</li>
+<li>初始化 git 仓库</li>
+</ul>
+</li>
+<li><p><strong>编码 Agent</strong>：每个后续会话，职责：</p>
+<ul>
+<li>读取 <code>claude-progress.txt</code> 和 git 日志了解当前状态</li>
+<li>运行 <code>init.sh</code> 启动开发服务器</li>
+<li>做基本端到端测试确认现有功能正常</li>
+<li>选择<strong>一个</strong>未完成功能（只做一个！）</li>
+<li>实现 → 测试 → 提交 → 更新进度日志</li>
+</ul>
+</li>
+</ol>
+<p><strong>做法 B：JSON 优于 Markdown</strong></p>
+<p>Anthropic 发现用 JSON 格式追踪功能状态比 Markdown 更好，因为 Agent 不太可能意外编辑或覆盖结构化数据。[6]</p>
+<p>用强措辞指令保护功能列表：</p>
+<blockquote>
+<p>“It is unacceptable to remove or edit tests because this could lead to missing or buggy functionality.” [6]</p>
+</blockquote>
+<p><strong>做法 C：每次会话的标准启动序列</strong></p>
+<p>Anthropic 总结的标准启动步骤：[6]</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">1. 运行 pwd 查看工作目录</span><br><span class="line">2. 读取 git 日志和进度文件了解最近的工作</span><br><span class="line">3. 读取功能列表，选择最高优先级的未完成功能</span><br><span class="line">4. 启动开发服务器</span><br><span class="line">5. 运行基本端到端测试确认应用未处于损坏状态</span><br><span class="line">6. 然后才开始实现新功能</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="实践六：熵治理-—-对抗-AI-Slop"><a href="#实践六：熵治理-—-对抗-AI-Slop" class="headerlink" title="实践六：熵治理 — 对抗 AI Slop"></a>实践六：熵治理 — 对抗 AI Slop</h2><h3 id="核心原则-5"><a href="#核心原则-5" class="headerlink" title="核心原则"></a>核心原则</h3><blockquote>
+<p>Agent 忠实地复制并放大代码库中已有的模式 — 包括坏模式。OpenAI 团队曾每周五花 20% 时间手动清理”AI slop”。[1]</p>
+</blockquote>
+<h3 id="具体做法-5"><a href="#具体做法-5" class="headerlink" title="具体做法"></a>具体做法</h3><p><strong>做法 A：Golden Principles（黄金原则）编码进仓库</strong></p>
+<p>OpenAI 的做法：[1]</p>
+<ul>
+<li>将有主见的、机械化的规则直接编码进仓库</li>
+<li>示例规则：<ul>
+<li>优先使用共享工具包，而非手写帮助函数（保持不变量集中）</li>
+<li>在边界验证数据，而非推测性地探测数据形状</li>
+<li>使用团队自己的 OpenTelemetry 并发工具，而非第三方并发原语</li>
+</ul>
+</li>
+</ul>
+<p><strong>做法 B：后台清理 Agent</strong></p>
+<p>一组后台 Codex 任务按固定周期运行：[1]</p>
+<ul>
+<li>扫描偏离黄金原则的代码</li>
+<li>更新每个产品域和架构层的质量评分</li>
+<li>自动开出有针对性的重构 PR</li>
+<li>大多数 PR 审查时间 &lt; 1 分钟，可自动合并</li>
+</ul>
+<p>关键性质：<strong>清理 Agent 的吞吐量与代码生成吞吐量成正比。</strong> 生成越多代码，就运行越多清理。这是手动方式无法扩展但自动化后自然平衡的系统。[1]</p>
+<p><strong>做法 C：Flaky Test 修复（Stripe）</strong></p>
+<p>Stripe 的 Minions 专门处理人类工程师通常搁置的技术债：[7]</p>
+<ul>
+<li>运行 flaky test 数千次以复现故障</li>
+<li>分析竞争条件</li>
+<li>提交修复补丁</li>
+<li>维护 300 万+ 测试的测试套件</li>
+</ul>
+<hr>
+<h2 id="实践七：并行管理与人类注意力分配"><a href="#实践七：并行管理与人类注意力分配" class="headerlink" title="实践七：并行管理与人类注意力分配"></a>实践七：并行管理与人类注意力分配</h2><h3 id="核心原则-6"><a href="#核心原则-6" class="headerlink" title="核心原则"></a>核心原则</h3><blockquote>
+<p>稀缺资源从”计算”变为”人类注意力”。等待很贵，纠正很便宜。[1]</p>
+</blockquote>
+<h3 id="具体做法-6"><a href="#具体做法-6" class="headerlink" title="具体做法"></a>具体做法</h3><p><strong>做法 A：有人值守并行（Attended Parallelization）</strong></p>
+<p>Mitchell Hashimoto 的方式：[4]</p>
+<ul>
+<li>同时运行 1 个 Agent（目前）</li>
+<li>使用 git worktree 隔离</li>
+<li><strong>关闭桌面通知</strong>：上下文切换成本极高。在自然休息时主动查看 Agent，而非被通知打断</li>
+<li>目标：工作日 10-20% 的时间有后台 Agent 运行</li>
+</ul>
+<p>Peter Steinberger（OpenClaw 作者）的方式：[7]</p>
+<ul>
+<li>同时运行 5-10 个 Agent</li>
+<li>一个月 6,600+ commits</li>
+<li>不逐行阅读代码，但深度关注架构和可扩展性</li>
+<li>在 Discord 中只讨论架构和大决策，不讨论代码</li>
+</ul>
+<p><strong>做法 B：无人值守并行（Unattended Parallelization）</strong></p>
+<p>Stripe Minions 的方式：[7]</p>
+<ul>
+<li>工程师在 Slack 中发布任务</li>
+<li>Agent 写代码 → 通过 CI → 开 PR</li>
+<li>人类只在 review 阶段介入</li>
+<li>每周 1,300+ PR 合并</li>
+</ul>
+<p><strong>关键前提</strong>：Stripe 能做到无人值守，是因为他们花了多年构建人类开发者基础设施 — 10 秒 devbox 启动、300 万测试、广泛的内部工具。<strong>为 Agent 做的最好准备，就是本来就该做好的工程实践。</strong> [7]</p>
+<p><strong>做法 C：合并哲学调整</strong></p>
+<p>OpenAI 的高吞吐量环境下：[1]</p>
+<ul>
+<li>PR 短生命周期</li>
+<li>最小化阻塞合并门禁</li>
+<li>Flaky test 用后续运行解决，而非无限阻塞进度</li>
+<li>前提：有快速检测和回滚机制</li>
+</ul>
+<hr>
+<h2 id="实践八：Blueprint-模式-—-确定性与概率性节点交替"><a href="#实践八：Blueprint-模式-—-确定性与概率性节点交替" class="headerlink" title="实践八：Blueprint 模式 — 确定性与概率性节点交替"></a>实践八：Blueprint 模式 — 确定性与概率性节点交替</h2><h3 id="核心原则-7"><a href="#核心原则-7" class="headerlink" title="核心原则"></a>核心原则</h3><blockquote>
+<p>模型不运行系统。系统运行模型。这个反转就是一切。[2]</p>
+</blockquote>
+<h3 id="具体做法-7"><a href="#具体做法-7" class="headerlink" title="具体做法"></a>具体做法</h3><p>Stripe 引入了 <strong>Blueprint</strong> 概念：一个在确定性代码节点和弹性 Agent 循环之间交替的工作流。[7]</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────┐</span><br><span class="line">│   触发            │  ← Slack / CLI / 自动触发</span><br><span class="line">└────────┬────────┘</span><br><span class="line">         │</span><br><span class="line">         v</span><br><span class="line">┌─────────────────┐</span><br><span class="line">│  预热 Devbox     │  ← EC2, 预克隆仓库, ~10 秒就绪</span><br><span class="line">│ （隔离沙箱）      │     无互联网, 无生产访问</span><br><span class="line">└────────┬────────┘</span><br><span class="line">         │</span><br><span class="line">         v</span><br><span class="line">┌─────────────────┐</span><br><span class="line">│  Blueprint 编排   │  ← 状态机: 确定性 + Agent 节点</span><br><span class="line">└────────┬────────┘</span><br><span class="line">         │</span><br><span class="line">    ┌────┴─────┐</span><br><span class="line">    │          │</span><br><span class="line">    v          v</span><br><span class="line"> [Agent]    [确定性]</span><br><span class="line"> &quot;实现&quot;     &quot;跑 linter&quot;</span><br><span class="line"> &quot;修 CI&quot;    &quot;推送更改&quot;</span><br><span class="line">    │          │</span><br><span class="line">    └────┬─────┘</span><br><span class="line">         │</span><br><span class="line">         v</span><br><span class="line">┌─────────────────┐</span><br><span class="line">│  本地 Lint       │  ← 启发式, &lt;5 秒</span><br><span class="line">│ （左移检查）      │</span><br><span class="line">└────────┬────────┘</span><br><span class="line">         │</span><br><span class="line">         v</span><br><span class="line">┌─────────────────┐</span><br><span class="line">│  远程 CI         │  ← 完整测试套件</span><br><span class="line">└────────┬────────┘</span><br><span class="line">         │</span><br><span class="line">         v</span><br><span class="line">┌─────────────────┐</span><br><span class="line">│  开 PR            │  ← 人类审查</span><br><span class="line">└─────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p>核心设计：<strong>确定性门禁”夹住”概率性的 LLM 工作。</strong> [7] Agent 最多尝试 2 轮 CI，然后要么成功要么放弃。</p>
+<hr>
+<h2 id="实践九：Trace-驱动的迭代改进"><a href="#实践九：Trace-驱动的迭代改进" class="headerlink" title="实践九：Trace 驱动的迭代改进"></a>实践九：Trace 驱动的迭代改进</h2><h3 id="核心原则-8"><a href="#核心原则-8" class="headerlink" title="核心原则"></a>核心原则</h3><blockquote>
+<p>Harness engineering is not vibes-based. [2]</p>
+</blockquote>
+<h3 id="具体做法-8"><a href="#具体做法-8" class="headerlink" title="具体做法"></a>具体做法</h3><p><strong>做法 A：Trace 分析技能（LangChain）</strong></p>
+<p>LangChain 的迭代改进配方：[9]</p>
+<ol>
+<li>从 LangSmith 获取实验 traces</li>
+<li>并行启动错误分析 Agent → 主 Agent 综合发现 + 建议</li>
+<li>汇总反馈，对 harness 做针对性修改</li>
+<li>人类验证修改（避免过拟合到特定任务）</li>
+</ol>
+<p>这类似于机器学习中的 <strong>boosting</strong>：专注于前一轮的失败案例。[9]</p>
+<p><strong>做法 B：度量指标体系</strong></p>
+<p>有用的度量聚类为几个桶：[2]</p>
+<ul>
+<li><strong>吞吐量</strong>：首次 PR 时间、合并时间、每日完成任务数、每任务迭代次数</li>
+<li><strong>质量</strong>：合并时 CI 通过率、缺陷逃逸率、回滚频率、回归检测平均时间</li>
+<li><strong>人类注意力</strong>：每 PR 审查分钟数、升级次数、需要人类判断的任务百分比</li>
+<li><strong>Harness 健康</strong>：文档新鲜度违规、架构边界违规、测试 flake 率</li>
+<li><strong>安全</strong>：被阻止的出站请求、权限拒绝、secret 扫描命中</li>
+</ul>
+<p><strong>关键</strong>：这些指标要让 Agent 也能看到（通过工具和仪表板），而非仅供人类查看。Harness 在 Agent 能看到”什么是好的”时改进最快。[2]</p>
+<hr>
+<h2 id="实践十：渐进式采纳路径"><a href="#实践十：渐进式采纳路径" class="headerlink" title="实践十：渐进式采纳路径"></a>实践十：渐进式采纳路径</h2><h3 id="Mitchell-Hashimoto-的六步路径-4"><a href="#Mitchell-Hashimoto-的六步路径-4" class="headerlink" title="Mitchell Hashimoto 的六步路径 [4]"></a>Mitchell Hashimoto 的六步路径 [4]</h3><table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>做什么</th>
+<th>关键认知</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Step 1</strong></td>
+<td>停止用聊天机器人编码</td>
+<td>必须用 Agent（能读文件、执行程序、发 HTTP 请求）</td>
+</tr>
+<tr>
+<td><strong>Step 2</strong></td>
+<td>重复自己的工作</td>
+<td>手动做一遍 → 用 Agent 重做一遍，强迫自己学会什么有效、什么无效</td>
+</tr>
+<tr>
+<td><strong>Step 3</strong></td>
+<td>下班前 Agent</td>
+<td>每天最后 30 分钟启动 Agent 做调研&#x2F;分诊&#x2F;探索，第二天有”热启动”</td>
+</tr>
+<tr>
+<td><strong>Step 4</strong></td>
+<td>外包必杀任务</td>
+<td>Agent 做有把握的任务，你<strong>同时做另一件事</strong>。关掉通知，自然休息时查看</td>
+</tr>
+<tr>
+<td><strong>Step 5</strong></td>
+<td>工程化缰绳</td>
+<td>Agent 犯错 → 更新 AGENTS.md 或写工具，确保不再犯同类错误</td>
+</tr>
+<tr>
+<td><strong>Step 6</strong></td>
+<td>始终有 Agent 在运行</td>
+<td>目标：Agent 不在运行时问自己”有什么事可以让 Agent 做”</td>
+</tr>
+</tbody></table>
+<p>Hashimoto 的关键建议：[4]</p>
+<ul>
+<li>知道何时<strong>不</strong>用 Agent 是效率的重要来源</li>
+<li>不要为了运行 Agent 而运行 Agent，只在真正有帮助时使用</li>
+<li><strong>不要让 Agent 通知你</strong> — 你控制何时查看它，而非它控制你</li>
+</ul>
+<hr>
+<h2 id="量化证据"><a href="#量化证据" class="headerlink" title="量化证据"></a>量化证据</h2><table>
+<thead>
+<tr>
+<th>来源</th>
+<th>数据</th>
+<th>变量</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Can.ac 实验</strong> [10]</td>
+<td>同一模型从 6.7% → 68.3%（Grok Code Fast 1）</td>
+<td>仅改变 harness 的编辑接口格式，未修改模型权重</td>
+</tr>
+<tr>
+<td><strong>LangChain</strong> [9]</td>
+<td>52.8% → 66.5%（+13.7 分），Top 30 → Top 5</td>
+<td>仅改变 harness（系统提示、工具、中间件），模型固定为 gpt-5.2-codex</td>
+</tr>
+<tr>
+<td><strong>OpenAI Codex 团队</strong> [1]</td>
+<td>5 个月, 100 万行, 零手写代码, ~1500 PR</td>
+<td>3 人起步，人均每天 3.5 PR，随团队扩展吞吐量增加</td>
+</tr>
+<tr>
+<td><strong>Stripe Minions</strong> [7]</td>
+<td>每周 1300+ PR 合并</td>
+<td>无人值守，Slack 触发 → 自动写代码 → CI → PR</td>
+</tr>
+<tr>
+<td><strong>Peter Steinberger</strong> [7]</td>
+<td>一个月 6600+ commits, 5-10 Agent 并行</td>
+<td>独立开发者，不逐行读代码，只管架构</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="尚未解决的问题"><a href="#尚未解决的问题" class="headerlink" title="尚未解决的问题"></a>尚未解决的问题</h2><h3 id="行为验证（Behavioral-Verification）"><a href="#行为验证（Behavioral-Verification）" class="headerlink" title="行为验证（Behavioral Verification）"></a>行为验证（Behavioral Verification）</h3><p>结构质量（linting, 架构, 命名）基本可解。<strong>行为正确性</strong>（产品真的做对了吗？）仍未解决。[2][5]</p>
+<p>数据佐证：</p>
+<ul>
+<li>Google DORA 报告：AI 采用率增加 90%，代码审查时间增加 91% [2]</li>
+<li>LinearB：AI 生成 PR 被拒率 67.3%，手动代码 15.6% [2]</li>
+<li>METR 研究：有经验的开发者使用 AI 工具后慢了 19%，但认为自己快了 20%（感知差距 39 个百分点）[2]</li>
+</ul>
+<h3 id="编辑格式问题"><a href="#编辑格式问题" class="headerlink" title="编辑格式问题"></a>编辑格式问题</h3><p>Agent 应用代码变更没有标准可靠方式。Can.ac 证明改变单个格式变量就能让 15 个模型提升 5-14 个百分点。[10] Cursor 专门构建了一个 700 亿参数模型，唯一用途是正确合并编辑。[2]</p>
+<h3 id="棕地项目（Brownfield）适用性"><a href="#棕地项目（Brownfield）适用性" class="headerlink" title="棕地项目（Brownfield）适用性"></a>棕地项目（Brownfield）适用性</h3><p>所有成功案例要么是绿地项目，要么是团队从零构建了基础设施。[5] 把 harness engineering 应用到 10 年历史的代码库（无架构约束、不一致的测试、残缺的文档）是更难的问题。</p>
+<h3 id="Agent-置信度校准"><a href="#Agent-置信度校准" class="headerlink" title="Agent 置信度校准"></a>Agent 置信度校准</h3><p>Agent 对正确输出和幻觉输出表现出同等的置信度。[2] 在 Agent 能表达”我不确定”之前，人类必须以同等严格度审查每个输出。</p>
+<h3 id="Harness-应该趋向简化"><a href="#Harness-应该趋向简化" class="headerlink" title="Harness 应该趋向简化"></a>Harness 应该趋向简化</h3><p>Manus 团队在 6 个月内重写了 5 次 harness，方向是<strong>简化而非复杂化</strong>。[11] 如果 harness 持续变复杂，可能是过度工程化的信号。</p>
+<hr>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><table>
+<thead>
+<tr>
+<th>编号</th>
+<th>来源</th>
+<th>标题</th>
+<th>日期</th>
+<th>链接</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>[1]</td>
+<td>OpenAI (Ryan Lopopolo)</td>
+<td>Harness engineering: leveraging Codex in an agent-first world</td>
+<td>2026-02</td>
+<td><a target="_blank" rel="noopener" href="https://openai.com/index/harness-engineering/">https://openai.com/index/harness-engineering/</a></td>
+</tr>
+<tr>
+<td>[2]</td>
+<td>Ekewaka Lono (GTCode)</td>
+<td>Harness Engineering: The Discipline of Building Systems That Make AI Agents Work</td>
+<td>2026-03-04</td>
+<td><a target="_blank" rel="noopener" href="https://gtcode.com/articles/harness-engineering/">https://gtcode.com/articles/harness-engineering/</a></td>
+</tr>
+<tr>
+<td>[3]</td>
+<td>Aditya Puranik</td>
+<td>The Control Theory Behind Harness Engineering: A First-Principles Map</td>
+<td>2026-03-03</td>
+<td><a target="_blank" rel="noopener" href="https://adityashrishpuranik.com/writing/harness-engineering-as-control-theory">https://adityashrishpuranik.com/writing/harness-engineering-as-control-theory</a></td>
+</tr>
+<tr>
+<td>[4]</td>
+<td>Mitchell Hashimoto</td>
+<td>My AI Adoption Journey</td>
+<td>2026-02-05</td>
+<td><a target="_blank" rel="noopener" href="https://mitchellh.com/writing/my-ai-adoption-journey">https://mitchellh.com/writing/my-ai-adoption-journey</a></td>
+</tr>
+<tr>
+<td>[5]</td>
+<td>Birgitta Böckeler (Martin Fowler)</td>
+<td>Harness Engineering</td>
+<td>2026-02-17</td>
+<td><a target="_blank" rel="noopener" href="https://martinfowler.com/articles/exploring-gen-ai/harness-engineering.html">https://martinfowler.com/articles/exploring-gen-ai/harness-engineering.html</a></td>
+</tr>
+<tr>
+<td>[6]</td>
+<td>Anthropic (Justin Young)</td>
+<td>Effective harnesses for long-running agents</td>
+<td>2025-11-26</td>
+<td><a target="_blank" rel="noopener" href="https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents">https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents</a></td>
+</tr>
+<tr>
+<td>[7]</td>
+<td>Charlie Guo (Artificial Ignorance)</td>
+<td>The Emerging “Harness Engineering” Playbook</td>
+<td>2026-02-22</td>
+<td><a target="_blank" rel="noopener" href="https://www.ignorance.ai/p/the-emerging-harness-engineering">https://www.ignorance.ai/p/the-emerging-harness-engineering</a></td>
+</tr>
+<tr>
+<td>[8]</td>
+<td>GitHub Blog</td>
+<td>How to write a great AGENTS.md: lessons from over 2,500 repositories</td>
+<td>2026</td>
+<td><a target="_blank" rel="noopener" href="https://github.blog/ai-and-ml/github-copilot/how-to-write-a-great-agents-md-lessons-from-over-2500-repositories/">https://github.blog/ai-and-ml/github-copilot/how-to-write-a-great-agents-md-lessons-from-over-2500-repositories/</a></td>
+</tr>
+<tr>
+<td>[9]</td>
+<td>LangChain (Vivek Trivedy)</td>
+<td>Improving Deep Agents with harness engineering</td>
+<td>2026-02-17</td>
+<td><a target="_blank" rel="noopener" href="https://blog.langchain.com/improving-deep-agents-with-harness-engineering/">https://blog.langchain.com/improving-deep-agents-with-harness-engineering/</a></td>
+</tr>
+<tr>
+<td>[10]</td>
+<td>Can.ac</td>
+<td>I Improved 15 LLMs at Coding in One Afternoon. Only the Harness Changed.</td>
+<td>2026-02</td>
+<td><a target="_blank" rel="noopener" href="https://blog.can.ac/2026/02/12/the-harness-problem/">https://blog.can.ac/2026/02/12/the-harness-problem/</a></td>
+</tr>
+<tr>
+<td>[11]</td>
+<td>SmartScope</td>
+<td>What Is Harness Engineering: Defining the “Outside” of Context Engineering</td>
+<td>2026-02</td>
+<td><a target="_blank" rel="noopener" href="https://smartscope.blog/en/blog/harness-engineering-overview/">https://smartscope.blog/en/blog/harness-engineering-overview/</a></td>
+</tr>
+<tr>
+<td>[12]</td>
+<td>Stripe Engineering (Alistair Gray)</td>
+<td>Minions: Stripe’s one-shot, end-to-end coding agents</td>
+<td>2026-02-09</td>
+<td><a target="_blank" rel="noopener" href="https://stripe.dev/blog/minions-stripes-one-shot-end-to-end-coding-agents">https://stripe.dev/blog/minions-stripes-one-shot-end-to-end-coding-agents</a></td>
+</tr>
+<tr>
+<td>[13]</td>
+<td>Kirill Dubovitskiy (bra1ndump)</td>
+<td>Harness Engineering Report</td>
+<td>2026-02-20</td>
+<td><a target="_blank" rel="noopener" href="https://bra1ndump.com/blog/research/harness-engineering">https://bra1ndump.com/blog/research/harness-engineering</a></td>
+</tr>
+<tr>
+<td>[14]</td>
+<td>Mohit Sewak, Ph.D.</td>
+<td>What is AI Harness Engineering? Your Guide to Controlling Autonomous Systems</td>
+<td>2026-03-03</td>
+<td><a target="_blank" rel="noopener" href="https://medium.com/be-open/what-is-ai-harness-engineering-your-guide-to-controlling-autonomous-systems-30c9c8d2b489">https://medium.com/be-open/what-is-ai-harness-engineering-your-guide-to-controlling-autonomous-systems-30c9c8d2b489</a></td>
+</tr>
+<tr>
+<td>[15]</td>
+<td>Cobus Greyling</td>
+<td>The Rise of AI Harness Engineering</td>
+<td>2026-03-13</td>
+<td><a target="_blank" rel="noopener" href="https://cobusgreyling.substack.com/p/the-rise-of-ai-harness-engineering">https://cobusgreyling.substack.com/p/the-rise-of-ai-harness-engineering</a></td>
+</tr>
+<tr>
+<td>[16]</td>
+<td>Vitthal Mirji</td>
+<td>Build the harness, not the code: a staff&#x2F;principal engineer’s guide to AI-agent systems</td>
+<td>2026-02-19</td>
+<td><a target="_blank" rel="noopener" href="https://vitthalmirji.com/2026/02/build-the-harness-not-the-code-a-staff/principal-engineers-guide-to-ai-agent-systems/">https://vitthalmirji.com/2026/02/build-the-harness-not-the-code-a-staff/principal-engineers-guide-to-ai-agent-systems/</a></td>
+</tr>
+</tbody></table>
+
+    </article>
+    <!-- license -->
+        <div class="license-wrapper">
+            <p>Author：<a href="https://edison-a-n.github.io">Edison</a>
+            <p>Link：<a href="https://edison-a-n.github.io/2026/03/14/harness-engineering-practical-guide/">https://edison-a-n.github.io/2026/03/14/harness-engineering-practical-guide/</a>
+            <p>Publish date：<a href="https://edison-a-n.github.io/2026/03/14/harness-engineering-practical-guide/">March 14th 2026, 12:00:00 am</a>
+            <p>Update date：<a href="https://edison-a-n.github.io/2026/03/14/harness-engineering-practical-guide/">March 14th 2026, 7:22:28 pm</a>
+            <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2026/03/16/agent-loop-study/" title="Agent Loop 技术调研报告">
+                    <div class="nextTitle">Agent Loop 技术调研报告</div>
+                </a>
+        </li>
+        <li class="previous">
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2026/01/17/trading-drawdown-control-guide/" title="交易回撤控制指南：认知、守心与仓位管理">
+                    <div class="prevTitle">交易回撤控制指南：认知、守心与仓位管理</div>
+                </a>
+        </li>
+    </ul>
+    <!-- comment -->
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+            
+            
+            
+            <!-- utteranc评论 -->
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+            
+            
+            
+        </div>
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    <!-- Mathjax -->
+</main>
+
+                <!-- profile -->
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+        <div class="social">
+                            <a href="mailto:zhangn661@gmail.com" class="iconfont-archer email" title="email" ></a>
+                <a href="//github.com/Edison-A-N" class="iconfont-archer github" target="_blank" title="github"></a>
+
+        </div>
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    <!-- 不蒜子  -->
+        <div class="busuanzi-container">
+                <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+        </div>
+</footer>
+
+        </div>
+        <!-- toc -->
+            <div class="toc-wrapper toc-wrapper-loding" style=    top:50vh;
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E8%AE%BA%EF%BC%9A%E4%B8%80%E4%B8%AA%E6%A0%B8%E5%BF%83%E8%AE%A4%E7%9F%A5%E8%BD%AC%E5%8F%98"><span class="toc-number">1.</span> <span class="toc-text">总论：一个核心认知转变</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E8%B7%B5%E4%B8%80%EF%BC%9AAGENTS-md-%E2%80%94-%E6%8A%8A%E6%96%87%E6%A1%A3%E5%8F%98%E6%88%90%E5%85%8D%E7%96%AB%E7%B3%BB%E7%BB%9F"><span class="toc-number">2.</span> <span class="toc-text">实践一：AGENTS.md — 把文档变成免疫系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%8E%9F%E5%88%99"><span class="toc-number">2.1.</span> <span class="toc-text">核心原则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B7%E4%BD%93%E5%81%9A%E6%B3%95"><span class="toc-number">2.2.</span> <span class="toc-text">具体做法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E8%B7%B5%E4%BA%8C%EF%BC%9A%E6%9E%B6%E6%9E%84%E7%BA%A6%E6%9D%9F%E6%9C%BA%E6%A2%B0%E5%8C%96%E6%89%A7%E8%A1%8C"><span class="toc-number">3.</span> <span class="toc-text">实践二：架构约束机械化执行</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%8E%9F%E5%88%99-1"><span class="toc-number">3.1.</span> <span class="toc-text">核心原则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B7%E4%BD%93%E5%81%9A%E6%B3%95-1"><span class="toc-number">3.2.</span> <span class="toc-text">具体做法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E8%B7%B5%E4%B8%89%EF%BC%9A%E8%AE%A9%E5%BA%94%E7%94%A8%E5%AF%B9-Agent-%E5%8F%AF%E8%A7%81"><span class="toc-number">4.</span> <span class="toc-text">实践三：让应用对 Agent 可见</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%8E%9F%E5%88%99-2"><span class="toc-number">4.1.</span> <span class="toc-text">核心原则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B7%E4%BD%93%E5%81%9A%E6%B3%95-2"><span class="toc-number">4.2.</span> <span class="toc-text">具体做法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E8%B7%B5%E5%9B%9B%EF%BC%9A%E9%97%AD%E7%8E%AF%E8%87%AA%E9%AA%8C%E8%AF%81%EF%BC%88Build-Verify-Loop%EF%BC%89"><span class="toc-number">5.</span> <span class="toc-text">实践四：闭环自验证（Build-Verify Loop）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%8E%9F%E5%88%99-3"><span class="toc-number">5.1.</span> <span class="toc-text">核心原则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B7%E4%BD%93%E5%81%9A%E6%B3%95-3"><span class="toc-number">5.2.</span> <span class="toc-text">具体做法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E8%B7%B5%E4%BA%94%EF%BC%9A%E9%95%BF%E6%97%B6%E8%BF%90%E8%A1%8C-Agent-%E7%9A%84%E4%BC%9A%E8%AF%9D%E9%97%B4%E8%AE%B0%E5%BF%86"><span class="toc-number">6.</span> <span class="toc-text">实践五：长时运行 Agent 的会话间记忆</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%8E%9F%E5%88%99-4"><span class="toc-number">6.1.</span> <span class="toc-text">核心原则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B7%E4%BD%93%E5%81%9A%E6%B3%95-4"><span class="toc-number">6.2.</span> <span class="toc-text">具体做法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E8%B7%B5%E5%85%AD%EF%BC%9A%E7%86%B5%E6%B2%BB%E7%90%86-%E2%80%94-%E5%AF%B9%E6%8A%97-AI-Slop"><span class="toc-number">7.</span> <span class="toc-text">实践六：熵治理 — 对抗 AI Slop</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%8E%9F%E5%88%99-5"><span class="toc-number">7.1.</span> <span class="toc-text">核心原则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B7%E4%BD%93%E5%81%9A%E6%B3%95-5"><span class="toc-number">7.2.</span> <span class="toc-text">具体做法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E8%B7%B5%E4%B8%83%EF%BC%9A%E5%B9%B6%E8%A1%8C%E7%AE%A1%E7%90%86%E4%B8%8E%E4%BA%BA%E7%B1%BB%E6%B3%A8%E6%84%8F%E5%8A%9B%E5%88%86%E9%85%8D"><span class="toc-number">8.</span> <span class="toc-text">实践七：并行管理与人类注意力分配</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%8E%9F%E5%88%99-6"><span class="toc-number">8.1.</span> <span class="toc-text">核心原则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B7%E4%BD%93%E5%81%9A%E6%B3%95-6"><span class="toc-number">8.2.</span> <span class="toc-text">具体做法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E8%B7%B5%E5%85%AB%EF%BC%9ABlueprint-%E6%A8%A1%E5%BC%8F-%E2%80%94-%E7%A1%AE%E5%AE%9A%E6%80%A7%E4%B8%8E%E6%A6%82%E7%8E%87%E6%80%A7%E8%8A%82%E7%82%B9%E4%BA%A4%E6%9B%BF"><span class="toc-number">9.</span> <span class="toc-text">实践八：Blueprint 模式 — 确定性与概率性节点交替</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%8E%9F%E5%88%99-7"><span class="toc-number">9.1.</span> <span class="toc-text">核心原则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B7%E4%BD%93%E5%81%9A%E6%B3%95-7"><span class="toc-number">9.2.</span> <span class="toc-text">具体做法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E8%B7%B5%E4%B9%9D%EF%BC%9ATrace-%E9%A9%B1%E5%8A%A8%E7%9A%84%E8%BF%AD%E4%BB%A3%E6%94%B9%E8%BF%9B"><span class="toc-number">10.</span> <span class="toc-text">实践九：Trace 驱动的迭代改进</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E5%8E%9F%E5%88%99-8"><span class="toc-number">10.1.</span> <span class="toc-text">核心原则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B7%E4%BD%93%E5%81%9A%E6%B3%95-8"><span class="toc-number">10.2.</span> <span class="toc-text">具体做法</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%9E%E8%B7%B5%E5%8D%81%EF%BC%9A%E6%B8%90%E8%BF%9B%E5%BC%8F%E9%87%87%E7%BA%B3%E8%B7%AF%E5%BE%84"><span class="toc-number">11.</span> <span class="toc-text">实践十：渐进式采纳路径</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Mitchell-Hashimoto-%E7%9A%84%E5%85%AD%E6%AD%A5%E8%B7%AF%E5%BE%84-4"><span class="toc-number">11.1.</span> <span class="toc-text">Mitchell Hashimoto 的六步路径 [4]</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%87%8F%E5%8C%96%E8%AF%81%E6%8D%AE"><span class="toc-number">12.</span> <span class="toc-text">量化证据</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B0%9A%E6%9C%AA%E8%A7%A3%E5%86%B3%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-number">13.</span> <span class="toc-text">尚未解决的问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A1%8C%E4%B8%BA%E9%AA%8C%E8%AF%81%EF%BC%88Behavioral-Verification%EF%BC%89"><span class="toc-number">13.1.</span> <span class="toc-text">行为验证（Behavioral Verification）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%96%E8%BE%91%E6%A0%BC%E5%BC%8F%E9%97%AE%E9%A2%98"><span class="toc-number">13.2.</span> <span class="toc-text">编辑格式问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A3%95%E5%9C%B0%E9%A1%B9%E7%9B%AE%EF%BC%88Brownfield%EF%BC%89%E9%80%82%E7%94%A8%E6%80%A7"><span class="toc-number">13.3.</span> <span class="toc-text">棕地项目（Brownfield）适用性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Agent-%E7%BD%AE%E4%BF%A1%E5%BA%A6%E6%A0%A1%E5%87%86"><span class="toc-number">13.4.</span> <span class="toc-text">Agent 置信度校准</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Harness-%E5%BA%94%E8%AF%A5%E8%B6%8B%E5%90%91%E7%AE%80%E5%8C%96"><span class="toc-number">13.5.</span> <span class="toc-text">Harness 应该趋向简化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="toc-number">14.</span> <span class="toc-text">参考文献</span></a></li></ol>
+            </div>
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 36
+        </div>
+        <!-- search  -->
+    </div>
+    <div class="post-archive">
+            <div class="archive-year"> 2026 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/14</span>
+            <a class="archive-post-title" href="/2026/04/14/llm-tool-calling-decision-bias/">LLM Agent 中 Skill/Tool 调用决策偏差：技术调研报告</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span>
+            <a class="archive-post-title" href="/2026/04/12/harness-engineering/">Harness Engineering：当 AI 的缰绳比 AI 本身更重要</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span>
+            <a class="archive-post-title" href="/2026/03/30/coding-agent-evolution/">从代码到行动：Coding Agent 如何演变为通用数字助手</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2026/03/21/multi-agent-investment-research/">用 OpenAgents Workspace 协调多 Agent 投研</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/16</span>
+            <a class="archive-post-title" href="/2026/03/16/agent-loop-study/">Agent Loop 技术调研报告</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/14</span>
+            <a class="archive-post-title" href="/2026/03/14/harness-engineering-practical-guide/">Harness Engineering 实践指南：来自 OpenAI、Stripe、Anthropic 等团队的一线经验</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/17</span>
+            <a class="archive-post-title" href="/2026/01/17/trading-drawdown-control-guide/">交易回撤控制指南：认知、守心与仓位管理</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2025 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/28</span>
+            <a class="archive-post-title" href="/2025/12/28/code-execution-sandbox-mcp/">LLM-Driven Agent Architecture with Sandbox and MCP Integration</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2025/11/10/mcp-recent-sharing/">MCP 近期内容分享：从 Resources、Tools 到 Prompts 的实践探索</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span>
+            <a class="archive-post-title" href="/2025/10/28/args_doc_format_comparison/">Tool Args Documentation Format Comparison Analysis</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span>
+            <a class="archive-post-title" href="/2025/10/27/asgi_lifespan_complete_guide/">ASGI Lifespan 完整指南</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/mcp-output-schema/">MCP Output Schema：数据验证与结构化输出的技术实现</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/stop-converting-rest-api-to-mcp/">停止转换REST API到MCP：设计AI原生接口的正确方式</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span>
+            <a class="archive-post-title" href="/2025/09/20/llm-consistency-challenges-large-data-processing/">大型语言模型在处理大批量数据时的一致性挑战与解决方案</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/01</span>
+            <a class="archive-post-title" href="/2024/02/01/nextjs-pagination/">nextjs-pagination</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span>
+            <a class="archive-post-title" href="/2023/09/20/smart-contract-demo/">smart-contract-demo</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/30</span>
+            <a class="archive-post-title" href="/2023/08/30/multi-tenant/">多租户应用与架构设计关注点</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2022 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span>
+            <a class="archive-post-title" href="/2022/12/13/go-ddd/">go-ddd</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/07</span>
+            <a class="archive-post-title" href="/2022/12/07/git-rebase/">使用 `git pull --rebase`</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span>
+            <a class="archive-post-title" href="/2022/12/03/opentelemetry-jaeger/">opnetelemetry-jaeger</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/09</span>
+            <a class="archive-post-title" href="/2022/06/09/ddd-thinking/">ddd-thinking</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/23</span>
+            <a class="archive-post-title" href="/2022/05/23/mvc-and-ddd/">mvc-and-ddd</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span>
+            <a class="archive-post-title" href="/2022/02/13/commit-format-and-auto-changelog/">Git commit 规范</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/tight-lipped/">思考与交流</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/30</span>
+            <a class="archive-post-title" href="/2022/01/30/knowledge-breath-and-depth/">知识掌握的广度与深度</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2021 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/16</span>
+            <a class="archive-post-title" href="/2021/12/16/software-design-doc/">如何撰写技术设计文档</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/21</span>
+            <a class="archive-post-title" href="/2021/11/21/breaking-creation-product/">突破式创新的产品设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span>
+            <a class="archive-post-title" href="/2021/07/15/parallel-and-asynchronous-python/">DRF Exception Handle</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/17</span>
+            <a class="archive-post-title" href="/2021/06/17/DRF-Exception/">DRF Exception Handle</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span>
+            <a class="archive-post-title" href="/2021/06/15/Django-With-DDD/">Django With DDD</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/09</span>
+            <a class="archive-post-title" href="/2021/05/09/Agile-Design/">敏捷软件开发：设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span>
+            <a class="archive-post-title" href="/2021/03/30/DRF-Bussiness-Logic/">Django Restful Framework Business Logic</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2021/03/21/graphql-and-restful/">Graphql and Restful API</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/08</span>
+            <a class="archive-post-title" href="/2021/03/08/grpc-hello-world/">grpc hello world</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/03</span>
+            <a class="archive-post-title" href="/2021/01/03/New-Coding-Language/">我如何学一门新的编程语言</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2020 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/08</span>
+            <a class="archive-post-title" href="/2020/11/08/Agile-Dev/">敏捷开发辅助新项目验证与落地</a>
+        </li>
+            </ul>
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+            <span class="sidebar-tag-name" data-tags="agile">
+                <span class="iconfont-archer">&#xe606;</span>
+                agile
+            </span>
+            <span class="sidebar-tag-name" data-tags="LLM">
+                <span class="iconfont-archer">&#xe606;</span>
+                LLM
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent Loop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent Loop
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Format">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Format
+            </span>
+            <span class="sidebar-tag-name" data-tags="ASGI, Python, FastAPI">
+                <span class="iconfont-archer">&#xe606;</span>
+                ASGI, Python, FastAPI
+            </span>
+            <span class="sidebar-tag-name" data-tags="Architecture">
+                <span class="iconfont-archer">&#xe606;</span>
+                Architecture
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="Sandbox">
+                <span class="iconfont-archer">&#xe606;</span>
+                Sandbox
+            </span>
+            <span class="sidebar-tag-name" data-tags="MCP">
+                <span class="iconfont-archer">&#xe606;</span>
+                MCP
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI
+            </span>
+            <span class="sidebar-tag-name" data-tags="Claude Code">
+                <span class="iconfont-archer">&#xe606;</span>
+                Claude Code
+            </span>
+            <span class="sidebar-tag-name" data-tags="Harness Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Harness Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="thinking">
+                <span class="iconfont-archer">&#xe606;</span>
+                thinking
+            </span>
+            <span class="sidebar-tag-name" data-tags="DDD">
+                <span class="iconfont-archer">&#xe606;</span>
+                DDD
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Calling">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Calling
+            </span>
+            <span class="sidebar-tag-name" data-tags="Prompt Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Prompt Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="OpenAgents">
+                <span class="iconfont-archer">&#xe606;</span>
+                OpenAgents
+            </span>
+            <span class="sidebar-tag-name" data-tags="投研">
+                <span class="iconfont-archer">&#xe606;</span>
+                投研
+            </span>
+            <span class="sidebar-tag-name" data-tags="Multi-Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                Multi-Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="multi-tenant">
+                <span class="iconfont-archer">&#xe606;</span>
+                multi-tenant
+            </span>
+            <span class="sidebar-tag-name" data-tags="可观测性">
+                <span class="iconfont-archer">&#xe606;</span>
+                可观测性
+            </span>
+            <span class="sidebar-tag-name" data-tags="opentelemetry">
+                <span class="iconfont-archer">&#xe606;</span>
+                opentelemetry
+            </span>
+            <span class="sidebar-tag-name" data-tags="API Design">
+                <span class="iconfont-archer">&#xe606;</span>
+                API Design
+            </span>
+            <span class="sidebar-tag-name" data-tags="Trading">
+                <span class="iconfont-archer">&#xe606;</span>
+                Trading
+            </span>
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+        <span class="sidebar-category-name" data-categories="AI Agent">
+            <span class="iconfont-archer">&#xe60a;</span>
+            AI Agent
+        </span>
+        <span class="sidebar-category-name" data-categories="交易策略">
+            <span class="iconfont-archer">&#xe60a;</span>
+            交易策略
+        </span>
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "https://edison-a-n.github.io",
+        root: siteMetaRoot,
+        author: "Edison"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+        <!-- main func -->
+        <script src="/scripts/main.js"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.umd.js" onload="window.Fancybox.bind('[data-fancybox]')" defer></script>
+        <!-- algolia -->
+        <!-- busuanzi -->
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        <!-- async load share.js -->
+            <script src="/scripts/share.js" async></script>
+        <!-- mermaid -->
+    </body>
+</html>
