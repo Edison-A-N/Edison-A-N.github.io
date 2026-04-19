@@ -419,6 +419,65 @@
                 <main class="main index-page">
             
         <article class="index-post">
+            <a class="abstract-title" href="/2022/12/07/git-rebase/">
+                <span class="abstract-title-text">使用 `git pull --rebase`</span>
+            </a>
+            <div class="abstract-content">
+                git-rebase使用 git pull 的时候，要加上 --rebase，减少merge，保持 log 整洁
+参考git rebase
+
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2026/03/14">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2022/12/07</span>
+                </div>
+                <!-- tags -->
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+            
+        <article class="index-post">
+            <a class="abstract-title" href="/2022/12/03/opentelemetry-jaeger/">
+                <span class="abstract-title-text">opnetelemetry-jaeger</span>
+            </a>
+            <div class="abstract-content">
+                在调研中，持续更新本篇 …
+架构
+Tracing核心概念此处只介绍使用中会遇到的概念，具体细节请查阅文档
+API
+TracerProvider 提供访问 Tracer 的入口。作为一个池子放置和管理 Tracers
+
+Span Exporter 定义一系列接口，执行 telemetry data 的序列化与反序列化，以将数据提交到不同的 backend。
+
+
+应用
+Tracing根据其架构设计，所有的应用都可以实现为：
+
+定义 Resource
+创建 Provider
+设置全局 Provider (option)
+设置 Exporter (option)
+server 中使用 Traci...
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2026/03/14">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2022/12/03</span>
+                </div>
+                <!-- tags -->
+                    <div class="abstract-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="可观测性">可观测性</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="opentelemetry">opentelemetry</a>
+</div>
+
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+            
+        <article class="index-post">
             <a class="abstract-title" href="/2022/06/09/ddd-thinking/">
                 <span class="abstract-title-text">ddd-thinking</span>
             </a>
@@ -611,47 +670,6 @@ IO问题  fork本身会继承打开文件的描述符，所以对于多进程的
             </div>
         </article>
         <div class="index-post-divider"></div>
-            
-        <article class="index-post">
-            <a class="abstract-title" href="/2021/06/17/DRF-Exception/">
-                <span class="abstract-title-text">DRF Exception Handle</span>
-            </a>
-            <div class="abstract-content">
-                框架报错源码解析
-exception 处理器
-1234567891011121314151617181920212223242526272829303132# rest_framework.views 71-101def exception_handler(exc, context):    &quot;&quot;&quot;    Returns the response that should be used for any given exception.    By default we handle the REST framework `APIException`, and...
-            </div>
-            <!-- read more -->
-            <div class="abstract-post-meta">
-                <!-- date -->
-                <div class="abstract-date" title="Last updated: 2026/03/14">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/06/17</span>
-                </div>
-                <!-- tags -->
-            </div>
-        </article>
-        <div class="index-post-divider"></div>
-            
-        <article class="index-post">
-            <a class="abstract-title" href="/2021/06/15/Django-With-DDD/">
-                <span class="abstract-title-text">Django With DDD</span>
-            </a>
-            <div class="abstract-content">
-                在DRF业务逻辑实现篇中，提到关于使用Django框架编写业务逻辑的一些局限性以及可能的解决方案。当业务开始扩展的时候，渐渐发现，框架对复杂业务的支持能力明显不足，已经超出了使用service来处理的能力了。
-当开始尝试使用DDD来进行模块与架构设计时，不仅要理解DDD是什么，同时需要去理解DDD在Django中应用的困难^1
-一种有效的方法是，从serializers中封装domail_serializers，用来承担view中的业务逻辑执行，担任一个实体。view作为一个bounded context的存在，绑定多个serializers，完成一个业务逻辑的执行。
-显然，DRF已经基...
-            </div>
-            <!-- read more -->
-            <div class="abstract-post-meta">
-                <!-- date -->
-                <div class="abstract-date" title="Last updated: 2026/03/14">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/06/15</span>
-                </div>
-                <!-- tags -->
-            </div>
-        </article>
-        <div class="index-post-divider"></div>
     <!-- paginator  -->
         <nav class="page-nav">
             <a class="extend prev" rel="prev" href="/archives/page/2/">&lt; PREV</a><a class="page-number" href="/archives/">1</a><a class="page-number" href="/archives/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/archives/page/4/">4</a><a class="extend next" rel="next" href="/archives/page/4/">NEXT &gt;</a>
@@ -726,15 +744,25 @@ exception 处理器
         
         
         
+        
+        
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 36
+        Total : 38
         </div>
         <!-- search  -->
     </div>
     <div class="post-archive">
             <div class="archive-year"> 2026 </div>
             <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/19</span>
+            <a class="archive-post-title" href="/2026/04/19/agent-deployment-industrial-practices/">AI Agent 部署工业实践全景（2024–2026）</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/19</span>
+            <a class="archive-post-title" href="/2026/04/19/multi-agent-architecture-survey/">Multi-Agent LLM 系统架构全景调研（2023–2026）</a>
+        </li>
         <li class="archive-post-item">
             <span class="archive-post-date">04/14</span>
             <a class="archive-post-title" href="/2026/04/14/llm-tool-calling-decision-bias/">LLM Agent 中 Skill/Tool 调用决策偏差：技术调研报告</a>
@@ -1002,6 +1030,26 @@ exception 处理器
             <span class="sidebar-tag-name" data-tags="Trading">
                 <span class="iconfont-archer">&#xe606;</span>
                 Trading
+            </span>
+            <span class="sidebar-tag-name" data-tags="Deployment">
+                <span class="iconfont-archer">&#xe606;</span>
+                Deployment
+            </span>
+            <span class="sidebar-tag-name" data-tags="Infrastructure">
+                <span class="iconfont-archer">&#xe606;</span>
+                Infrastructure
+            </span>
+            <span class="sidebar-tag-name" data-tags="Memory">
+                <span class="iconfont-archer">&#xe606;</span>
+                Memory
+            </span>
+            <span class="sidebar-tag-name" data-tags="Security">
+                <span class="iconfont-archer">&#xe606;</span>
+                Security
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI Architecture">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI Architecture
             </span>
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
