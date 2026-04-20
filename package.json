@@ -12,10 +12,11 @@
     "version": "6.3.0"
   },
   "devDependencies": {
-    "baseline-browser-mapping": "^2.2.0"
+    "baseline-browser-mapping": "^2.3.1"
   },
   "dependencies": {
     "hexo": "^6.3.0",
+    "hexo-auto-canonical": "^0.1.1",
     "hexo-deployer-git": "^3.0.0",
     "hexo-filter-mermaid-diagrams": "^1.0.5",
     "hexo-generator-archive": "^1.0.0",

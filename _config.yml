@@ -3,22 +3,32 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: Edison
-# subtitle: ''
-description: Thinking, writing and sharing''
+title: Edison's Tech Blog
+subtitle: Software Architecture, AI/LLM, DDD & Full-Stack Engineering
+description: A software engineer's blog covering Domain-Driven Design, AI agents, MCP, Python, Go, and modern software architecture. Practical guides and deep dives.
 keywords:
+  - software architecture
+  - domain-driven design
+  - DDD
+  - AI agents
+  - MCP
+  - Python
+  - Go
+  - full-stack development
+  - LLM
+  - software engineering
 author: Edison
 language: en
-timezone: ''
+timezone: Asia/Shanghai
 
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
 url: https://edison-a-n.github.io/
 permalink: :year/:month/:day/:title/
-permalink_defaults:
 pretty_urls:
-  trailing_index: true # Set to false to remove trailing 'index.html' from permalinks
-  trailing_html: true # Set to false to remove trailing '.html' from permalinks
+  trailing_index: false
+  trailing_html: false
+permalink_defaults:
 
 # Directory
 source_dir: source
@@ -139,6 +149,15 @@ jsonContent:
 sitemap:
   path: sitemap.xml
   template: ./sitemap_template.xml
-  rel: false
+  rel: true
   tags: true
   categories: true
+
+# Feed (RSS)
+feed:
+  enable: true
+  type: atom
+  path: atom.xml
+  limit: 20
+  content: true
+  content_limit: 200

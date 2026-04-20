@@ -64,16 +64,25 @@ profile_links:
 
 # ========== Site ========== #
 # title of the site (good for SEO)
-SEO_title: Edison's Blog
+SEO_title: Edison's Tech Blog | Software Architecture, AI & DDD
 # keywords for site (good for SEO)
 SEO_keywords:
-  - Edison
+  - software architecture
+  - domain-driven design
   - DDD
-  - 'hexo-blog'
+  - AI agents
+  - MCP
+  - Model Context Protocol
+  - Python
+  - Go
+  - full-stack development
+  - LLM
+  - software engineering
+  - hexo blog
 # main title shown in header image
 main_title: Edison's Studio.
 # subtitle
-subtitle: Thinking, writing and sharing
+subtitle: Software Architecture, AI/LLM, DDD & Full-Stack Engineering
 # site haeder image
 site_header_image: '/intro/index-bg.jpg'
 # post haeder image
