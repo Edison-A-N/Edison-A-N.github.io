@@ -8,17 +8,17 @@
     <meta name="author" content="Edison">
     <meta name="renderer" content="webkit">
     <meta name="copyright" content="Edison">
-        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,Edison,DDD">
-    <meta name="description" content="Thinking, writing and sharing''">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,software architecture,domain-driven design,DDD,AI agents,MCP,Model Context Protocol,Python,Go,full-stack development,LLM,software engineering,hexo blog">
+    <meta name="description" content="A software engineer's blog covering Domain-Driven Design, AI agents, MCP, Python, Go, and modern software architecture. Practical guides and deep dives.">
     <meta name="description" content="从客户端到服务端，全面梳理 AI Agent 部署的工业实践。覆盖设备端推理、边缘部署、服务端分布式编排、计算&#x2F;数据隔离、Memory 存储架构、安全防护、成本管控与生产运维，引用 Apple&#x2F;Google&#x2F;Stripe&#x2F;Anthropic&#x2F;Uber&#x2F;Cloudflare 等公司的一线实践。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="AI Agent 部署工业实践全景（2024–2026）">
-<meta property="og:url" content="https://edison-a-n.github.io/2026/04/19/agent-deployment-industrial-practices/index.html">
-<meta property="og:site_name" content="Edison">
+<meta property="og:url" content="https://edison-a-n.github.io/2026/04/19/agent-deployment-industrial-practices/">
+<meta property="og:site_name" content="Edison&#39;s Tech Blog">
 <meta property="og:description" content="从客户端到服务端，全面梳理 AI Agent 部署的工业实践。覆盖设备端推理、边缘部署、服务端分布式编排、计算&#x2F;数据隔离、Memory 存储架构、安全防护、成本管控与生产运维，引用 Apple&#x2F;Google&#x2F;Stripe&#x2F;Anthropic&#x2F;Uber&#x2F;Cloudflare 等公司的一线实践。">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2026-04-18T16:00:00.000Z">
-<meta property="article:modified_time" content="2026-04-19T06:45:43.190Z">
+<meta property="article:modified_time" content="2026-04-19T08:21:15.923Z">
 <meta property="article:author" content="Edison">
 <meta property="article:tag" content="AI Agent">
 <meta property="article:tag" content="Deployment">
@@ -29,7 +29,7 @@
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/avatar/avatar.jpg">
-    <title>AI Agent 部署工业实践全景（2024–2026） · Edison&#39;s Blog</title>
+    <title>AI Agent 部署工业实践全景（2024–2026） · Edison&#39;s Tech Blog | Software Architecture, AI &amp; DDD</title>
     <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
 /* This file is meant as a standalone workflow for
 - testing support for link[rel=preload]
@@ -225,7 +225,7 @@
 
             gtag('config', 'UA-188648772-3');
         </script>
-<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Edison" type="application/atom+xml">
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Edison's Tech Blog" type="application/atom+xml">
 </head>
 
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
@@ -313,7 +313,7 @@
 
                 <!-- 文章字数统计 -->
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">4.6k</span>Reading time: <span class="post-count reading-time">18 min</span></span>
+                        <span>Word count: <span class="post-count word-count">5.8k</span>Reading time: <span class="post-count reading-time">23 min</span></span>
                     </div>
                 <div class="post-intro-meta">
                     <!-- 撰写日期 -->
@@ -487,7 +487,7 @@
 <tbody><tr>
 <td><strong>Apple Intelligence</strong></td>
 <td>AFM ~3B on-device</td>
-<td>LoRA adapter 热切换（rank 16，几十 MB&#x2F;adapter），2-4bit 混合量化 ~3.5 bpw，iPhone 15 Pro TTFT ~0.6s</td>
+<td>LoRA adapter 热切换（rank 16，几十 MB&#x2F;adapter），2-4bit 混合量化 ~3.5 bpw，iPhone 15 Pro TTFT ~0.6 ms&#x2F;token</td>
 </tr>
 <tr>
 <td><strong>Google Gemini Nano</strong></td>
@@ -505,16 +505,16 @@
 <td>推理在云端，工具调用在本地，最多 8 个并行 agent 各自在独立 Git worktree</td>
 </tr>
 </tbody></table>
-<p><strong>Apple</strong> 的核心模式是<strong>运行时可切换 LoRA adapter</strong>：一个基础模型通过加载不同的 adapter（每个仅十几 MB）来服务 Siri、Writing Tools、Image Playground 等不同任务，无需重训整个模型。超出设备能力范围的查询走 <strong>Private Cloud Compute</strong>——苹果自有硅基服务器，加密认证且无数据留存。</p>
-<p><strong>Google</strong> 选择了<strong>系统服务模式</strong>：AICore 作为 Android 系统服务统一管理模型下载、分发和推理调度，应用通过 ML Kit GenAI API 调用，不需要在 APK 中打包模型。设备支持 Pixel 9+ 和 Samsung Galaxy S24&#x2F;S25。</p>
-<p><strong>Cursor</strong> 的架构代表了桌面端 Agent 的典型分离模式：推理和规划在云端完成，而文件编辑、终端命令等工具调用在用户本机执行。其自托管方案（Self-Hosted Cloud Agents）通过 Helm chart 部署 worker 到客户基础设施，仅需出站 HTTPS，不开入站端口。</p>
+<p><strong>Apple</strong> 的核心模式是<strong>运行时可切换 LoRA adapter</strong>：一个基础模型通过加载不同的 adapter（每个仅十几 MB）来服务 Siri、Writing Tools、Image Playground 等不同任务，无需重训整个模型。超出设备能力范围的查询走 <strong>Private Cloud Compute</strong>——苹果自有硅基服务器，加密认证且无数据留存。<a target="_blank" rel="noopener" href="https://machinelearning.apple.com/research/apple-intelligence-foundation-language-models">[Apple ML Research, 2024]</a></p>
+<p><strong>Google</strong> 选择了<strong>系统服务模式</strong>：AICore 作为 Android 系统服务统一管理模型下载、分发和推理调度，应用通过 ML Kit GenAI API 调用，不需要在 APK 中打包模型。设备支持 Pixel 9+ 和 Samsung Galaxy S24&#x2F;S25。<a target="_blank" rel="noopener" href="https://developer.android.com/ai/gemini-nano">[Android Developer Docs]</a></p>
+<p><strong>Cursor</strong> 的架构代表了桌面端 Agent 的典型分离模式：推理和规划在云端完成，而文件编辑、终端命令等工具调用在用户本机执行。其自托管方案（Self-Hosted Cloud Agents）通过 Helm chart 部署 worker 到客户基础设施，仅需出站 HTTPS，不开入站端口。<a target="_blank" rel="noopener" href="https://cursor.com/blog/self-hosted-cloud-agents">[Cursor Blog]</a></p>
 <h3 id="1-2-浏览器端推理"><a href="#1-2-浏览器端推理" class="headerlink" title="1.2 浏览器端推理"></a>1.2 浏览器端推理</h3><p>浏览器已经成为一个可行的 Agent 推理环境：</p>
 <ul>
 <li><strong>Transformers.js</strong>：Hugging Face 的浏览器端 Transformer 推理库，基于 ONNX Runtime Web + WebGPU，支持 <code>q4</code> 量化，使用 Browser Cache API 持久化模型</li>
 <li><strong>WebLLM &#x2F; MLC-LLM</strong>：基于 Apache TVM 编译栈，通过 WebGPU shader 运行 LLM。Chrome 扩展中需要 Service Worker + Offscreen Document 模式绕过 WebGPU 限制，模型缓存在 IndexedDB</li>
 <li><strong>Chrome Prompt API</strong>：零下载直接调用设备内置 Gemini Nano</li>
 </ul>
-<p>生产案例：<strong>NoAIBills</strong> Chrome 扩展同时集成了 WebLLM、Transformers.js 和 Chrome Prompt API 三种推理后端，支持 Llama 3.2、DeepSeek R1、Qwen3，全离线运行，通过 IndexedDB 缓存实现跨会话模型复用。</p>
+<p>生产案例：<strong>NoAIBills</strong> Chrome 扩展同时集成了 WebLLM、Transformers.js 和 Chrome Prompt API 三种推理后端，支持 Llama 3.2、DeepSeek R1、Qwen 2.5 等，全离线运行，通过 IndexedDB 缓存实现跨会话模型复用。<a target="_blank" rel="noopener" href="https://www.indiehackers.com/post/building-noaibills-a-chrome-extension-that-runs-llms-locally-using-webgpu-transformers-js-and-chromes-prompt-api-ac03fca727">[Indie Hackers]</a></p>
 <h3 id="1-3-Edge-部署"><a href="#1-3-Edge-部署" class="headerlink" title="1.3 Edge 部署"></a>1.3 Edge 部署</h3><table>
 <thead>
 <tr>
@@ -535,7 +535,7 @@
 <td>V8 isolate，内置 KV 全球复制 ~200ms，适合轻量级 agent API</td>
 </tr>
 </tbody></table>
-<p><strong>Cloudflare</strong> 的 Agent 部署模型尤其值得关注：每个 Durable Object 就是一个有状态的 micro-server，拥有自己的 SQLite 存储、WebSocket 连接和调度能力。Agent 可以做到<strong>每用户一个实例</strong>，空闲时完全不计费，按需毫秒级唤醒。2026 年推出的 Dynamic Workers 提供 5 级逐步升级的计算沙箱：</p>
+<p><strong>Cloudflare</strong> 的 Agent 部署模型尤其值得关注：每个 Durable Object 就是一个有状态的 micro-server，拥有自己的 SQLite 存储、WebSocket 连接和调度能力。Agent 可以做到<strong>每用户一个实例</strong>，空闲时完全不计费，按需毫秒级唤醒。2026 年推出的 Dynamic Workers 提供 5 级逐步升级的计算沙箱：<a target="_blank" rel="noopener" href="https://developers.cloudflare.com/agents/">[Cloudflare Agents Docs]</a></p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Tier 0: Workspace（V8 isolate）</span><br><span class="line">Tier 1: Dynamic Worker</span><br><span class="line">Tier 2: + npm 包</span><br><span class="line">Tier 3: + Headless Browser</span><br><span class="line">Tier 4: Full OS Sandbox</span><br></pre></td></tr></table></figure>
 
 <h3 id="1-4-混合路由架构"><a href="#1-4-混合路由架构" class="headerlink" title="1.4 混合路由架构"></a>1.4 混合路由架构</h3><p>生产环境中的混合架构通常在三个层级间路由：</p>
@@ -547,7 +547,7 @@
 <li><strong>置信度级联</strong>：本地模型先跑，输出置信度低于阈值时升级到云端</li>
 <li><strong>推测解码</strong>：边缘模型快速起草候选 token，云端模型并行验证&#x2F;拒绝，减少 30-50% 云端延迟</li>
 </ul>
-<p><strong>成本效益</strong>：当 70%+ 查询为常规查询时，混合路由可实现 <strong>60-80% 云端成本降低</strong>。</p>
+<p><strong>成本效益</strong>：当 70%+ 查询为常规查询时，混合路由可实现 <strong>60-80% 云端成本降低</strong>。<a target="_blank" rel="noopener" href="https://www.slipbox.ai/blogs/hybrid-agent-architecture">[Slipbox]</a></p>
 <hr>
 <h2 id="二、服务端分布式部署"><a href="#二、服务端分布式部署" class="headerlink" title="二、服务端分布式部署"></a>二、服务端分布式部署</h2><h3 id="2-1-编排框架"><a href="#2-1-编排框架" class="headerlink" title="2.1 编排框架"></a>2.1 编排框架</h3><table>
 <thead>
@@ -562,7 +562,7 @@
 <td><strong>LangGraph</strong></td>
 <td>有状态图执行 + checkpointing</td>
 <td>LangGraph Platform &#x2F; Self-hosted Docker&#x2F;K8s</td>
-<td>Klarna（250 万对话），Replit Agent，11x（200 万线索）</td>
+<td>Klarna（230 万+对话），Replit Agent，11x（200 万线索）</td>
 </tr>
 <tr>
 <td><strong>CrewAI</strong></td>
@@ -589,8 +589,8 @@
 <td>字节跳动内部</td>
 </tr>
 </tbody></table>
-<p><strong>LangGraph</strong> 已成为生产多 Agent 系统的主流选择，月 PyPI 下载量 3800 万+，近 400 家企业在 beta 期间接入 LangGraph Platform。</p>
-<p><strong>Klarna</strong> 基于 LangGraph + LangSmith 构建的 Agent 系统处理 <strong>250 万对话</strong>，覆盖 8500 万活跃用户，等效 <strong>700 个全职客服</strong>，解决时间缩短 80%。</p>
+<p><strong>LangGraph</strong> 已成为生产多 Agent 系统的主流选择（截至 2025 年底，月 PyPI 下载量超 3000 万），近 400 家企业在 beta 期间接入 LangGraph Platform。<a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/langgraph/case-studies">[LangGraph Case Studies]</a></p>
+<p><strong>Klarna</strong> 的 AI 客服助手最初由 OpenAI 驱动（2024.2 上线首月处理 230 万对话），后接入 LangGraph + LangSmith 进行编排和可观测性管理。截至 2025 年底，该系统覆盖超 1 亿活跃用户，等效 <strong>850+ 全职客服</strong>，解决时间缩短 80%。<a target="_blank" rel="noopener" href="https://www.klarna.com/international/press/klarna-ai-assistant-handles-two-thirds-of-customer-service-chats-in-its-first-month/">[Klarna 原始公告, 2024]</a> <a target="_blank" rel="noopener" href="https://blog.langchain.com/customers-klarna">[LangChain Case Study]</a></p>
 <p><strong>Brain&#x2F;Worker 分离模式</strong>是服务端部署的一个关键优化：Supervisor（Brain）跑 Lambda，Worker 跑 ECS，成本降低 5-10x。</p>
 <h3 id="2-2-分布式执行"><a href="#2-2-分布式执行" class="headerlink" title="2.2 分布式执行"></a>2.2 分布式执行</h3><p><strong>生产标准：无状态 worker + 外部状态存储。</strong></p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Load Balancer → FastAPI Workers (stateless) → Redis/Postgres Checkpoints → 可观测性平台</span><br></pre></td></tr></table></figure>
@@ -620,7 +620,7 @@
 <td>异步工作流、定时任务</td>
 </tr>
 </tbody></table>
-<p><strong>Temporal</strong> 的杀手特性：一个运行 15 分钟的 Agent 在 99% 处崩溃时，可以从最后一个 checkpoint 恢复，不浪费已完成的计算。</p>
+<p><strong>Temporal</strong> 的杀手特性：一个运行 15 分钟的 Agent 在 99% 处崩溃时，可以从最后一个 checkpoint 恢复，不浪费已完成的计算。<a target="_blank" rel="noopener" href="https://temporal.io/blog/build-durable-ai-agents-pydantic-ai-and-temporal">[Temporal Blog]</a></p>
 <h3 id="2-3-计算隔离"><a href="#2-3-计算隔离" class="headerlink" title="2.3 计算隔离"></a>2.3 计算隔离</h3><p><strong>生产共识：LLM 生成的代码必须用 Firecracker 或 Kata Containers 隔离，禁止裸 Docker。</strong></p>
 <table>
 <thead>
@@ -662,9 +662,9 @@
 <td>Anthropic Claude Code</td>
 </tr>
 </tbody></table>
-<p><strong>Stripe Minions</strong>（每周生成 1000+ PR）的做法：每次运行启动独立 devbox VM，<strong>无网络访问 + 无生产数据访问</strong>。隔离本身就是权限系统。</p>
-<p><strong>Anthropic Claude Code</strong> 使用轻量级进程隔离：Linux 上用 bubblewrap，macOS 上用 Seatbelt，将文件系统访问限制在特定目录，所有网络流量经过可配置代理。开源为 <code>anthropic-experimental/sandbox-runtime</code>，内部使用减少了 <strong>84% 的权限提示</strong>。</p>
-<p><strong>K8s 原生方案</strong>：<code>kubernetes-sigs/agent-sandbox</code>（2025.11 启动）标准化了沙箱编排，支持 Kata Containers 和 gVisor 后端。</p>
+<p><strong>Stripe Minions</strong>（每周生成 1000+ PR）的做法：每次运行启动独立 devbox VM，<strong>无网络访问 + 无生产数据访问</strong>。隔离本身就是权限系统。<a target="_blank" rel="noopener" href="https://stripe.dev/blog/minions-stripes-one-shot-end-to-end-coding-agents">[Stripe Engineering Blog]</a></p>
+<p><strong>Anthropic Claude Code</strong> 使用轻量级进程隔离：Linux 上用 bubblewrap，macOS 上用 Seatbelt，将文件系统访问限制在特定目录，所有网络流量经过可配置代理。开源为 <a target="_blank" rel="noopener" href="https://github.com/anthropic-experimental/sandbox-runtime"><code>anthropic-experimental/sandbox-runtime</code></a>，内部使用减少了 <strong>84% 的权限提示</strong>。</p>
+<p><strong>K8s 原生方案</strong>：<a target="_blank" rel="noopener" href="https://github.com/kubernetes-sigs/agent-sandbox"><code>kubernetes-sigs/agent-sandbox</code></a>（2025.11 启动）标准化了沙箱编排，支持 Kata Containers 和 gVisor 后端。</p>
 <h3 id="2-4-数据隔离-x2F-多租户"><a href="#2-4-数据隔离-x2F-多租户" class="headerlink" title="2.4 数据隔离 &#x2F; 多租户"></a>2.4 数据隔离 &#x2F; 多租户</h3><p>AI Agent 引入了传统 SaaS 之外的隔离挑战：共享模型上下文（跨租户 prompt injection）、向量库交叉污染、持久化记忆泄漏、工具执行跨租户访问。</p>
 <p><strong>数据库层 — Row-Level Security（黄金标准）</strong>：</p>
 <figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> POLICY &quot;tenant_isolation&quot;</span><br><span class="line"><span class="keyword">ON</span> conversations <span class="keyword">FOR</span> <span class="keyword">ALL</span></span><br><span class="line"><span class="keyword">USING</span> (org_id <span class="operator">=</span> current_setting(<span class="string">&#x27;app.current_org_id&#x27;</span>)::UUID);</span><br></pre></td></tr></table></figure>
@@ -684,7 +684,7 @@
 <td>Per-tenant namespace</td>
 <td>最强（物理分区）</td>
 <td>高</td>
-<td>Pinecone、Weaviate</td>
+<td><a target="_blank" rel="noopener" href="https://docs.pinecone.io/guides/index-data/implement-multitenancy">Pinecone</a>、<a target="_blank" rel="noopener" href="https://weaviate.io/blog/weaviate-multi-tenancy-architecture-explained">Weaviate</a></td>
 </tr>
 <tr>
 <td>Metadata filtering</td>
@@ -812,6 +812,9 @@
 <td>$10M 种子轮，但 LLM 有时忘记搜索&#x2F;更新</td>
 </tr>
 </tbody></table>
+<blockquote>
+<p>平台链接：<a target="_blank" rel="noopener" href="https://github.com/mem0ai/mem0">Mem0</a> · <a target="_blank" rel="noopener" href="https://github.com/getzep/zep">Zep</a> · <a target="_blank" rel="noopener" href="https://github.com/langchain-ai/langmem">LangMem</a> · <a target="_blank" rel="noopener" href="https://github.com/letta-ai/letta">Letta</a></p>
+</blockquote>
 <p><strong>Mem0</strong> vs <strong>Zep</strong> 的核心权衡：Mem0 延迟低、存储效率高（1,764 tokens&#x2F;对话），Zep 在时间推理上远超（LongMemEval 63.8% vs 49.0%）但内存占用巨大（600K tokens&#x2F;对话）。</p>
 <h3 id="3-4-存储后端选型"><a href="#3-4-存储后端选型" class="headerlink" title="3.4 存储后端选型"></a>3.4 存储后端选型</h3><ul>
 <li><strong>Redis</strong>：L1 热状态，sub-ms 延迟，<strong>必须配 TTL</strong>（没有 TTL 的短期记忆会意外变成长期记忆）</li>
@@ -819,7 +822,7 @@
 <li><strong>Qdrant</strong>（Rust，HNSW+BQ）&#x2F; <strong>Pinecone</strong>（Serverless）&#x2F; <strong>Weaviate</strong>（混合搜索）：L2&#x2F;L3 语义检索</li>
 <li>**Neo4j + Graphiti (Zep)**：双时态知识图谱，事实矛盾不丢信息，追踪”用户三月认为 X，现在认为 Y”</li>
 </ul>
-<h3 id="3-5-持久化模式"><a href="#3-5-持久化模式" class="headerlink" title="3.5 持久化模式"></a>3.5 持久化模式</h3><p><strong>LangGraph Checkpointing</strong> 是生产主流：</p>
+<h3 id="3-5-持久化模式"><a href="#3-5-持久化模式" class="headerlink" title="3.5 持久化模式"></a>3.5 持久化模式</h3><p><strong>LangGraph Checkpointing</strong> 是生产主流：<a target="_blank" rel="noopener" href="https://langchain-ai.github.io/langgraph/how-tos/persistence/">[LangGraph Persistence Docs]</a></p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> langgraph.checkpoint.postgres <span class="keyword">import</span> PostgresSaver</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> PostgresSaver.from_conn_string(DB_URI) <span class="keyword">as</span> checkpointer:</span><br><span class="line">    checkpointer.setup()</span><br><span class="line">    graph = builder.<span class="built_in">compile</span>(checkpointer=checkpointer)</span><br><span class="line">    <span class="comment"># 每个节点执行自动创建 checkpoint</span></span><br><span class="line">    <span class="comment"># 崩溃恢复：用相同 thread_id 从最后 checkpoint 恢复</span></span><br></pre></td></tr></table></figure>
 
 <p>三种持久化模式：<code>sync</code>（最安全，每步前 checkpoint）、<code>async</code>（更快，后台 checkpoint）、<code>exit</code>（仅退出时 checkpoint）。</p>
@@ -887,12 +890,12 @@
 <td>大多数生产系统</td>
 </tr>
 </tbody></table>
-<p><strong>关键统计：36.9% 的多 agent 失败源于 agent 间记忆不一致——各 agent 基于不同版本的事实运行。</strong></p>
-<h3 id="3-7-Memory-安全威胁"><a href="#3-7-Memory-安全威胁" class="headerlink" title="3.7 Memory 安全威胁"></a>3.7 Memory 安全威胁</h3><p><strong>Memory Poisoning</strong>（OWASP ASI06，2026）是 Agent 记忆系统面临的头号安全风险：</p>
+<p><strong>关键挑战：多 agent 系统中，agent 间记忆不一致是常见的失败根因——各 agent 基于不同版本的事实运行，导致决策冲突。</strong></p>
+<h3 id="3-7-Memory-安全威胁"><a href="#3-7-Memory-安全威胁" class="headerlink" title="3.7 Memory 安全威胁"></a>3.7 Memory 安全威胁</h3><p><strong>Memory Poisoning</strong>（<a target="_blank" rel="noopener" href="https://genai.owasp.org/resource/owasp-top-10-for-agentic-ai/">OWASP Agentic AI Top 10, ASI06</a>，2026）是 Agent 记忆系统面临的头号安全风险：</p>
 <ul>
 <li>攻击者通过正常交互注入恶意指令到长期记忆</li>
 <li>跨会话持久生效，可能在注入数天&#x2F;数周后触发</li>
-<li>NeurIPS 2025 研究显示 <strong>95% 注入成功率</strong>，<strong>70%+ 攻击成功率</strong></li>
+<li>NeurIPS 2025 研究显示 <strong>95% 注入成功率</strong>，<strong>70%+ 攻击成功率</strong> <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2503.03704">[MINJA, arXiv]</a></li>
 </ul>
 <p>防御层级：</p>
 <ol>
@@ -903,7 +906,7 @@
 <li>行为漂移监控：拒绝率偏移 &gt;15% 告警、指令回显评分、工具使用异常检测、KL 散度基线检测</li>
 </ol>
 <hr>
-<h2 id="四、安全与防护"><a href="#四、安全与防护" class="headerlink" title="四、安全与防护"></a>四、安全与防护</h2><h3 id="4-1-Prompt-Injection-防御"><a href="#4-1-Prompt-Injection-防御" class="headerlink" title="4.1 Prompt Injection 防御"></a>4.1 Prompt Injection 防御</h3><p>Prompt Injection 位列 OWASP 2025 AI 安全风险 <strong>#1</strong>。生产级防御需要多层堆叠：</p>
+<h2 id="四、安全与防护"><a href="#四、安全与防护" class="headerlink" title="四、安全与防护"></a>四、安全与防护</h2><h3 id="4-1-Prompt-Injection-防御"><a href="#4-1-Prompt-Injection-防御" class="headerlink" title="4.1 Prompt Injection 防御"></a>4.1 Prompt Injection 防御</h3><p>Prompt Injection 位列 <a target="_blank" rel="noopener" href="https://genai.owasp.org/llm-top-10/">OWASP 2025 AI 安全风险</a> <strong>#1</strong>。生产级防御需要多层堆叠：</p>
 <table>
 <thead>
 <tr>
@@ -933,13 +936,13 @@
 <td>Stripe 分离模式</td>
 </tr>
 </tbody></table>
-<p><strong>NeMo Guardrails</strong>：NVIDIA 的可编程 rails 框架，使用 Colang DSL 定义输入&#x2F;输出规则，支持 PII 检测、越狱检测、主题控制。</p>
-<p><strong>Lakera Guard</strong>：&lt;50ms 延迟，每天处理 10 万+ 对抗样本，支持 100+ 语言。</p>
+<p>**<a target="_blank" rel="noopener" href="https://github.com/NVIDIA-NeMo/Guardrails">NeMo Guardrails</a>**：NVIDIA 的可编程 rails 框架，使用 Colang DSL 定义输入&#x2F;输出规则，支持 PII 检测、越狱检测、主题控制。</p>
+<p>**<a target="_blank" rel="noopener" href="https://www.lakera.ai/">Lakera Guard</a>**：&lt;50ms 延迟，每天处理 10 万+ 对抗样本，支持 100+ 语言。</p>
 <h3 id="4-2-Auth-amp-授权"><a href="#4-2-Auth-amp-授权" class="headerlink" title="4.2 Auth &amp; 授权"></a>4.2 Auth &amp; 授权</h3><p>Agent 的身份管理比传统服务更复杂——它们是非确定性的、自主的、以机器速度运行。</p>
 <p><strong>五层身份模型</strong>：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">触发者身份（谁发起）</span><br><span class="line">  → 执行身份（Agent 的 service account）</span><br><span class="line">    → 授权身份（委托的 token scope）</span><br><span class="line">      → 租户身份（Org/workspace 上下文）</span><br><span class="line">        → 通道身份（集成上下文：Slack workspace、GitHub org）</span><br></pre></td></tr></table></figure>
 
-<p><strong>MCP 授权标准</strong>（OAuth 2.1）：</p>
+<p>**<a target="_blank" rel="noopener" href="https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization">MCP 授权标准</a>**（OAuth 2.1）：</p>
 <ul>
 <li>MCP Server 作为 OAuth Resource Server</li>
 <li>强制 PKCE</li>
@@ -947,7 +950,7 @@
 <li>每次工具调用时评估权限，不仅在连接时</li>
 </ul>
 <p><strong>关键原则</strong>：短命令牌（5-15 分钟）、tenant-scoped 凭证、最小权限、全量审计。</p>
-<h3 id="4-3-成本管控"><a href="#4-3-成本管控" class="headerlink" title="4.3 成本管控"></a>4.3 成本管控</h3><p>2026 年 AI SaaS 产品将 <strong>30-50%</strong> 基础设施预算用于 LLM API。</p>
+<h3 id="4-3-成本管控"><a href="#4-3-成本管控" class="headerlink" title="4.3 成本管控"></a>4.3 成本管控</h3><p>对于 AI-heavy 的 SaaS 产品，LLM API 调用往往是基础设施成本中最大的单项支出。</p>
 <p><strong>优化栈</strong>（叠加效果约 <strong>52% 总成本降低</strong>）：</p>
 <table>
 <thead>
@@ -959,7 +962,7 @@
 </thead>
 <tbody><tr>
 <td>语义缓存</td>
-<td>GPTCache、RedisVL</td>
+<td><a target="_blank" rel="noopener" href="https://github.com/zilliztech/GPTCache">GPTCache</a>、RedisVL</td>
 <td>20-50%（FAQ 场景高达 70%）</td>
 </tr>
 <tr>
@@ -988,13 +991,13 @@
 <td>部分 provider 50% 折扣</td>
 </tr>
 </tbody></table>
-<p><strong>模型路由示例</strong>：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Trivial → GPT-4.1-nano ($0.05/M input)</span><br><span class="line">Simple  → Claude 3.5 Haiku ($0.25/M input)</span><br><span class="line">Moderate → GPT-4o ($2.50/M input)</span><br><span class="line">Complex → Claude 3.5 Sonnet ($3.00/M input)</span><br></pre></td></tr></table></figure>
+<p><strong>示例路由策略</strong>（价格随时间变动，仅供参考）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Trivial  → 轻量模型（如 GPT-4.1-nano 级别，~$0.05/M input）</span><br><span class="line">Simple   → 中等模型（如 Claude Haiku 级别，~$0.25/M input）</span><br><span class="line">Moderate → 主力模型（如 GPT-4o 级别，~$2.50/M input）</span><br><span class="line">Complex  → 旗舰模型（如 Claude Sonnet 级别，~$3.00/M input）</span><br></pre></td></tr></table></figure>
 
-<p>研究发现：90% 查询走小模型 + 复杂查询升级，可实现 <strong>87% 成本降低</strong>同时维持质量。</p>
-<p><strong>血泪案例</strong>：某金融 Agent 循环运行 11 天无人察觉，周 API 账单从 $127 飙升至 <strong>$47,000</strong>——没有熔断器，没有花费告警。</p>
+<p>实践表明：将大部分简单查询路由到小模型、仅将复杂查询升级到大模型，可显著降低成本（部分案例报告超过 <strong>80% 成本降低</strong>）同时维持质量。</p>
+<p><strong>典型风险场景</strong>：Agent 进入无限循环而无人察觉，导致 API 账单在数天内从百美元级飙升至数万美元——缺少熔断器和花费告警是根因。</p>
 <hr>
-<h2 id="五、可靠性模式"><a href="#五、可靠性模式" class="headerlink" title="五、可靠性模式"></a>五、可靠性模式</h2><p>LLM API 运行在 99.0-99.5% 可用性——即每月 3.5-7 小时宕机。2024 Q1 到 2025 Q1 行业 API 可用性实际从 99.66% <strong>下降</strong>到 99.46%。</p>
+<h2 id="五、可靠性模式"><a href="#五、可靠性模式" class="headerlink" title="五、可靠性模式"></a>五、可靠性模式</h2><p>LLM API 通常运行在 99.0-99.5% 可用性水平——即每月约 3.5-7 小时宕机，且主流提供商的可用性在过去一年呈下降趋势。</p>
 <h3 id="弹性层级"><a href="#弹性层级" class="headerlink" title="弹性层级"></a>弹性层级</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">你的应用</span><br><span class="line">  ↓</span><br><span class="line">Circuit Breaker  ← 服务挂了就停止请求</span><br><span class="line">  ↓</span><br><span class="line">Model Fallback   ← 试备用模型/供应商</span><br><span class="line">  ↓</span><br><span class="line">Retry + Backoff  ← 处理瞬时错误</span><br><span class="line">  ↓</span><br><span class="line">Graceful Degradation ← 一切都挂了就降级</span><br><span class="line">  ↓</span><br><span class="line">LLM API</span><br></pre></td></tr></table></figure>
 
 <p><strong>Circuit Breaker 配置</strong>：</p>
@@ -1015,7 +1018,7 @@
 <li>Model 级：GPT-4 → GPT-3.5-turbo → 规则响应</li>
 <li>数据级：实时 RAG → 缓存数据 → 通用响应</li>
 </ul>
-<p><strong>Human-in-the-Loop 升级触发</strong>：连续 N 次失败、置信度低于阈值、敏感操作。Stripe 设置了 <strong>two-round CI cap</strong> 防止 Agent 无限重试。</p>
+<p><strong>Human-in-the-Loop 升级触发</strong>：连续 N 次失败、置信度低于阈值、敏感操作。Stripe 设置了 <strong>two-round CI cap</strong> 防止 Agent 无限重试。<a target="_blank" rel="noopener" href="https://stripe.dev/blog/minions-stripes-one-shot-end-to-end-coding-agents">[Stripe Blog]</a></p>
 <hr>
 <h2 id="六、部署生命周期"><a href="#六、部署生命周期" class="headerlink" title="六、部署生命周期"></a>六、部署生命周期</h2><h3 id="6-1-四层测试"><a href="#6-1-四层测试" class="headerlink" title="6.1 四层测试"></a>6.1 四层测试</h3><table>
 <thead>
@@ -1075,7 +1078,7 @@
 </tr>
 <tr>
 <td><strong>Uber</strong></td>
-<td>Michelangelo 平台，75%+ 关键场景走 shadow testing，四级安全评级（Bronze→Platinum）</td>
+<td>Michelangelo 平台，75%+ 关键场景走 shadow testing，四级安全评级（Bronze→Platinum）<a target="_blank" rel="noopener" href="https://www.uber.com/us/en/blog/from-predictive-to-generative-ai/">[Blog]</a></td>
 </tr>
 <tr>
 <td><strong>Anthropic</strong></td>
@@ -1093,19 +1096,19 @@
 </tr>
 </thead>
 <tbody><tr>
-<td><strong>LangSmith</strong></td>
+<td><strong><a target="_blank" rel="noopener" href="https://docs.smith.langchain.com/">LangSmith</a></strong></td>
 <td>SaaS</td>
 <td>零配置追踪，对话聚类，LangGraph 深度集成</td>
 <td>Free 5K traces&#x2F;月，Plus $39&#x2F;seat&#x2F;月</td>
 </tr>
 <tr>
-<td><strong>Langfuse</strong></td>
+<td><strong><a target="_blank" rel="noopener" href="https://github.com/langfuse/langfuse">Langfuse</a></strong></td>
 <td>开源 MIT (19K⭐)</td>
 <td>框架无关，Prompt 版本控制，成本分析</td>
 <td>自托管免费，Cloud $59&#x2F;月起</td>
 </tr>
 <tr>
-<td><strong>Arize Phoenix</strong></td>
+<td><strong><a target="_blank" rel="noopener" href="https://github.com/Arize-ai/phoenix">Arize Phoenix</a></strong></td>
 <td>开源 ELv2</td>
 <td>OpenTelemetry 原生，Embedding 漂移检测，路径&#x2F;收敛评估</td>
 <td>自托管免费，AX Cloud $50&#x2F;月起</td>
@@ -1179,7 +1182,7 @@
 </tr>
 <tr>
 <td><strong>Klarna</strong></td>
-<td>LangGraph，250 万对话，700 FTE 等效</td>
+<td>LangGraph + OpenAI，230 万+对话&#x2F;月，850+ FTE 等效</td>
 </tr>
 <tr>
 <td><strong>Stripe</strong></td>
@@ -1199,13 +1202,151 @@
 </tr>
 <tr>
 <td><strong>E2B</strong></td>
-<td>2 亿+ Firecracker 沙箱，&lt;200ms 冷启动</td>
+<td><a target="_blank" rel="noopener" href="https://github.com/e2b-dev/e2b">2 亿+ Firecracker 沙箱</a>，&lt;200ms 冷启动</td>
 </tr>
 <tr>
 <td><strong>Cloudflare</strong></td>
 <td>Durable Objects Agent，5 级沙箱，休眠 $0</td>
 </tr>
 </tbody></table>
+<hr>
+<h2 id="九、参考资料与开源地址"><a href="#九、参考资料与开源地址" class="headerlink" title="九、参考资料与开源地址"></a>九、参考资料与开源地址</h2><blockquote>
+<p>⭐ 数据截至 2025 年中，仅供量级参考。</p>
+</blockquote>
+<h3 id="客户端-x2F-边缘部署"><a href="#客户端-x2F-边缘部署" class="headerlink" title="客户端 &#x2F; 边缘部署"></a>客户端 &#x2F; 边缘部署</h3><p><strong>Apple Intelligence</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://machinelearning.apple.com/research/apple-intelligence-foundation-language-models">Apple Intelligence Foundation Language Models (2024)</a> — 原始技术报告，描述 on-device ~3B 模型与 LoRA adapter 架构</li>
+<li><a target="_blank" rel="noopener" href="https://machinelearning.apple.com/research/apple-foundation-models-tech-report-2025">Apple Foundation Models Tech Report 2025</a> — 2025 更新版，开发者 API 与 adapter 微调</li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2407.21075">arXiv: 2407.21075</a> — 完整论文</li>
+</ul>
+<p><strong>Google Gemini Nano</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://developer.android.com/ai/gemini-nano">Android Developer Docs: Gemini Nano</a> — AICore 系统服务架构</li>
+<li><a target="_blank" rel="noopener" href="https://developer.android.com/ai/gemini-nano/ml-kit-genai">ML Kit GenAI APIs</a> — 高层 API（摘要、校对、图片描述等）</li>
+<li><a target="_blank" rel="noopener" href="https://developers.google.com/ml-kit/genai/aicore-dev-preview">AICore Developer Preview</a> — 预览模型测试</li>
+</ul>
+<p><strong>Cursor</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://cursor.com/blog/self-hosted-cloud-agents">Cursor Blog: Self-Hosted Cloud Agents</a> — 自托管方案公告</li>
+<li><a target="_blank" rel="noopener" href="https://cursor.com/docs/cloud-agent/self-hosted">Cursor Docs: Self-Hosted Pool</a> — Helm chart 部署指南</li>
+</ul>
+<p><strong>Cloudflare Agents SDK</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://developers.cloudflare.com/agents/">Cloudflare Agents 官方文档</a> — Durable Objects + 状态管理 + AI 集成</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/cloudflare/agents/">GitHub: cloudflare&#x2F;agents</a> — 开源 SDK</li>
+<li><a target="_blank" rel="noopener" href="https://developers.cloudflare.com/durable-objects/">Durable Objects 文档</a> — 底层原语</li>
+</ul>
+<p><strong>Vercel AI SDK</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://sdk.vercel.ai/docs/agents/overview">Vercel AI SDK: Agents Overview</a> — Agent 构建文档</li>
+<li><a target="_blank" rel="noopener" href="https://www.vercel.com/guides/how-to-build-ai-agents-with-vercel-and-the-ai-sdk">Guide: Build AI Agents with Vercel</a> — 端到端教程</li>
+</ul>
+<p><strong>浏览器端推理</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/huggingface/transformers.js">GitHub: huggingface&#x2F;transformers.js</a> (15.8K⭐) — 浏览器端 Transformer 推理</li>
+<li><a target="_blank" rel="noopener" href="https://huggingface.co/docs/transformers.js/guides/webgpu">Transformers.js WebGPU Guide</a> — WebGPU 加速文档</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/mlc-ai/web-llm">GitHub: mlc-ai&#x2F;web-llm</a> (17.7K⭐) — 浏览器端 LLM 推理引擎</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/mlc-ai/mlc-llm">GitHub: mlc-ai&#x2F;mlc-llm</a> — 通用 LLM 部署引擎</li>
+<li><a target="_blank" rel="noopener" href="https://www.indiehackers.com/post/building-noaibills-a-chrome-extension-that-runs-llms-locally-using-webgpu-transformers-js-and-chromes-prompt-api-ac03fca727">NoAIBills Build Story (Indie Hackers)</a> — 三后端架构深度分享</li>
+</ul>
+<p><strong>Deno Deploy</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://docs.deno.com/examples/sandbox_for_untrusted_code/">Deno Sandbox for AI Agents</a> — 不可信代码执行示例</li>
+</ul>
+<p><strong>混合路由架构</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.slipbox.ai/blogs/hybrid-agent-architecture">Slipbox: Hybrid Agent Architecture</a> — 实际产品案例，on-device SLM + 云端 LLM 级联</li>
+<li><a target="_blank" rel="noopener" href="https://zylos.ai/research/2026-03-02-ai-agent-model-routing">Zylos Research: AI Agent Model Routing</a> — 路由策略综述（RouteLLM、Martian、LiteLLM 等）</li>
+</ul>
+<hr>
+<h3 id="服务端分布式部署"><a href="#服务端分布式部署" class="headerlink" title="服务端分布式部署"></a>服务端分布式部署</h3><p><strong>编排框架</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://docs.langchain.com/langgraph-platform/deploy-to-cloud">LangGraph Cloud Deployment Guide</a> — 官方部署文档</li>
+<li><a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/langgraph/case-studies">LangGraph Case Studies</a> — 生产案例列表</li>
+<li><a target="_blank" rel="noopener" href="https://blog.langchain.com/customers-klarna">Klarna Case Study</a> — 230 万+对话&#x2F;月，850+ FTE 等效</li>
+<li><a target="_blank" rel="noopener" href="https://blog.langchain.com/customers-replit">Replit Case Study</a> — Agent 工作流与可观测性</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/crewAIInc/crewAI">GitHub: crewAIInc&#x2F;crewAI</a> — 角色制 Agent 团队框架</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/microsoft/autogen">GitHub: microsoft&#x2F;autogen</a> — 微软 AutoGen</li>
+<li><a target="_blank" rel="noopener" href="https://www.microsoft.com/en-us/research/blog/autogen-v0-4-reimagining-the-foundation-of-agentic-ai-for-scale-extensibility-and-robustness/">AutoGen v0.4 Release Blog</a> — v0.4 架构重设计</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/langgenius/dify">GitHub: langgenius&#x2F;dify</a> — 低代码 LLM 平台</li>
+<li><a target="_blank" rel="noopener" href="https://community.alibabacloud.com/blog/high-availability-and-performance-best-practices-for-deploying-dify-based-on-ack_601874">Dify on ACK 高可用部署</a> — 阿里云 ACK 最佳实践</li>
+</ul>
+<p><strong>分布式执行</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://temporal.io/blog/build-durable-ai-agents-pydantic-ai-and-temporal">Temporal: Durable AI Agents</a> — Temporal + Pydantic AI 构建持久 Agent</li>
+<li><a target="_blank" rel="noopener" href="https://temporal.io/blog/what-are-multi-agent-workflows">Temporal: Multi-Agent Workflows</a> — 多 Agent 工作流架构</li>
+<li><a target="_blank" rel="noopener" href="https://docs.temporal.io/ai-cookbook/durable-agent-with-tools">Temporal AI Cookbook</a> — 工具调用 Agent 食谱</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/inngest/inngest">GitHub: inngest&#x2F;inngest</a> (5K⭐) — 事件驱动持久执行平台</li>
+</ul>
+<p><strong>计算隔离</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/firecracker-microvm/firecracker">GitHub: firecracker-microvm&#x2F;firecracker</a> — AWS Firecracker microVM</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/kata-containers/kata-containers">GitHub: kata-containers&#x2F;kata-containers</a> — Kata Containers</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/google/gvisor">GitHub: google&#x2F;gvisor</a> — gVisor 容器运行时</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/e2b-dev/e2b">GitHub: e2b-dev&#x2F;e2b</a> — AI Agent 专用沙箱（Firecracker 底层）</li>
+<li><a target="_blank" rel="noopener" href="https://docs.e2b.dev/">E2B Docs</a> — 沙箱文档</li>
+<li><a target="_blank" rel="noopener" href="https://modal.com/products/sandboxes">Modal Sandboxes (gVisor)</a> — Modal 沙箱产品</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/kubernetes-sigs/agent-sandbox">GitHub: kubernetes-sigs&#x2F;agent-sandbox</a> — K8s SIG Apps Agent 沙箱</li>
+<li><a target="_blank" rel="noopener" href="https://agent-sandbox.sigs.k8s.io/">Agent Sandbox Docs</a> — 官方文档</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/kubeswarm/kubeswarm">GitHub: kubeswarm&#x2F;kubeswarm</a> — K8s Agent 编排 operator</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/anthropic-experimental/sandbox-runtime">GitHub: anthropic-experimental&#x2F;sandbox-runtime</a> — Anthropic Claude Code 沙箱运行时</li>
+</ul>
+<p><strong>工业案例</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://stripe.dev/blog/minions-stripes-one-shot-end-to-end-coding-agents">Stripe: Minions End-to-End Coding Agents</a> — 1000+ PR&#x2F;周，devbox 隔离架构</li>
+<li><a target="_blank" rel="noopener" href="https://www.uber.com/us/en/blog/from-predictive-to-generative-ai/">Uber: From Predictive to Generative AI</a> — Michelangelo 平台 GenAI 演进</li>
+<li><a target="_blank" rel="noopener" href="https://www.uber.com/us/en/blog/enhanced-agentic-rag/">Uber: Enhanced Agentic RAG</a> — Agentic RAG 与 on-call copilot</li>
+</ul>
+<p><strong>数据隔离</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://mvpfactory.io/blog/postgresql-row-level-security-for-multi-tenant-saas-eliminating-tenant-data/">PostgreSQL RLS for Multi-Tenant SaaS</a> — RLS 实战指南</li>
+<li><a target="_blank" rel="noopener" href="https://medium.com/@Praxen/5-postgres-row-level-security-recipes-for-personalized-ai-c9f78b4f4878">5 Postgres RLS Recipes for AI</a> — AI 场景 RLS 方案</li>
+<li><a target="_blank" rel="noopener" href="https://docs.pinecone.io/guides/index-data/implement-multitenancy">Pinecone: Implement Multitenancy</a> — 命名空间隔离</li>
+<li><a target="_blank" rel="noopener" href="https://weaviate.io/blog/weaviate-multi-tenancy-architecture-explained">Weaviate: Multi-Tenancy Architecture</a> — 物理分区设计</li>
+</ul>
+<hr>
+<h3 id="Agent-Memory-存储"><a href="#Agent-Memory-存储" class="headerlink" title="Agent Memory 存储"></a>Agent Memory 存储</h3><p><strong>Memory 平台</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/mem0ai/mem0">GitHub: mem0ai&#x2F;mem0</a> (53K⭐) — 通用 AI Agent 记忆层</li>
+<li><a target="_blank" rel="noopener" href="https://docs.mem0.ai/">Mem0 Docs</a> — 文档</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/getzep/zep">GitHub: getzep&#x2F;zep</a> — 时态知识图谱记忆引擎</li>
+<li><a target="_blank" rel="noopener" href="https://help.getzep.com/">Zep Docs</a> — 文档</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/langchain-ai/langmem">GitHub: langchain-ai&#x2F;langmem</a> — LangChain 记忆管理 SDK</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/letta-ai/letta">GitHub: letta-ai&#x2F;letta</a> (22K⭐) — Letta (MemGPT)，LLM 自主管理三级内存</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/topoteretes/cognee">GitHub: topoteretes&#x2F;cognee</a> (16K⭐) — AI Agent 知识引擎</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/zilliztech/GPTCache">GitHub: zilliztech&#x2F;GPTCache</a> (8K⭐) — LLM 语义缓存</li>
+</ul>
+<p><strong>Checkpointing</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://langchain-ai.github.io/langgraph/how-tos/persistence/">LangGraph Persistence How-To</a> — PostgresSaver &#x2F; RedisSaver 文档</li>
+</ul>
+<hr>
+<h3 id="安全与生产运维"><a href="#安全与生产运维" class="headerlink" title="安全与生产运维"></a>安全与生产运维</h3><p><strong>安全工具</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/NVIDIA-NeMo/Guardrails">GitHub: NVIDIA-NeMo&#x2F;Guardrails</a> — 可编程 LLM 护栏</li>
+<li><a target="_blank" rel="noopener" href="https://docs.nvidia.com/nemo/guardrails/">NeMo Guardrails Docs</a> — 官方文档</li>
+<li><a target="_blank" rel="noopener" href="https://www.lakera.ai/">Lakera Guard</a> — AI 原生安全平台</li>
+<li><a target="_blank" rel="noopener" href="https://docs.lakera.ai/">Lakera Docs</a> — 文档</li>
+</ul>
+<p><strong>安全标准与研究</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://genai.owasp.org/llm-top-10/">OWASP Top 10 for LLMs 2025</a> — LLM 应用安全风险排名</li>
+<li><a target="_blank" rel="noopener" href="https://owasp.org/www-project-top-10-for-large-language-model-applications/assets/PDF/OWASP-Top-10-for-LLMs-v2025.pdf">OWASP Top 10 for LLMs 2025 (PDF)</a></li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2503.03704">MINJA: Memory Injection Attacks on LLM Agents (arXiv)</a> — NeurIPS 2025，95% 注入成功率</li>
+<li><a target="_blank" rel="noopener" href="https://openreview.net/forum?id=aGvo1YEmnJ">MINJA (OpenReview)</a> — 论文评审</li>
+</ul>
+<p><strong>授权协议</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization">MCP Authorization Spec (OAuth 2.1)</a> — MCP 官方授权规范</li>
+</ul>
+<p><strong>可观测性</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://docs.smith.langchain.com/">LangSmith Docs</a> — LangChain 可观测性平台</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/langfuse/langfuse">GitHub: langfuse&#x2F;langfuse</a> (25K⭐) — 开源 LLM 工程平台</li>
+<li><a target="_blank" rel="noopener" href="https://docs.langfuse.com/">Langfuse Docs</a> — 文档</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/Arize-ai/phoenix">GitHub: Arize-ai&#x2F;phoenix</a> (9K⭐) — 开源 AI 可观测性</li>
+<li><a target="_blank" rel="noopener" href="https://arize.com/docs/phoenix">Arize Phoenix Docs</a> — 文档</li>
+</ul>
 
     </article>
     <!-- license -->
@@ -1213,7 +1354,7 @@
             <p>Author：<a href="https://edison-a-n.github.io">Edison</a>
             <p>Link：<a href="https://edison-a-n.github.io/2026/04/19/agent-deployment-industrial-practices/">https://edison-a-n.github.io/2026/04/19/agent-deployment-industrial-practices/</a>
             <p>Publish date：<a href="https://edison-a-n.github.io/2026/04/19/agent-deployment-industrial-practices/">April 19th 2026, 12:00:00 am</a>
-            <p>Update date：<a href="https://edison-a-n.github.io/2026/04/19/agent-deployment-industrial-practices/">April 19th 2026, 2:45:43 pm</a>
+            <p>Update date：<a href="https://edison-a-n.github.io/2026/04/19/agent-deployment-industrial-practices/">April 19th 2026, 4:21:15 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     <!-- paginator -->
@@ -1275,7 +1416,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%AE%A2%E6%88%B7%E7%AB%AF-x2F-%E8%BE%B9%E7%BC%98%E9%83%A8%E7%BD%B2"><span class="toc-number">1.</span> <span class="toc-text">一、客户端 &#x2F; 边缘部署</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E8%AE%BE%E5%A4%87%E7%AB%AF%E9%83%A8%E7%BD%B2"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 设备端部署</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E6%B5%8F%E8%A7%88%E5%99%A8%E7%AB%AF%E6%8E%A8%E7%90%86"><span class="toc-number">1.2.</span> <span class="toc-text">1.2 浏览器端推理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-Edge-%E9%83%A8%E7%BD%B2"><span class="toc-number">1.3.</span> <span class="toc-text">1.3 Edge 部署</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-%E6%B7%B7%E5%90%88%E8%B7%AF%E7%94%B1%E6%9E%B6%E6%9E%84"><span class="toc-number">1.4.</span> <span class="toc-text">1.4 混合路由架构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%9C%8D%E5%8A%A1%E7%AB%AF%E5%88%86%E5%B8%83%E5%BC%8F%E9%83%A8%E7%BD%B2"><span class="toc-number">2.</span> <span class="toc-text">二、服务端分布式部署</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E7%BC%96%E6%8E%92%E6%A1%86%E6%9E%B6"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 编排框架</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E5%88%86%E5%B8%83%E5%BC%8F%E6%89%A7%E8%A1%8C"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 分布式执行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E8%AE%A1%E7%AE%97%E9%9A%94%E7%A6%BB"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 计算隔离</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E6%95%B0%E6%8D%AE%E9%9A%94%E7%A6%BB-x2F-%E5%A4%9A%E7%A7%9F%E6%88%B7"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 数据隔离 &#x2F; 多租户</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Agent-Memory-%E5%AD%98%E5%82%A8"><span class="toc-number">3.</span> <span class="toc-text">三、Agent Memory 存储</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E4%B8%89%E5%B1%82%E8%AE%B0%E5%BF%86%E6%9E%B6%E6%9E%84"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 三层记忆架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E8%AE%B0%E5%BF%86%E7%B1%BB%E5%9E%8B"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 记忆类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E4%B8%93%E7%94%A8-Memory-%E5%B9%B3%E5%8F%B0"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 专用 Memory 平台</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E5%AD%98%E5%82%A8%E5%90%8E%E7%AB%AF%E9%80%89%E5%9E%8B"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 存储后端选型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-%E6%8C%81%E4%B9%85%E5%8C%96%E6%A8%A1%E5%BC%8F"><span class="toc-number">3.5.</span> <span class="toc-text">3.5 持久化模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-6-%E5%A4%9A-Agent-%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98"><span class="toc-number">3.6.</span> <span class="toc-text">3.6 多 Agent 共享内存</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-7-Memory-%E5%AE%89%E5%85%A8%E5%A8%81%E8%83%81"><span class="toc-number">3.7.</span> <span class="toc-text">3.7 Memory 安全威胁</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%AE%89%E5%85%A8%E4%B8%8E%E9%98%B2%E6%8A%A4"><span class="toc-number">4.</span> <span class="toc-text">四、安全与防护</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Prompt-Injection-%E9%98%B2%E5%BE%A1"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 Prompt Injection 防御</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Auth-amp-%E6%8E%88%E6%9D%83"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 Auth &amp; 授权</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E6%88%90%E6%9C%AC%E7%AE%A1%E6%8E%A7"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 成本管控</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%8F%AF%E9%9D%A0%E6%80%A7%E6%A8%A1%E5%BC%8F"><span class="toc-number">5.</span> <span class="toc-text">五、可靠性模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%B9%E6%80%A7%E5%B1%82%E7%BA%A7"><span class="toc-number">5.1.</span> <span class="toc-text">弹性层级</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E9%83%A8%E7%BD%B2%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc-number">6.</span> <span class="toc-text">六、部署生命周期</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E5%9B%9B%E5%B1%82%E6%B5%8B%E8%AF%95"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 四层测试</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E9%83%A8%E7%BD%B2%E7%AD%96%E7%95%A5"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 部署策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-Prompt-%E7%89%88%E6%9C%AC%E7%AE%A1%E7%90%86"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 Prompt 版本管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-%E4%BC%81%E4%B8%9A%E5%AE%9E%E8%B7%B5"><span class="toc-number">6.4.</span> <span class="toc-text">6.4 企业实践</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7"><span class="toc-number">7.</span> <span class="toc-text">七、可观测性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E5%85%A8%E6%99%AF%E9%80%9F%E6%9F%A5%E8%A1%A8"><span class="toc-number">8.</span> <span class="toc-text">八、全景速查表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E6%9E%B6%E6%9E%84%E5%86%B3%E7%AD%96"><span class="toc-number">8.1.</span> <span class="toc-text">关键架构决策</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E5%85%AC%E5%8F%B8%E5%AE%9E%E8%B7%B5"><span class="toc-number">8.2.</span> <span class="toc-text">关键公司实践</span></a></li></ol></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%AE%A2%E6%88%B7%E7%AB%AF-x2F-%E8%BE%B9%E7%BC%98%E9%83%A8%E7%BD%B2"><span class="toc-number">1.</span> <span class="toc-text">一、客户端 &#x2F; 边缘部署</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E8%AE%BE%E5%A4%87%E7%AB%AF%E9%83%A8%E7%BD%B2"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 设备端部署</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E6%B5%8F%E8%A7%88%E5%99%A8%E7%AB%AF%E6%8E%A8%E7%90%86"><span class="toc-number">1.2.</span> <span class="toc-text">1.2 浏览器端推理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-Edge-%E9%83%A8%E7%BD%B2"><span class="toc-number">1.3.</span> <span class="toc-text">1.3 Edge 部署</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-%E6%B7%B7%E5%90%88%E8%B7%AF%E7%94%B1%E6%9E%B6%E6%9E%84"><span class="toc-number">1.4.</span> <span class="toc-text">1.4 混合路由架构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%9C%8D%E5%8A%A1%E7%AB%AF%E5%88%86%E5%B8%83%E5%BC%8F%E9%83%A8%E7%BD%B2"><span class="toc-number">2.</span> <span class="toc-text">二、服务端分布式部署</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E7%BC%96%E6%8E%92%E6%A1%86%E6%9E%B6"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 编排框架</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E5%88%86%E5%B8%83%E5%BC%8F%E6%89%A7%E8%A1%8C"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 分布式执行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E8%AE%A1%E7%AE%97%E9%9A%94%E7%A6%BB"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 计算隔离</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E6%95%B0%E6%8D%AE%E9%9A%94%E7%A6%BB-x2F-%E5%A4%9A%E7%A7%9F%E6%88%B7"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 数据隔离 &#x2F; 多租户</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Agent-Memory-%E5%AD%98%E5%82%A8"><span class="toc-number">3.</span> <span class="toc-text">三、Agent Memory 存储</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E4%B8%89%E5%B1%82%E8%AE%B0%E5%BF%86%E6%9E%B6%E6%9E%84"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 三层记忆架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E8%AE%B0%E5%BF%86%E7%B1%BB%E5%9E%8B"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 记忆类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E4%B8%93%E7%94%A8-Memory-%E5%B9%B3%E5%8F%B0"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 专用 Memory 平台</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E5%AD%98%E5%82%A8%E5%90%8E%E7%AB%AF%E9%80%89%E5%9E%8B"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 存储后端选型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-%E6%8C%81%E4%B9%85%E5%8C%96%E6%A8%A1%E5%BC%8F"><span class="toc-number">3.5.</span> <span class="toc-text">3.5 持久化模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-6-%E5%A4%9A-Agent-%E5%85%B1%E4%BA%AB%E5%86%85%E5%AD%98"><span class="toc-number">3.6.</span> <span class="toc-text">3.6 多 Agent 共享内存</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-7-Memory-%E5%AE%89%E5%85%A8%E5%A8%81%E8%83%81"><span class="toc-number">3.7.</span> <span class="toc-text">3.7 Memory 安全威胁</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%AE%89%E5%85%A8%E4%B8%8E%E9%98%B2%E6%8A%A4"><span class="toc-number">4.</span> <span class="toc-text">四、安全与防护</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-Prompt-Injection-%E9%98%B2%E5%BE%A1"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 Prompt Injection 防御</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-Auth-amp-%E6%8E%88%E6%9D%83"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 Auth &amp; 授权</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E6%88%90%E6%9C%AC%E7%AE%A1%E6%8E%A7"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 成本管控</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%8F%AF%E9%9D%A0%E6%80%A7%E6%A8%A1%E5%BC%8F"><span class="toc-number">5.</span> <span class="toc-text">五、可靠性模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%B9%E6%80%A7%E5%B1%82%E7%BA%A7"><span class="toc-number">5.1.</span> <span class="toc-text">弹性层级</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E9%83%A8%E7%BD%B2%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc-number">6.</span> <span class="toc-text">六、部署生命周期</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E5%9B%9B%E5%B1%82%E6%B5%8B%E8%AF%95"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 四层测试</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E9%83%A8%E7%BD%B2%E7%AD%96%E7%95%A5"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 部署策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-Prompt-%E7%89%88%E6%9C%AC%E7%AE%A1%E7%90%86"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 Prompt 版本管理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-%E4%BC%81%E4%B8%9A%E5%AE%9E%E8%B7%B5"><span class="toc-number">6.4.</span> <span class="toc-text">6.4 企业实践</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7"><span class="toc-number">7.</span> <span class="toc-text">七、可观测性</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E5%85%A8%E6%99%AF%E9%80%9F%E6%9F%A5%E8%A1%A8"><span class="toc-number">8.</span> <span class="toc-text">八、全景速查表</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E6%9E%B6%E6%9E%84%E5%86%B3%E7%AD%96"><span class="toc-number">8.1.</span> <span class="toc-text">关键架构决策</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E5%85%AC%E5%8F%B8%E5%AE%9E%E8%B7%B5"><span class="toc-number">8.2.</span> <span class="toc-text">关键公司实践</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99%E4%B8%8E%E5%BC%80%E6%BA%90%E5%9C%B0%E5%9D%80"><span class="toc-number">9.</span> <span class="toc-text">九、参考资料与开源地址</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF-x2F-%E8%BE%B9%E7%BC%98%E9%83%A8%E7%BD%B2"><span class="toc-number">9.1.</span> <span class="toc-text">客户端 &#x2F; 边缘部署</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E7%AB%AF%E5%88%86%E5%B8%83%E5%BC%8F%E9%83%A8%E7%BD%B2"><span class="toc-number">9.2.</span> <span class="toc-text">服务端分布式部署</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Agent-Memory-%E5%AD%98%E5%82%A8"><span class="toc-number">9.3.</span> <span class="toc-text">Agent Memory 存储</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E5%85%A8%E4%B8%8E%E7%94%9F%E4%BA%A7%E8%BF%90%E7%BB%B4"><span class="toc-number">9.4.</span> <span class="toc-text">安全与生产运维</span></a></li></ol></li></ol>
             </div>
         <!-- sidebar -->
         <div class="sidebar sidebar-hide">
@@ -1514,13 +1655,29 @@
                 <span class="iconfont-archer">&#xe606;</span>
                 agile
             </span>
-            <span class="sidebar-tag-name" data-tags="LLM">
-                <span class="iconfont-archer">&#xe606;</span>
-                LLM
-            </span>
             <span class="sidebar-tag-name" data-tags="AI Agent">
                 <span class="iconfont-archer">&#xe606;</span>
                 AI Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="Deployment">
+                <span class="iconfont-archer">&#xe606;</span>
+                Deployment
+            </span>
+            <span class="sidebar-tag-name" data-tags="Infrastructure">
+                <span class="iconfont-archer">&#xe606;</span>
+                Infrastructure
+            </span>
+            <span class="sidebar-tag-name" data-tags="Memory">
+                <span class="iconfont-archer">&#xe606;</span>
+                Memory
+            </span>
+            <span class="sidebar-tag-name" data-tags="Security">
+                <span class="iconfont-archer">&#xe606;</span>
+                Security
+            </span>
+            <span class="sidebar-tag-name" data-tags="LLM">
+                <span class="iconfont-archer">&#xe606;</span>
+                LLM
             </span>
             <span class="sidebar-tag-name" data-tags="Agent Loop">
                 <span class="iconfont-archer">&#xe606;</span>
@@ -1550,6 +1707,14 @@
                 <span class="iconfont-archer">&#xe606;</span>
                 MCP
             </span>
+            <span class="sidebar-tag-name" data-tags="thinking">
+                <span class="iconfont-archer">&#xe606;</span>
+                thinking
+            </span>
+            <span class="sidebar-tag-name" data-tags="DDD">
+                <span class="iconfont-archer">&#xe606;</span>
+                DDD
+            </span>
             <span class="sidebar-tag-name" data-tags="AI">
                 <span class="iconfont-archer">&#xe606;</span>
                 AI
@@ -1562,14 +1727,6 @@
                 <span class="iconfont-archer">&#xe606;</span>
                 Harness Engineering
             </span>
-            <span class="sidebar-tag-name" data-tags="thinking">
-                <span class="iconfont-archer">&#xe606;</span>
-                thinking
-            </span>
-            <span class="sidebar-tag-name" data-tags="DDD">
-                <span class="iconfont-archer">&#xe606;</span>
-                DDD
-            </span>
             <span class="sidebar-tag-name" data-tags="Tool Calling">
                 <span class="iconfont-archer">&#xe606;</span>
                 Tool Calling
@@ -1578,6 +1735,14 @@
                 <span class="iconfont-archer">&#xe606;</span>
                 Prompt Engineering
             </span>
+            <span class="sidebar-tag-name" data-tags="Multi-Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                Multi-Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI Architecture">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI Architecture
+            </span>
             <span class="sidebar-tag-name" data-tags="OpenAgents">
                 <span class="iconfont-archer">&#xe606;</span>
                 OpenAgents
@@ -1585,10 +1750,6 @@
             <span class="sidebar-tag-name" data-tags="投研">
                 <span class="iconfont-archer">&#xe606;</span>
                 投研
-            </span>
-            <span class="sidebar-tag-name" data-tags="Multi-Agent">
-                <span class="iconfont-archer">&#xe606;</span>
-                Multi-Agent
             </span>
             <span class="sidebar-tag-name" data-tags="multi-tenant">
                 <span class="iconfont-archer">&#xe606;</span>
@@ -1609,26 +1770,6 @@
             <span class="sidebar-tag-name" data-tags="Trading">
                 <span class="iconfont-archer">&#xe606;</span>
                 Trading
-            </span>
-            <span class="sidebar-tag-name" data-tags="Deployment">
-                <span class="iconfont-archer">&#xe606;</span>
-                Deployment
-            </span>
-            <span class="sidebar-tag-name" data-tags="Infrastructure">
-                <span class="iconfont-archer">&#xe606;</span>
-                Infrastructure
-            </span>
-            <span class="sidebar-tag-name" data-tags="Memory">
-                <span class="iconfont-archer">&#xe606;</span>
-                Memory
-            </span>
-            <span class="sidebar-tag-name" data-tags="Security">
-                <span class="iconfont-archer">&#xe606;</span>
-                Security
-            </span>
-            <span class="sidebar-tag-name" data-tags="AI Architecture">
-                <span class="iconfont-archer">&#xe606;</span>
-                AI Architecture
             </span>
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>

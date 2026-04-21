@@ -8,13 +8,13 @@
     <meta name="author" content="Edison">
     <meta name="renderer" content="webkit">
     <meta name="copyright" content="Edison">
-        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,Edison,DDD">
-    <meta name="description" content="Thinking, writing and sharing''">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,software architecture,domain-driven design,DDD,AI agents,MCP,Model Context Protocol,Python,Go,full-stack development,LLM,software engineering,hexo blog">
+    <meta name="description" content="A software engineer's blog covering Domain-Driven Design, AI agents, MCP, Python, Go, and modern software architecture. Practical guides and deep dives.">
     <meta name="description" content="本篇是关于多租户应用与架构设计关注点的一些自己的思考。本篇强调多租户本质是支持共享与隔离。同时提到应用架构可能的形式以及多租户集成的设计。核心的关注点强调了对业务未来长期的判断决定了隔离粒度，最终决定了业务应用的产品架构与技术架构设计。 本篇更多是提供一些启发，供商业规划、业务负责人、技术解决方案提供方在做多租户集成时，进行参考。本篇不作为多租户服务提供者的设计建议。  什么是多租户多租户是一种">
 <meta property="og:type" content="article">
 <meta property="og:title" content="多租户应用与架构设计关注点">
-<meta property="og:url" content="https://edison-a-n.github.io/2023/08/30/multi-tenant/index.html">
-<meta property="og:site_name" content="Edison">
+<meta property="og:url" content="https://edison-a-n.github.io/2023/08/30/multi-tenant/">
+<meta property="og:site_name" content="Edison&#39;s Tech Blog">
 <meta property="og:description" content="本篇是关于多租户应用与架构设计关注点的一些自己的思考。本篇强调多租户本质是支持共享与隔离。同时提到应用架构可能的形式以及多租户集成的设计。核心的关注点强调了对业务未来长期的判断决定了隔离粒度，最终决定了业务应用的产品架构与技术架构设计。 本篇更多是提供一些启发，供商业规划、业务负责人、技术解决方案提供方在做多租户集成时，进行参考。本篇不作为多租户服务提供者的设计建议。  什么是多租户多租户是一种">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://edison-a-n.github.io/images/tenant.png">
@@ -27,7 +27,7 @@
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/avatar/avatar.jpg">
-    <title>多租户应用与架构设计关注点 · Edison&#39;s Blog</title>
+    <title>多租户应用与架构设计关注点 · Edison&#39;s Tech Blog | Software Architecture, AI &amp; DDD</title>
     <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
 /* This file is meant as a standalone workflow for
 - testing support for link[rel=preload]
@@ -223,7 +223,7 @@
 
             gtag('config', 'UA-188648772-3');
         </script>
-<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Edison" type="application/atom+xml">
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Edison's Tech Blog" type="application/atom+xml">
 </head>
 
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
@@ -845,13 +845,29 @@
                 <span class="iconfont-archer">&#xe606;</span>
                 agile
             </span>
-            <span class="sidebar-tag-name" data-tags="LLM">
-                <span class="iconfont-archer">&#xe606;</span>
-                LLM
-            </span>
             <span class="sidebar-tag-name" data-tags="AI Agent">
                 <span class="iconfont-archer">&#xe606;</span>
                 AI Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="Deployment">
+                <span class="iconfont-archer">&#xe606;</span>
+                Deployment
+            </span>
+            <span class="sidebar-tag-name" data-tags="Infrastructure">
+                <span class="iconfont-archer">&#xe606;</span>
+                Infrastructure
+            </span>
+            <span class="sidebar-tag-name" data-tags="Memory">
+                <span class="iconfont-archer">&#xe606;</span>
+                Memory
+            </span>
+            <span class="sidebar-tag-name" data-tags="Security">
+                <span class="iconfont-archer">&#xe606;</span>
+                Security
+            </span>
+            <span class="sidebar-tag-name" data-tags="LLM">
+                <span class="iconfont-archer">&#xe606;</span>
+                LLM
             </span>
             <span class="sidebar-tag-name" data-tags="Agent Loop">
                 <span class="iconfont-archer">&#xe606;</span>
@@ -881,6 +897,14 @@
                 <span class="iconfont-archer">&#xe606;</span>
                 MCP
             </span>
+            <span class="sidebar-tag-name" data-tags="thinking">
+                <span class="iconfont-archer">&#xe606;</span>
+                thinking
+            </span>
+            <span class="sidebar-tag-name" data-tags="DDD">
+                <span class="iconfont-archer">&#xe606;</span>
+                DDD
+            </span>
             <span class="sidebar-tag-name" data-tags="AI">
                 <span class="iconfont-archer">&#xe606;</span>
                 AI
@@ -893,14 +917,6 @@
                 <span class="iconfont-archer">&#xe606;</span>
                 Harness Engineering
             </span>
-            <span class="sidebar-tag-name" data-tags="thinking">
-                <span class="iconfont-archer">&#xe606;</span>
-                thinking
-            </span>
-            <span class="sidebar-tag-name" data-tags="DDD">
-                <span class="iconfont-archer">&#xe606;</span>
-                DDD
-            </span>
             <span class="sidebar-tag-name" data-tags="Tool Calling">
                 <span class="iconfont-archer">&#xe606;</span>
                 Tool Calling
@@ -909,6 +925,14 @@
                 <span class="iconfont-archer">&#xe606;</span>
                 Prompt Engineering
             </span>
+            <span class="sidebar-tag-name" data-tags="Multi-Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                Multi-Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI Architecture">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI Architecture
+            </span>
             <span class="sidebar-tag-name" data-tags="OpenAgents">
                 <span class="iconfont-archer">&#xe606;</span>
                 OpenAgents
@@ -916,10 +940,6 @@
             <span class="sidebar-tag-name" data-tags="投研">
                 <span class="iconfont-archer">&#xe606;</span>
                 投研
-            </span>
-            <span class="sidebar-tag-name" data-tags="Multi-Agent">
-                <span class="iconfont-archer">&#xe606;</span>
-                Multi-Agent
             </span>
             <span class="sidebar-tag-name" data-tags="multi-tenant">
                 <span class="iconfont-archer">&#xe606;</span>
@@ -940,26 +960,6 @@
             <span class="sidebar-tag-name" data-tags="Trading">
                 <span class="iconfont-archer">&#xe606;</span>
                 Trading
-            </span>
-            <span class="sidebar-tag-name" data-tags="Deployment">
-                <span class="iconfont-archer">&#xe606;</span>
-                Deployment
-            </span>
-            <span class="sidebar-tag-name" data-tags="Infrastructure">
-                <span class="iconfont-archer">&#xe606;</span>
-                Infrastructure
-            </span>
-            <span class="sidebar-tag-name" data-tags="Memory">
-                <span class="iconfont-archer">&#xe606;</span>
-                Memory
-            </span>
-            <span class="sidebar-tag-name" data-tags="Security">
-                <span class="iconfont-archer">&#xe606;</span>
-                Security
-            </span>
-            <span class="sidebar-tag-name" data-tags="AI Architecture">
-                <span class="iconfont-archer">&#xe606;</span>
-                AI Architecture
             </span>
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>

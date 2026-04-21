@@ -8,26 +8,26 @@
     <meta name="author" content="Edison">
     <meta name="renderer" content="webkit">
     <meta name="copyright" content="Edison">
-        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,Edison,DDD">
-    <meta name="description" content="Thinking, writing and sharing''">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,software architecture,domain-driven design,DDD,AI agents,MCP,Model Context Protocol,Python,Go,full-stack development,LLM,software engineering,hexo blog">
+    <meta name="description" content="A software engineer's blog covering Domain-Driven Design, AI agents, MCP, Python, Go, and modern software architecture. Practical guides and deep dives.">
     <meta name="description" content="Agent Loop 是让 LLM 从&quot;单轮问答&quot;变成&quot;自主执行任务&quot;的核心机制。本文从一个最小模型出发建立直觉， 然后对 Anthropic Agent SDK、OpenAI Codex CLI、OpenClaw、Google ADK Loop Agents 与 LangChain Deep Agents 五大平台的实现进行横向对比，从控制论视角剖析其本质，并评估 ReAct、Reflectio">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Agent Loop 技术调研报告">
-<meta property="og:url" content="https://edison-a-n.github.io/2026/03/16/agent-loop-study/index.html">
-<meta property="og:site_name" content="Edison">
+<meta property="og:url" content="https://edison-a-n.github.io/2026/03/16/agent-loop-study/">
+<meta property="og:site_name" content="Edison&#39;s Tech Blog">
 <meta property="og:description" content="Agent Loop 是让 LLM 从&quot;单轮问答&quot;变成&quot;自主执行任务&quot;的核心机制。本文从一个最小模型出发建立直觉， 然后对 Anthropic Agent SDK、OpenAI Codex CLI、OpenClaw、Google ADK Loop Agents 与 LangChain Deep Agents 五大平台的实现进行横向对比，从控制论视角剖析其本质，并评估 ReAct、Reflectio">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2026-03-15T16:00:00.000Z">
 <meta property="article:modified_time" content="2026-04-14T05:56:35.777Z">
 <meta property="article:author" content="Edison">
-<meta property="article:tag" content="LLM">
 <meta property="article:tag" content="AI Agent">
+<meta property="article:tag" content="LLM">
 <meta property="article:tag" content="Agent Loop">
 <meta name="twitter:card" content="summary">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/avatar/avatar.jpg">
-    <title>Agent Loop 技术调研报告 · Edison&#39;s Blog</title>
+    <title>Agent Loop 技术调研报告 · Edison&#39;s Tech Blog | Software Architecture, AI &amp; DDD</title>
     <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
 /* This file is meant as a standalone workflow for
 - testing support for link[rel=preload]
@@ -223,7 +223,7 @@
 
             gtag('config', 'UA-188648772-3');
         </script>
-<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Edison" type="application/atom+xml">
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Edison's Tech Blog" type="application/atom+xml">
 </head>
 
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
@@ -302,8 +302,8 @@
             <div class="post-intros">
                 <!-- 文章页标签  -->
                     <div class="post-intro-tags" >
-        <a class="post-tag" href="javascript:void(0);" data-tags="LLM">LLM</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="LLM">LLM</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="Agent Loop">Agent Loop</a>
 </div>
 
@@ -1503,13 +1503,29 @@
                 <span class="iconfont-archer">&#xe606;</span>
                 agile
             </span>
-            <span class="sidebar-tag-name" data-tags="LLM">
-                <span class="iconfont-archer">&#xe606;</span>
-                LLM
-            </span>
             <span class="sidebar-tag-name" data-tags="AI Agent">
                 <span class="iconfont-archer">&#xe606;</span>
                 AI Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="Deployment">
+                <span class="iconfont-archer">&#xe606;</span>
+                Deployment
+            </span>
+            <span class="sidebar-tag-name" data-tags="Infrastructure">
+                <span class="iconfont-archer">&#xe606;</span>
+                Infrastructure
+            </span>
+            <span class="sidebar-tag-name" data-tags="Memory">
+                <span class="iconfont-archer">&#xe606;</span>
+                Memory
+            </span>
+            <span class="sidebar-tag-name" data-tags="Security">
+                <span class="iconfont-archer">&#xe606;</span>
+                Security
+            </span>
+            <span class="sidebar-tag-name" data-tags="LLM">
+                <span class="iconfont-archer">&#xe606;</span>
+                LLM
             </span>
             <span class="sidebar-tag-name" data-tags="Agent Loop">
                 <span class="iconfont-archer">&#xe606;</span>
@@ -1539,6 +1555,14 @@
                 <span class="iconfont-archer">&#xe606;</span>
                 MCP
             </span>
+            <span class="sidebar-tag-name" data-tags="thinking">
+                <span class="iconfont-archer">&#xe606;</span>
+                thinking
+            </span>
+            <span class="sidebar-tag-name" data-tags="DDD">
+                <span class="iconfont-archer">&#xe606;</span>
+                DDD
+            </span>
             <span class="sidebar-tag-name" data-tags="AI">
                 <span class="iconfont-archer">&#xe606;</span>
                 AI
@@ -1551,14 +1575,6 @@
                 <span class="iconfont-archer">&#xe606;</span>
                 Harness Engineering
             </span>
-            <span class="sidebar-tag-name" data-tags="thinking">
-                <span class="iconfont-archer">&#xe606;</span>
-                thinking
-            </span>
-            <span class="sidebar-tag-name" data-tags="DDD">
-                <span class="iconfont-archer">&#xe606;</span>
-                DDD
-            </span>
             <span class="sidebar-tag-name" data-tags="Tool Calling">
                 <span class="iconfont-archer">&#xe606;</span>
                 Tool Calling
@@ -1567,6 +1583,14 @@
                 <span class="iconfont-archer">&#xe606;</span>
                 Prompt Engineering
             </span>
+            <span class="sidebar-tag-name" data-tags="Multi-Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                Multi-Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI Architecture">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI Architecture
+            </span>
             <span class="sidebar-tag-name" data-tags="OpenAgents">
                 <span class="iconfont-archer">&#xe606;</span>
                 OpenAgents
@@ -1574,10 +1598,6 @@
             <span class="sidebar-tag-name" data-tags="投研">
                 <span class="iconfont-archer">&#xe606;</span>
                 投研
-            </span>
-            <span class="sidebar-tag-name" data-tags="Multi-Agent">
-                <span class="iconfont-archer">&#xe606;</span>
-                Multi-Agent
             </span>
             <span class="sidebar-tag-name" data-tags="multi-tenant">
                 <span class="iconfont-archer">&#xe606;</span>
@@ -1598,26 +1618,6 @@
             <span class="sidebar-tag-name" data-tags="Trading">
                 <span class="iconfont-archer">&#xe606;</span>
                 Trading
-            </span>
-            <span class="sidebar-tag-name" data-tags="Deployment">
-                <span class="iconfont-archer">&#xe606;</span>
-                Deployment
-            </span>
-            <span class="sidebar-tag-name" data-tags="Infrastructure">
-                <span class="iconfont-archer">&#xe606;</span>
-                Infrastructure
-            </span>
-            <span class="sidebar-tag-name" data-tags="Memory">
-                <span class="iconfont-archer">&#xe606;</span>
-                Memory
-            </span>
-            <span class="sidebar-tag-name" data-tags="Security">
-                <span class="iconfont-archer">&#xe606;</span>
-                Security
-            </span>
-            <span class="sidebar-tag-name" data-tags="AI Architecture">
-                <span class="iconfont-archer">&#xe606;</span>
-                AI Architecture
             </span>
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
