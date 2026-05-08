@@ -191,7 +191,7 @@
   </url>
   
   <url>
-    <loc>https://edison-a-n.github.io/2022/12/13/go-ddd/</loc>
+    <loc>https://edison-a-n.github.io/2022/12/07/git-rebase/</loc>
     
     <lastmod>2023-08-29</lastmod>
     
@@ -200,7 +200,7 @@
   </url>
   
   <url>
-    <loc>https://edison-a-n.github.io/2022/12/07/git-rebase/</loc>
+    <loc>https://edison-a-n.github.io/2022/12/13/go-ddd/</loc>
     
     <lastmod>2023-08-29</lastmod>
     
@@ -254,15 +254,6 @@
   </url>
   
   <url>
-    <loc>https://edison-a-n.github.io/2022/06/09/ddd-thinking/</loc>
-    
-    <lastmod>2022-06-13</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://edison-a-n.github.io/2021/11/21/breaking-creation-product/</loc>
     
     <lastmod>2022-06-13</lastmod>
@@ -272,7 +263,7 @@
   </url>
   
   <url>
-    <loc>https://edison-a-n.github.io/2021/03/08/grpc-hello-world/</loc>
+    <loc>https://edison-a-n.github.io/2022/06/09/ddd-thinking/</loc>
     
     <lastmod>2022-06-13</lastmod>
     
@@ -290,6 +281,15 @@
   </url>
   
   <url>
+    <loc>https://edison-a-n.github.io/2021/03/08/grpc-hello-world/</loc>
+    
+    <lastmod>2022-06-13</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://edison-a-n.github.io/2022/01/30/knowledge-breath-and-depth/</loc>
     
     <lastmod>2022-06-13</lastmod>
@@ -299,7 +299,7 @@
   </url>
   
   <url>
-    <loc>https://edison-a-n.github.io/2022/05/23/mvc-and-ddd/</loc>
+    <loc>https://edison-a-n.github.io/2021/07/15/parallel-and-asynchronous-python/</loc>
     
     <lastmod>2022-06-13</lastmod>
     
@@ -308,7 +308,7 @@
   </url>
   
   <url>
-    <loc>https://edison-a-n.github.io/2021/07/15/parallel-and-asynchronous-python/</loc>
+    <loc>https://edison-a-n.github.io/2022/05/23/mvc-and-ddd/</loc>
     
     <lastmod>2022-06-13</lastmod>
     
@@ -344,7 +344,7 @@
   </url>
   
   <url>
-    <loc>https://edison-a-n.github.io/2021/03/30/DRF-Bussiness-Logic/</loc>
+    <loc>https://edison-a-n.github.io/2020/11/08/Agile-Dev/</loc>
     
     <lastmod>2022-06-13</lastmod>
     
@@ -353,7 +353,7 @@
   </url>
   
   <url>
-    <loc>https://edison-a-n.github.io/2020/11/08/Agile-Dev/</loc>
+    <loc>https://edison-a-n.github.io/2021/03/30/DRF-Bussiness-Logic/</loc>
     
     <lastmod>2022-06-13</lastmod>
     
@@ -441,13 +441,6 @@
   </url>
   
   <url>
-    <loc>https://edison-a-n.github.io/tags/thinking/</loc>
-    <lastmod>2026-05-08</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://edison-a-n.github.io/tags/AI/</loc>
     <lastmod>2026-05-08</lastmod>
     <changefreq>weekly</changefreq>
@@ -470,6 +463,13 @@
   
   <url>
     <loc>https://edison-a-n.github.io/tags/DDD/</loc>
+    <lastmod>2026-05-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/thinking/</loc>
     <lastmod>2026-05-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
