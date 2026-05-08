@@ -315,7 +315,7 @@
 
                 <!-- 文章字数统计 -->
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">7.4k</span>Reading time: <span class="post-count reading-time">26 min</span></span>
+                        <span>Word count: <span class="post-count word-count">7.5k</span>Reading time: <span class="post-count reading-time">27 min</span></span>
                     </div>
                 <div class="post-intro-meta">
                     <!-- 撰写日期 -->
@@ -521,39 +521,7 @@
 </ul>
 </li>
 </ol>
-<h3 id="工作流程"><a href="#工作流程" class="headerlink" title="工作流程"></a>工作流程</h3><pre class="mermaid">graph LR
-    subgraph "LLM 控制层"
-        LLM[LLM 模型]
-        CC[生成控制代码<br/>Control Code]
-    end
-    
-    subgraph "代码执行沙箱"
-        SB[轻量级沙箱环境<br/>Lightweight Sandbox]
-        NET[网络访问控制<br/>Network Access Control]
-    end
-    
-    subgraph "数据存储层"
-        STORAGE[数据存储<br/>Storage]
-    end
-    
-    subgraph "MCP 服务层"
-        MCP[MCP 服务<br/>MCP Service]
-    end
-    
-    LLM -->|生成| CC
-    CC -->|执行| SB
-    SB -->|调用| MCP
-    SB -.->|受限网络访问| NET
-    MCP -.->|返回结果| SB
-    SB -.->|执行结果| CC
-    STORAGE ~~~ MCP
-    
-    style LLM fill:#e1f5ff
-    style CC fill:#b3e5fc
-    style SB fill:#fff9c4
-    style NET fill:#fff9c4
-    style MCP fill:#c8e6c9
-    style STORAGE fill:#f3e5f5</pre>
+<h3 id="工作流程"><a href="#工作流程" class="headerlink" title="工作流程"></a>工作流程</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">graph LR</span><br><span class="line">    subgraph &quot;LLM 控制层&quot;</span><br><span class="line">        LLM[LLM 模型]</span><br><span class="line">        CC[生成控制代码&lt;br/&gt;Control Code]</span><br><span class="line">    end</span><br><span class="line">    </span><br><span class="line">    subgraph &quot;代码执行沙箱&quot;</span><br><span class="line">        SB[轻量级沙箱环境&lt;br/&gt;Lightweight Sandbox]</span><br><span class="line">        NET[网络访问控制&lt;br/&gt;Network Access Control]</span><br><span class="line">    end</span><br><span class="line">    </span><br><span class="line">    subgraph &quot;数据存储层&quot;</span><br><span class="line">        STORAGE[数据存储&lt;br/&gt;Storage]</span><br><span class="line">    end</span><br><span class="line">    </span><br><span class="line">    subgraph &quot;MCP 服务层&quot;</span><br><span class="line">        MCP[MCP 服务&lt;br/&gt;MCP Service]</span><br><span class="line">    end</span><br><span class="line">    </span><br><span class="line">    LLM --&gt;|生成| CC</span><br><span class="line">    CC --&gt;|执行| SB</span><br><span class="line">    SB --&gt;|调用| MCP</span><br><span class="line">    SB -.-&gt;|受限网络访问| NET</span><br><span class="line">    MCP -.-&gt;|返回结果| SB</span><br><span class="line">    SB -.-&gt;|执行结果| CC</span><br><span class="line">    STORAGE ~~~ MCP</span><br><span class="line">    </span><br><span class="line">    style LLM fill:#e1f5ff</span><br><span class="line">    style CC fill:#b3e5fc</span><br><span class="line">    style SB fill:#fff9c4</span><br><span class="line">    style NET fill:#fff9c4</span><br><span class="line">    style MCP fill:#c8e6c9</span><br><span class="line">    style STORAGE fill:#f3e5f5</span><br></pre></td></tr></table></figure>
 
 <h4 id="架构说明"><a href="#架构说明" class="headerlink" title="架构说明"></a>架构说明</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LLM → 生成控制代码 → 沙箱执行控制代码 → 调用 MCP 服务 → 执行功能代码</span><br></pre></td></tr></table></figure>
 
@@ -1319,15 +1287,40 @@
         
         
         
+        
+        
+        
+        
+        
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 33
+        Total : 38
         </div>
         <!-- search  -->
     </div>
     <div class="post-archive">
             <div class="archive-year"> 2026 </div>
             <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span>
+            <a class="archive-post-title" href="/2026/05/08/agent-engineer-interview-2026/">2026 Agent 开发工程师面试指南：从架构、MCP 到生产化</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/19</span>
+            <a class="archive-post-title" href="/2026/04/19/multi-agent-architecture-survey/">Multi-Agent LLM 系统架构全景调研（2023–2026）</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/14</span>
+            <a class="archive-post-title" href="/2026/04/14/llm-tool-calling-decision-bias/">LLM Agent 中 Skill/Tool 调用决策偏差：技术调研报告</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span>
+            <a class="archive-post-title" href="/2026/04/12/harness-engineering/">Harness Engineering：当 AI 的缰绳比 AI 本身更重要</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span>
+            <a class="archive-post-title" href="/2026/03/30/coding-agent-evolution/">从代码到行动：Coding Agent 如何演变为通用数字助手</a>
+        </li>
         <li class="archive-post-item">
             <span class="archive-post-date">03/21</span>
             <a class="archive-post-title" href="/2026/03/21/multi-agent-investment-research/">用 OpenAgents Workspace 协调多 Agent 投研</a>
@@ -1496,57 +1489,17 @@
                 <span class="iconfont-archer">&#xe606;</span>
                 AI Agent
             </span>
-            <span class="sidebar-tag-name" data-tags="Tool Format">
+            <span class="sidebar-tag-name" data-tags="Agent Loop">
                 <span class="iconfont-archer">&#xe606;</span>
-                Tool Format
-            </span>
-            <span class="sidebar-tag-name" data-tags="thinking">
-                <span class="iconfont-archer">&#xe606;</span>
-                thinking
-            </span>
-            <span class="sidebar-tag-name" data-tags="DDD">
-                <span class="iconfont-archer">&#xe606;</span>
-                DDD
+                Agent Loop
             </span>
             <span class="sidebar-tag-name" data-tags="MCP">
                 <span class="iconfont-archer">&#xe606;</span>
                 MCP
             </span>
-            <span class="sidebar-tag-name" data-tags="OpenAgents">
+            <span class="sidebar-tag-name" data-tags="面试">
                 <span class="iconfont-archer">&#xe606;</span>
-                OpenAgents
-            </span>
-            <span class="sidebar-tag-name" data-tags="投研">
-                <span class="iconfont-archer">&#xe606;</span>
-                投研
-            </span>
-            <span class="sidebar-tag-name" data-tags="Multi-Agent">
-                <span class="iconfont-archer">&#xe606;</span>
-                Multi-Agent
-            </span>
-            <span class="sidebar-tag-name" data-tags="multi-tenant">
-                <span class="iconfont-archer">&#xe606;</span>
-                multi-tenant
-            </span>
-            <span class="sidebar-tag-name" data-tags="可观测性">
-                <span class="iconfont-archer">&#xe606;</span>
-                可观测性
-            </span>
-            <span class="sidebar-tag-name" data-tags="opentelemetry">
-                <span class="iconfont-archer">&#xe606;</span>
-                opentelemetry
-            </span>
-            <span class="sidebar-tag-name" data-tags="API Design">
-                <span class="iconfont-archer">&#xe606;</span>
-                API Design
-            </span>
-            <span class="sidebar-tag-name" data-tags="Trading">
-                <span class="iconfont-archer">&#xe606;</span>
-                Trading
-            </span>
-            <span class="sidebar-tag-name" data-tags="Agent Loop">
-                <span class="iconfont-archer">&#xe606;</span>
-                Agent Loop
+                面试
             </span>
             <span class="sidebar-tag-name" data-tags="ASGI, Python, FastAPI">
                 <span class="iconfont-archer">&#xe606;</span>
@@ -1564,9 +1517,73 @@
                 <span class="iconfont-archer">&#xe606;</span>
                 Sandbox
             </span>
+            <span class="sidebar-tag-name" data-tags="thinking">
+                <span class="iconfont-archer">&#xe606;</span>
+                thinking
+            </span>
+            <span class="sidebar-tag-name" data-tags="DDD">
+                <span class="iconfont-archer">&#xe606;</span>
+                DDD
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Format">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Format
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI
+            </span>
+            <span class="sidebar-tag-name" data-tags="Claude Code">
+                <span class="iconfont-archer">&#xe606;</span>
+                Claude Code
+            </span>
             <span class="sidebar-tag-name" data-tags="Harness Engineering">
                 <span class="iconfont-archer">&#xe606;</span>
                 Harness Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Calling">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Calling
+            </span>
+            <span class="sidebar-tag-name" data-tags="Prompt Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Prompt Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="OpenAgents">
+                <span class="iconfont-archer">&#xe606;</span>
+                OpenAgents
+            </span>
+            <span class="sidebar-tag-name" data-tags="投研">
+                <span class="iconfont-archer">&#xe606;</span>
+                投研
+            </span>
+            <span class="sidebar-tag-name" data-tags="Multi-Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                Multi-Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="multi-tenant">
+                <span class="iconfont-archer">&#xe606;</span>
+                multi-tenant
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI Architecture">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI Architecture
+            </span>
+            <span class="sidebar-tag-name" data-tags="可观测性">
+                <span class="iconfont-archer">&#xe606;</span>
+                可观测性
+            </span>
+            <span class="sidebar-tag-name" data-tags="opentelemetry">
+                <span class="iconfont-archer">&#xe606;</span>
+                opentelemetry
+            </span>
+            <span class="sidebar-tag-name" data-tags="API Design">
+                <span class="iconfont-archer">&#xe606;</span>
+                API Design
+            </span>
+            <span class="sidebar-tag-name" data-tags="Trading">
+                <span class="iconfont-archer">&#xe606;</span>
+                Trading
             </span>
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
