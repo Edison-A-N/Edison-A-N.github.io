@@ -6,6 +6,7 @@ public/
 db.json
 deploy*/
 .deploy_git/
+_multiconfig.yml
 
 # Local tooling
 .opencode/
