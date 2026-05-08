@@ -5,6 +5,10 @@ node_modules
 public/
 db.json
 deploy*/
+.deploy_git/
+
+# Local tooling
+.opencode/
 
 # IDE
 .vscode/
