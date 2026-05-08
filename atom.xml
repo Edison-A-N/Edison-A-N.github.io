@@ -110,13 +110,13 @@
     <category term="AI Agent" scheme="https://edison-a-n.github.io/categories/AI-Agent/"/>
     
     
-    <category term="Agent" scheme="https://edison-a-n.github.io/tags/Agent/"/>
-    
-    <category term="MCP" scheme="https://edison-a-n.github.io/tags/MCP/"/>
-    
     <category term="AI" scheme="https://edison-a-n.github.io/tags/AI/"/>
     
+    <category term="Agent" scheme="https://edison-a-n.github.io/tags/Agent/"/>
+    
     <category term="Claude Code" scheme="https://edison-a-n.github.io/tags/Claude-Code/"/>
+    
+    <category term="MCP" scheme="https://edison-a-n.github.io/tags/MCP/"/>
     
     <category term="Harness Engineering" scheme="https://edison-a-n.github.io/tags/Harness-Engineering/"/>
     
@@ -240,13 +240,13 @@
     
     <category term="LLM" scheme="https://edison-a-n.github.io/tags/LLM/"/>
     
-    <category term="Architecture" scheme="https://edison-a-n.github.io/tags/Architecture/"/>
-    
     <category term="Agent" scheme="https://edison-a-n.github.io/tags/Agent/"/>
     
-    <category term="Sandbox" scheme="https://edison-a-n.github.io/tags/Sandbox/"/>
-    
     <category term="MCP" scheme="https://edison-a-n.github.io/tags/MCP/"/>
+    
+    <category term="Architecture" scheme="https://edison-a-n.github.io/tags/Architecture/"/>
+    
+    <category term="Sandbox" scheme="https://edison-a-n.github.io/tags/Sandbox/"/>
     
   </entry>
   
