@@ -1,0 +1,1889 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+<!-- keywords -->
+<head>
+    <meta charset="utf-8">
+    <meta name="google-site-verification" content="JB-maqhhwUFVUFApXAdvEnVFMjbiaUSIwUQFvCk1VMQ" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Edison">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Edison">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,software architecture,domain-driven design,DDD,AI agents,MCP,Model Context Protocol,Python,Go,full-stack development,LLM,software engineering,hexo blog">
+    <meta name="description" content="聚焦 SaaS Agent 场景，讨论 Agent Sandbox 到底应该怎么使用。重点不是 KVM、Docker、Firecracker 等实现细节，而是 Sandbox 如何嵌入 Agent 产品：生命周期、权限、凭证、工具调用、状态恢复、多租户配额、调度隔离和人类审批。">
+    <link rel="canonical" href="https://edison-a-n.github.io/2026/05/12/saas-agent-sandbox-research/"/>
+    <meta name="description" content="聚焦 SaaS Agent 场景，讨论 Agent Sandbox 到底应该怎么使用。重点不是 KVM、Docker、Firecracker 等实现细节，而是 Sandbox 如何嵌入 Agent 产品：生命周期、权限、凭证、工具调用、状态恢复、多租户配额、调度隔离和人类审批。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SaaS Agent Sandbox 使用指南：不要把 Sandbox 当成一个容器">
+<meta property="og:url" content="https://edison-a-n.github.io/2026/05/12/saas-agent-sandbox-research/">
+<meta property="og:site_name" content="Edison&#39;s Tech Blog">
+<meta property="og:description" content="聚焦 SaaS Agent 场景，讨论 Agent Sandbox 到底应该怎么使用。重点不是 KVM、Docker、Firecracker 等实现细节，而是 Sandbox 如何嵌入 Agent 产品：生命周期、权限、凭证、工具调用、状态恢复、多租户配额、调度隔离和人类审批。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-05-11T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-05-12T14:56:30.195Z">
+<meta property="article:author" content="Edison">
+<meta property="article:tag" content="AI Agent">
+<meta property="article:tag" content="Architecture">
+<meta property="article:tag" content="Sandbox">
+<meta property="article:tag" content="SaaS">
+<meta property="article:tag" content="Security">
+<meta name="twitter:card" content="summary">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/avatar/avatar.jpg">
+    <title>SaaS Agent Sandbox 使用指南：不要把 Sandbox 当成一个容器 · Edison&#39;s Tech Blog | Software Architecture, AI &amp; DDD</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .footer-fixed-btn,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(
+            -45deg,
+            #444 0,
+            #444 80px,
+            #333 80px,
+            #333 160px
+        );
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link id="stylesheet-fancybox" rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link id="stylesheet-base" rel="preload" href="/css/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link id="stylesheet-mobile" rel="preload" href="/css/mobile.css" as="style" onload="this.onload=null;this.rel='stylesheet';this.media='screen and (max-width: 960px)'">
+    <link id="stylesheet-theme-dark" rel="preload" href="/css/dark.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    <!-- 百度统计  -->
+    <!-- 谷歌统计  -->
+        <script>
+            var cnzz_s_tag = document.createElement('script');
+            cnzz_s_tag.type = 'text/javascript';
+            cnzz_s_tag.async = true;
+            cnzz_s_tag.charset = 'utf-8';
+            cnzz_s_tag.src = 'https://w.cnzz.com/c.php?id=&async=1';
+            var root_s = document.getElementsByTagName('script')[0];
+            root_s.parentNode.insertBefore(cnzz_s_tag, root_s);
+        </script>
+    <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-188648772-3"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-188648772-3');
+        </script>
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Edison's Tech Blog" type="application/atom+xml">
+</head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+        <body class="post-body">
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        <div class="header-sidebar-menu">
+            <div style="padding-left: 1px;">&#xe775;</div>
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href="/">Edison's Studio.</a>
+        </span>
+    </div>
+    <!-- toggle banner -->
+    <div class="banner">
+        <div class="blog-title header-element">
+            <a href="/">Edison&#39;s Studio.</a>
+        </div>
+        <div class="post-title header-element">
+            <a href="#" class="post-name">SaaS Agent Sandbox 使用指南：不要把 Sandbox 当成一个容器</a>
+        </div>
+    </div>
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- donate button -->
+
+    <!-- back to top button -->
+    <div class="footer-fixed-btn footer-fixed-btn--hidden back-top">
+        <div>&#xe639;</div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="    height:50vh;
+">
+    <!-- 主页  -->
+    <!-- 404页  -->
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+                SaaS Agent Sandbox 使用指南：不要把 Sandbox 当成一个容器
+            <!-- 404 -->
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            <!-- 404 -->
+        </p>
+        <!-- 文章页 meta -->
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                    <div class="post-intro-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Architecture">Architecture</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Sandbox">Sandbox</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="SaaS">SaaS</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Security">Security</a>
+</div>
+
+                <!-- 文章字数统计 -->
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">12k</span>Reading time: <span class="post-count reading-time">49 min</span></span>
+                    </div>
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2026/05/12</span>
+                    <!-- busuanzi -->
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" alt="loading">
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <div style="color: #666; font-style: italic; font-size: 0.9em; margin-bottom: 1em;">
+本文内容由 AI 协助生成
+</div>
+
+<h2 id="一、核心结论"><a href="#一、核心结论" class="headerlink" title="一、核心结论"></a>一、核心结论</h2><p>在 SaaS Agent 场景里，Sandbox 不应该被理解成“一个能运行代码的容器”。OpenAI Code Interpreter、E2B、CubeSandbox 等文档都把 sandbox 放在“隔离执行环境”的语境下，但 OWASP AI Agent Security 进一步提醒，Agent 风险来自工具滥用、权限扩大、数据外泄和目标劫持，因此仅有执行隔离还不够。<a href="#ref-16">OpenAI&#x2F;E2B&#x2F;CubeSandbox：sandbox 用于隔离代码执行和文件处理</a>；<a href="#ref-18">OWASP AI Agent Security：least privilege、HITL、tool abuse 风险</a></p>
+<p>更准确的理解是：</p>
+<blockquote>
+<p>Sandbox 是 Agent 执行动作的隔离现场。<a href="#ref-16">OpenAI&#x2F;E2B&#x2F;CubeSandbox：sandbox 用于隔离代码执行和文件处理</a>；<a href="#ref-18">OWASP AI Agent Security：least privilege、HITL、tool abuse 风险</a>；<a href="#ref-20">OWASP Secure Coding with AI：工具权限、输入校验、不可信上下文</a></p>
+</blockquote>
+<p>它的价值不在于“用了什么虚拟化技术”，而在于帮产品回答这几个问题：</p>
+<ul>
+<li>Agent 在哪里执行代码？</li>
+<li>Agent 在哪里读写文件？</li>
+<li>Agent 在哪里打开浏览器？</li>
+<li>Agent 能不能访问外网？</li>
+<li>Agent 能不能拿到客户凭证？</li>
+<li>Agent 的中间产物放在哪里？</li>
+<li>Agent 中断后怎么恢复？</li>
+<li>Agent 的危险动作怎么审批？</li>
+</ul>
+<p>所以 SaaS Agent 使用 Sandbox 的正确方式不是：</p>
+<pre class="mermaid">graph LR
+    LLM["LLM"] --> SB["Sandbox"] --> ANY["随便执行"]</pre>
+
+<p>而是：</p>
+<pre class="mermaid">graph LR
+    ORCH["Agent Orchestrator"] --> POLICY["Policy Check"]
+    POLICY --> CRED["Credential Broker"]
+    CRED --> TOOL["Tool Gateway"]
+    TOOL --> SB["Sandbox"]
+    SB --> ARTIFACT["Artifact Store"]
+    ARTIFACT --> AUDIT["Audit Log"]</pre>
+
+<p>一句话：</p>
+<blockquote>
+<p>Agent 可以自由思考，但不能自由行动。所有行动都要经过策略、凭证、网络、配额和审计边界。<a href="#ref-18">OWASP AI Agent Security：least privilege、HITL、tool abuse 风险</a>；<a href="#ref-20">OWASP Secure Coding with AI：工具权限、输入校验、不可信上下文</a>；<a href="#ref-21">Google Cloud Agent Identity：auth manager &#x2F; credential vault 管理凭证</a>；<a href="#ref-22">OWASP SSRF Prevention：allowlist、阻断内网和 metadata endpoint</a>；<a href="#ref-23">Google Workflows &#x2F; Browserbase：execution logs 与 session recording</a>；<a href="#ref-24">Cloudflare HITL：workflow 暂停等待人工确认</a></p>
+</blockquote>
+<hr>
+<h2 id="二、什么时候需要-Sandbox"><a href="#二、什么时候需要-Sandbox" class="headerlink" title="二、什么时候需要 Sandbox"></a>二、什么时候需要 Sandbox</h2><p>不是所有 Agent 都需要复杂 Sandbox。判断标准很简单：</p>
+<blockquote>
+<p>只要 Agent 要执行不可信、可变、带副作用的动作，就应该进入 Sandbox 或经过等价的隔离执行层。<a href="#ref-16">OpenAI&#x2F;E2B&#x2F;CubeSandbox：sandbox 用于隔离代码执行和文件处理</a>；<a href="#ref-18">OWASP AI Agent Security：least privilege、HITL、tool abuse 风险</a>；<a href="#ref-19">OWASP Prompt Injection：网页&#x2F;文档&#x2F;邮件可成为注入载体</a>；<a href="#ref-20">OWASP Secure Coding with AI：工具权限、输入校验、不可信上下文</a></p>
+</blockquote>
+<h3 id="需要-Sandbox-的场景"><a href="#需要-Sandbox-的场景" class="headerlink" title="需要 Sandbox 的场景"></a>需要 Sandbox 的场景</h3><p>典型场景包括：</p>
+<ul>
+<li>执行 LLM 生成的代码；</li>
+<li>运行 Python &#x2F; JavaScript &#x2F; Shell；</li>
+<li>处理用户上传文件；</li>
+<li>修改 repository；</li>
+<li>运行测试；</li>
+<li>打开浏览器访问第三方网站；</li>
+<li>下载或上传文件；</li>
+<li>生成图表、报告、CSV、PDF；</li>
+<li>执行多步骤自动化任务；</li>
+<li>为每个租户创建隔离工作区。</li>
+</ul>
+<h3 id="不一定需要-Sandbox-的场景"><a href="#不一定需要-Sandbox-的场景" class="headerlink" title="不一定需要 Sandbox 的场景"></a>不一定需要 Sandbox 的场景</h3><p>如果 Agent 只是：</p>
+<ul>
+<li>读数据库里已经授权的数据；</li>
+<li>调一个固定后端 API；</li>
+<li>做只读问答；</li>
+<li>生成文本草稿；</li>
+<li>调用没有副作用的内部函数；</li>
+</ul>
+<p>那么不一定要上完整 Sandbox，但仍然要有 tool gateway、权限控制和审计。这个判断来自 OWASP 对 Agent least privilege、tool abuse 和 monitoring 的要求：即使没有代码执行环境，工具调用本身仍然是安全边界。<a href="#ref-18">OWASP AI Agent Security：least privilege、HITL、tool abuse 风险</a>；<a href="#ref-20">OWASP Secure Coding with AI：工具权限、输入校验、不可信上下文</a>；<a href="#ref-23">Google Workflows &#x2F; Browserbase：execution logs 与 session recording</a></p>
+<hr>
+<h2 id="三、Sandbox-在产品里的位置"><a href="#三、Sandbox-在产品里的位置" class="headerlink" title="三、Sandbox 在产品里的位置"></a>三、Sandbox 在产品里的位置</h2><p>Sandbox 不应该直接暴露给 LLM。它应该由 Orchestrator 管理。原因是 Agent 工具调用需要按用户权限、会话上下文和最小权限校验，而凭证、网络和审计也需要由外部控制面统一管理。<a href="#ref-18">OWASP AI Agent Security：least privilege、HITL、tool abuse 风险</a>；<a href="#ref-20">OWASP Secure Coding with AI：工具权限、输入校验、不可信上下文</a>；<a href="#ref-21">Google Cloud Agent Identity：auth manager &#x2F; credential vault 管理凭证</a>；<a href="#ref-22">OWASP SSRF Prevention：allowlist、阻断内网和 metadata endpoint</a>；<a href="#ref-23">Google Workflows &#x2F; Browserbase：execution logs 与 session recording</a></p>
+<p>推荐结构：</p>
+<pre class="mermaid">graph TD
+    USER["User / Tenant"] --> ORCH["Agent Orchestrator"]
+    ORCH --> POLICY["Policy Engine"]
+    ORCH --> CRED["Credential Broker"]
+    ORCH --> TOOL["Tool Gateway"]
+    ORCH --> SB["Sandbox Manager"]
+    ORCH --> ARTIFACT["Artifact Store"]
+    ORCH --> AUDIT["Audit Log"]</pre>
+
+<h3 id="Orchestrator-负责什么"><a href="#Orchestrator-负责什么" class="headerlink" title="Orchestrator 负责什么"></a>Orchestrator 负责什么</h3><p>Orchestrator 负责：</p>
+<ul>
+<li>创建 sandbox；</li>
+<li>绑定 tenant &#x2F; session &#x2F; task；</li>
+<li>注入最小必要上下文；</li>
+<li>调用工具；</li>
+<li>保存结果；</li>
+<li>记录事件；</li>
+<li>在失败后恢复任务。</li>
+</ul>
+<p>LLM 不应该直接知道底层 sandbox 的 root credential、主机网络、存储路径或云资源权限。Google Cloud Agent Identity 文档给出的模式是通过身份、auth manager &#x2F; credential vault 发放受控凭证，而不是把原始 secret 暴露给 Agent。<a href="#ref-21">Google Cloud Agent Identity：auth manager &#x2F; credential vault 管理凭证</a></p>
+<h3 id="Sandbox-负责什么"><a href="#Sandbox-负责什么" class="headerlink" title="Sandbox 负责什么"></a>Sandbox 负责什么</h3><p>Sandbox 只负责“执行现场”：</p>
+<ul>
+<li>运行代码；</li>
+<li>读写临时文件；</li>
+<li>打开浏览器；</li>
+<li>运行测试；</li>
+<li>生成中间产物；</li>
+<li>暂存执行上下文。</li>
+</ul>
+<p>Sandbox 不应该负责最终权限判断，也不应该负责长期保存业务数据。权限判断属于 tool permission &#x2F; policy 层，业务产物应通过受控文件接口或 artifact store 流出，而不是依赖 sandbox 内部目录长期保存。<a href="#ref-20">OWASP Secure Coding with AI：工具权限、输入校验、不可信上下文</a>；<a href="#ref-26">OpenAI Code Interpreter &#x2F; E2B：文件进出 sandbox 与产物处理</a></p>
+<hr>
+<h2 id="四、一次-Agent-任务应该怎么使用-Sandbox"><a href="#四、一次-Agent-任务应该怎么使用-Sandbox" class="headerlink" title="四、一次 Agent 任务应该怎么使用 Sandbox"></a>四、一次 Agent 任务应该怎么使用 Sandbox</h2><p>一个比较稳的执行流程是：先把执行放入隔离环境，再让外部动作经过 tool gateway、credential broker、approval 和 audit。这是对 OpenAI&#x2F;E2B 代码执行模型、OWASP Agent 安全建议、Cloudflare HITL 和 Workflows&#x2F;Audit 思路的组合设计。<a href="#ref-16">OpenAI&#x2F;E2B&#x2F;CubeSandbox：sandbox 用于隔离代码执行和文件处理</a>；<a href="#ref-18">OWASP AI Agent Security：least privilege、HITL、tool abuse 风险</a>；<a href="#ref-20">OWASP Secure Coding with AI：工具权限、输入校验、不可信上下文</a>；<a href="#ref-21">Google Cloud Agent Identity：auth manager &#x2F; credential vault 管理凭证</a>；<a href="#ref-23">Google Workflows &#x2F; Browserbase：execution logs 与 session recording</a>；<a href="#ref-24">Cloudflare HITL：workflow 暂停等待人工确认</a>；<a href="#ref-26">OpenAI Code Interpreter &#x2F; E2B：文件进出 sandbox 与产物处理</a></p>
+<pre class="mermaid">graph TD
+    START["用户发起任务"] --> SESSION["Orchestrator 创建 task / session"]
+    SESSION --> POLICY["Policy Engine 判断需要哪些能力"]
+    POLICY --> CREATE["Sandbox Manager 创建 sandbox"]
+    CREATE --> CONTEXT["注入输入文件和最小上下文"]
+    CONTEXT --> EXEC["Agent 在 sandbox 中执行代码 / 浏览器 / 文件操作"]
+    EXEC --> ARTIFACT["产物写入 Artifact Store"]
+    EXEC --> TOOL["外部动作通过 Tool Gateway 执行"]
+    TOOL --> APPROVAL["高风险动作进入 Human Approval"]
+    ARTIFACT --> AUDIT["Audit Log 记录全过程"]
+    APPROVAL --> AUDIT
+    AUDIT --> END["任务完成后销毁或 checkpoint sandbox"]</pre>
+
+<p>这里有一个关键原则：</p>
+<blockquote>
+<p>Sandbox 里的结果不能自动变成真实世界的结果。<a href="#ref-20">OWASP Secure Coding with AI：工具权限、输入校验、不可信上下文</a>；<a href="#ref-24">Cloudflare HITL：workflow 暂停等待人工确认</a>；<a href="#ref-26">OpenAI Code Interpreter &#x2F; E2B：文件进出 sandbox 与产物处理</a></p>
+</blockquote>
+<p>例如 coding agent 修改了代码，正确流程应该是：</p>
+<pre class="mermaid">graph TD
+    COPY["copy repo into sandbox"] --> MODIFY["agent modifies code"]
+    MODIFY --> TEST["run tests"]
+    TEST --> DIFF["produce diff"]
+    DIFF --> APPROVE["human / policy approves"]
+    APPROVE --> PR["merge or create PR"]</pre>
+
+<p>而不是让 Agent 直接改生产仓库。</p>
+<hr>
+<h2 id="五、Sandbox-生命周期怎么设计"><a href="#五、Sandbox-生命周期怎么设计" class="headerlink" title="五、Sandbox 生命周期怎么设计"></a>五、Sandbox 生命周期怎么设计</h2><p>Sandbox 的生命周期建议分三种。这个分层来自两个事实：一方面 E2B 等 sandbox 支持按需创建、暂停、恢复；另一方面 AWS Lambda 执行环境生命周期说明运行环境复用会保留 <code>/tmp</code>、进程内对象等状态，因此生命周期越长，状态和残留风险越需要显式管理。<a href="#ref-3">AWS Lambda Execution Lifecycle：复用会保留 &#x2F;tmp 与进程内状态</a>；<a href="#ref-15">E2B Sandbox：按需创建、暂停、恢复 sandbox</a></p>
+<h3 id="1-短任务-Sandbox"><a href="#1-短任务-Sandbox" class="headerlink" title="1. 短任务 Sandbox"></a>1. 短任务 Sandbox</h3><p>适合：</p>
+<ul>
+<li>文件转换；</li>
+<li>数据分析；</li>
+<li>运行一段代码；</li>
+<li>生成图表；</li>
+<li>一次性网页抓取；</li>
+<li>简单测试。</li>
+</ul>
+<p>策略：</p>
+<pre class="mermaid">graph LR
+    CREATE["create"] --> EXEC["execute"]
+    EXEC --> EXPORT["export artifacts"]
+    EXPORT --> DESTROY["destroy"]</pre>
+
+<p>这是默认模式，最安全、最容易控成本。设计依据是：短任务只把输入、输出和日志作为 artifact 保留，避免把执行环境本身变成长期状态源。<a href="#ref-3">AWS Lambda Execution Lifecycle：复用会保留 &#x2F;tmp 与进程内状态</a>；<a href="#ref-23">Google Workflows &#x2F; Browserbase：execution logs 与 session recording</a>；<a href="#ref-26">OpenAI Code Interpreter &#x2F; E2B：文件进出 sandbox 与产物处理</a></p>
+<h3 id="2-会话级-Sandbox"><a href="#2-会话级-Sandbox" class="headerlink" title="2. 会话级 Sandbox"></a>2. 会话级 Sandbox</h3><p>适合：</p>
+<ul>
+<li>多轮数据分析；</li>
+<li>notebook-like 工作流；</li>
+<li>需要保留上下文的 browser session；</li>
+<li>用户和 Agent 交互式协作。</li>
+</ul>
+<p>策略：</p>
+<pre class="mermaid">graph LR
+    CREATE["create"] --> EXEC["execute multiple steps"]
+    EXEC --> IDLE["idle timeout"]
+    IDLE --> CHECKPOINT["checkpoint"]
+    IDLE --> DESTROY["destroy"]</pre>
+
+<p>注意：会话级 sandbox 必须有 idle timeout，不能无限保留。Browserbase 和 E2B 都有 session &#x2F; sandbox 生命周期能力，但这类能力应和配额、超时、回收策略一起设计，而不是默认长驻。<a href="#ref-15">E2B Sandbox：按需创建、暂停、恢复 sandbox</a>；<a href="#ref-17">Browserbase：云浏览器 session、录制、timeout 与 keep-alive</a></p>
+<h3 id="3-项目级-Workspace"><a href="#3-项目级-Workspace" class="headerlink" title="3. 项目级 Workspace"></a>3. 项目级 Workspace</h3><p>适合：</p>
+<ul>
+<li>coding agent；</li>
+<li>长期项目；</li>
+<li>repository 修改；</li>
+<li>多天任务；</li>
+<li>复杂调试。</li>
+</ul>
+<p>策略：</p>
+<pre class="mermaid">graph LR
+    SESSION["Project / Session"] --> WORKSPACE["persistent workspace"]
+    SESSION --> COMPUTE["ephemeral compute"]</pre>
+
+<p>也就是 workspace 可以保留，但执行 sandbox 可以重建。不要把“项目状态”完全绑定到一个永不销毁的运行容器上；durable workflow &#x2F; workflow history 的设计思路也是把长期状态放到外部 durable layer，而不是依赖某个 worker 或 sandbox 内存。<a href="#ref-25">Cloudflare &#x2F; Dapr Workflows：durable workflow、history、幂等恢复</a></p>
+<hr>
+<h2 id="六、持续运行-Agent：状态怎么保持"><a href="#六、持续运行-Agent：状态怎么保持" class="headerlink" title="六、持续运行 Agent：状态怎么保持"></a>六、持续运行 Agent：状态怎么保持</h2><p>持续运行 Agent 最大的问题是：中间一定会断。Cloudflare Workflows 和 Dapr Workflows 的共同思路是把长任务建模为可恢复的 workflow&#x2F;history，而不是依赖一次连续不失败的进程执行。<a href="#ref-25">Cloudflare &#x2F; Dapr Workflows：durable workflow、history、幂等恢复</a></p>
+<p>可能断在：</p>
+<ul>
+<li>LLM 调用失败；</li>
+<li>sandbox 被回收；</li>
+<li>浏览器崩溃；</li>
+<li>worker 重启；</li>
+<li>网络超时；</li>
+<li>用户暂停；</li>
+<li>审批等待；</li>
+<li>任务超过执行时间。</li>
+</ul>
+<p>所以不能依赖“一个一直活着的 sandbox”。正确做法是把状态拆开保存：Agent 控制状态进入 workflow&#x2F;state store，执行产物进入 artifact&#x2F;workspace，外部副作用进入 operation log。<a href="#ref-23">Google Workflows &#x2F; Browserbase：execution logs 与 session recording</a>；<a href="#ref-25">Cloudflare &#x2F; Dapr Workflows：durable workflow、history、幂等恢复</a>；<a href="#ref-26">OpenAI Code Interpreter &#x2F; E2B：文件进出 sandbox 与产物处理</a></p>
+<h3 id="三类状态"><a href="#三类状态" class="headerlink" title="三类状态"></a>三类状态</h3><h4 id="1-Agent-控制状态"><a href="#1-Agent-控制状态" class="headerlink" title="1. Agent 控制状态"></a>1. Agent 控制状态</h4><p>包括：</p>
+<ul>
+<li>task id；</li>
+<li>tenant id；</li>
+<li>当前计划；</li>
+<li>已完成步骤；</li>
+<li>下一步 cursor；</li>
+<li>tool call history；</li>
+<li>approval 状态；</li>
+<li>retry count；</li>
+<li>错误信息。</li>
+</ul>
+<p>这些应该存在 Agent State Store 或 workflow engine 中。Dapr workflow 和 Cloudflare Workflows 的文档都强调 workflow runtime 会保存执行历史&#x2F;状态，用于恢复和继续执行。<a href="#ref-25">Cloudflare &#x2F; Dapr Workflows：durable workflow、history、幂等恢复</a></p>
+<h4 id="2-Sandbox-执行状态"><a href="#2-Sandbox-执行状态" class="headerlink" title="2. Sandbox 执行状态"></a>2. Sandbox 执行状态</h4><p>包括：</p>
+<ul>
+<li>工作目录；</li>
+<li>生成文件；</li>
+<li>安装依赖；</li>
+<li>notebook kernel；</li>
+<li>browser profile；</li>
+<li>screenshots；</li>
+<li>stdout &#x2F; stderr。</li>
+</ul>
+<p>这些可以通过 artifact、workspace volume、snapshot 或 checkpoint 保存。E2B 的 sandbox 文档和 Firecracker snapshot 文档分别提供了 sandbox pause&#x2F;resume 与底层 snapshot&#x2F;restore 的参考，但它们都应服务于上层生命周期策略。<a href="#ref-13">Firecracker Snapshot &#x2F; Jailer：snapshot 恢复与隔离增强</a>；<a href="#ref-15">E2B Sandbox：按需创建、暂停、恢复 sandbox</a></p>
+<h5 id="Snapshot-x2F-Checkpoint-到底应该保存什么"><a href="#Snapshot-x2F-Checkpoint-到底应该保存什么" class="headerlink" title="Snapshot &#x2F; Checkpoint 到底应该保存什么"></a>Snapshot &#x2F; Checkpoint 到底应该保存什么</h5><p>Snapshot 不是“把整个 sandbox 当成数据库”。它更像是一个可恢复的执行现场，用来缩短恢复时间、保留运行上下文，或者从同一个中间状态 fork 出新的执行分支。<a href="#ref-31">E2B Persistence &#x2F; Auto-resume：pause&#x2F;resume 保留运行状态</a>；<a href="#ref-32">E2B &#x2F; Firecracker Snapshot：point-in-time 状态恢复和 fork</a></p>
+<p>推荐把 snapshot 拆成几层：</p>
+<pre class="mermaid">graph TD
+    SNAPSHOT["Snapshot / Checkpoint"] --> BASE["base image snapshot"]
+    BASE --> BASE_CONTENT["OS / runtime / common dependencies"]
+
+    SNAPSHOT --> WORKSPACE["workspace snapshot"]
+    WORKSPACE --> WORKSPACE_CONTENT["repo files / generated files / installed packages / local caches"]
+
+    SNAPSHOT --> RUNTIME["runtime snapshot"]
+    RUNTIME --> RUNTIME_CONTENT["process state / memory / notebook kernel / open editor state"]
+
+    SNAPSHOT --> BROWSER["browser profile snapshot"]
+    BROWSER --> BROWSER_CONTENT["cookies / localStorage / history / downloads / extension state"]
+
+    SNAPSHOT --> HISTORY["execution history snapshot"]
+    HISTORY --> HISTORY_CONTENT["command history / tool call transcript / stdout / stderr / screenshots"]</pre>
+
+<p>这几层不要混在一起保存。原因是它们的生命周期、敏感度和复用边界都不同：</p>
+<table>
+<thead>
+<tr>
+<th>内容</th>
+<th>是否适合 snapshot</th>
+<th>更推荐的位置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>基础镜像、语言运行时、常用依赖</td>
+<td>适合</td>
+<td>base image &#x2F; golden snapshot</td>
+</tr>
+<tr>
+<td>当前 workspace 文件、临时 repo、生成文件</td>
+<td>适合</td>
+<td>workspace volume &#x2F; object store &#x2F; diff</td>
+</tr>
+<tr>
+<td>notebook kernel、长任务进程、内存中间结果</td>
+<td>有条件适合</td>
+<td>runtime snapshot &#x2F; pause-resume</td>
+</tr>
+<tr>
+<td>browser profile、cookies、localStorage、下载记录</td>
+<td>只适合同租户&#x2F;同 session</td>
+<td>encrypted profile store</td>
+</tr>
+<tr>
+<td>命令历史、stdout&#x2F;stderr、截图、tool trace</td>
+<td>适合保存，但不一定放进 sandbox snapshot</td>
+<td>audit log &#x2F; execution log &#x2F; artifact store</td>
+</tr>
+<tr>
+<td>用户上传的原始文件</td>
+<td>不建议只存在 snapshot 里</td>
+<td>user file store &#x2F; artifact store</td>
+</tr>
+<tr>
+<td>长期 secret、OAuth refresh token、客户 API key</td>
+<td>不应该</td>
+<td>credential broker &#x2F; secret vault</td>
+</tr>
+<tr>
+<td>已经发生的外部动作</td>
+<td>不应该</td>
+<td>operation log &#x2F; idempotency store</td>
+</tr>
+</tbody></table>
+<p>也就是说，snapshot 可以包含“运行现场”，但不应该成为唯一事实来源。尤其是用户数据要单独建模：用户上传文件、浏览器登录态、生成产物、审计日志和业务数据库记录，不应该因为恢复一个 sandbox snapshot 就被隐式恢复或覆盖。</p>
+<p>一个更稳的保存模型是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">checkpoint_id</span><br><span class="line">tenant_id</span><br><span class="line">user_id</span><br><span class="line">session_id</span><br><span class="line">task_id</span><br><span class="line">run_id</span><br><span class="line">base_image_digest</span><br><span class="line">workspace_version</span><br><span class="line">runtime_snapshot_ref</span><br><span class="line">browser_profile_ref</span><br><span class="line">artifact_refs</span><br><span class="line">execution_log_range</span><br><span class="line">created_at</span><br><span class="line">expires_at</span><br><span class="line">encryption_key_ref</span><br><span class="line">data_classification</span><br><span class="line">restore_policy</span><br></pre></td></tr></table></figure>
+
+<p>恢复时不要只做：</p>
+<pre class="mermaid">graph LR
+    RESTORE["restore snapshot"] --> CONTINUE["continue"]</pre>
+
+<p>更安全的流程是：</p>
+<pre class="mermaid">graph TD
+    LOAD["load checkpoint metadata"] --> BINDING["verify tenant / user / session binding"]
+    BINDING --> POLICY["verify base image and policy version"]
+    POLICY --> WORKSPACE["restore workspace snapshot"]
+    WORKSPACE --> RUNTIME["restore runtime snapshot if allowed"]
+    RUNTIME --> BROWSER["attach browser profile if same trust boundary"]
+    BROWSER --> HISTORY["reload execution history and last safe cursor"]
+    HISTORY --> RECONCILE["reconcile external side effects"]
+    RECONCILE --> CONTINUE["continue from next idempotent step"]</pre>
+
+<p>这里有几个容易踩坑的点：</p>
+<ul>
+<li>snapshot 可能保存内存里的 token、shell history、浏览器 cookie，所以 snapshot 本身必须按敏感数据加密、隔离、设置 TTL；</li>
+<li>runtime snapshot 可能包含打开的 socket、后台进程和依赖宿主机的状态，恢复后要做健康检查，不能假设所有连接还有效；<a href="#ref-33">Firecracker Snapshot Caveats：恢复依赖宿主条件和健康检查</a>；<a href="#ref-34">Docker checkpoint &#x2F; CRIU：checkpoint 的一致性风险</a></li>
+<li>browser profile 是用户数据，不是普通缓存；Playwright &#x2F; Chromium 的 user data directory 会包含 cookie、localStorage、history 等登录态和浏览痕迹；<a href="#ref-35">Playwright Persistent Context：userDataDir 保存浏览器会话状态</a>；<a href="#ref-36">Chromium User Data Directory：cookies&#x2F;history&#x2F;local state 等用户数据</a></li>
+<li>跨 tenant 默认不要复用同一个 runtime snapshot；如果要用基础镜像 snapshot 加速启动，也应该只复用无用户数据、无凭证、无历史状态的 clean snapshot；</li>
+<li>audit log 和 operation log 必须外置，因为它们是判断“上一步到底有没有对外生效”的依据，不能跟着 sandbox 回滚。</li>
+</ul>
+<p>一句话：</p>
+<blockquote>
+<p>Snapshot 用来恢复执行现场，不用来保存业务事实；用户数据、凭证和外部副作用必须有独立的系统记录。</p>
+</blockquote>
+<h4 id="3-外部副作用状态"><a href="#3-外部副作用状态" class="headerlink" title="3. 外部副作用状态"></a>3. 外部副作用状态</h4><p>包括：</p>
+<ul>
+<li>是否已经发邮件；</li>
+<li>是否已经提交表单；</li>
+<li>是否已经创建订单；</li>
+<li>是否已经写数据库；</li>
+<li>是否已经创建 PR。</li>
+</ul>
+<p>这些不能靠 sandbox 恢复，必须靠 operation log 和 idempotency key 管理。因为外部副作用已经发生在 sandbox 之外，恢复时首先要 reconcile，而不是盲目 replay。<a href="#ref-23">Google Workflows &#x2F; Browserbase：execution logs 与 session recording</a>；<a href="#ref-25">Cloudflare &#x2F; Dapr Workflows：durable workflow、history、幂等恢复</a></p>
+<h3 id="推荐恢复流程"><a href="#推荐恢复流程" class="headerlink" title="推荐恢复流程"></a>推荐恢复流程</h3><pre class="mermaid">graph TD
+    STATE["load task state"] --> CURSOR["load last safe cursor"]
+    CURSOR --> SANDBOX["restore or recreate sandbox"]
+    SANDBOX --> ARTIFACTS["load artifacts / workspace"]
+    ARTIFACTS --> RECONCILE["reconcile external side effects"]
+    RECONCILE --> CONTINUE["continue from next safe step"]</pre>
+
+<p>关键原则：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Sandbox can be durable,</span><br><span class="line">but recovery must not depend on sandbox immortality.</span><br></pre></td></tr></table></figure>
+
+<p>也就是：sandbox 可以长时间存在，但系统必须能在它消失后恢复。</p>
+<hr>
+<h2 id="七、工具和凭证怎么接入-Sandbox"><a href="#七、工具和凭证怎么接入-Sandbox" class="headerlink" title="七、工具和凭证怎么接入 Sandbox"></a>七、工具和凭证怎么接入 Sandbox</h2><p>这是 SaaS Agent 最容易做错的部分。OWASP AI Agent Security 和 Secure Coding with AI 都把 tool permissions、least privilege、输入校验和不可信上下文视为核心风险点。<a href="#ref-18">OWASP AI Agent Security：least privilege、HITL、tool abuse 风险</a>；<a href="#ref-20">OWASP Secure Coding with AI：工具权限、输入校验、不可信上下文</a></p>
+<h3 id="不要把长期-Secret-放进-Sandbox"><a href="#不要把长期-Secret-放进-Sandbox" class="headerlink" title="不要把长期 Secret 放进 Sandbox"></a>不要把长期 Secret 放进 Sandbox</h3><p>错误做法：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export CUSTOMER_API_KEY=xxx</span><br></pre></td></tr></table></figure>
+
+<p>更好的做法：</p>
+<pre class="mermaid">graph LR
+    AGENT["Agent requests capability"] --> POLICY["Policy Engine approves"]
+    POLICY --> TOKEN["Credential Broker issues short-lived scoped token"]
+    TOKEN --> TOOL["Tool Gateway executes action"]
+    TOOL --> AUDIT["Audit Log records result"]</pre>
+
+<p>Agent 不应该直接持有客户长期凭证。Sandbox 也不应该变成 secret 仓库。Google Cloud Agent Identity 文档给出的设计是把凭证交给 auth manager &#x2F; credential vault，并让 Agent 使用绑定身份的授权能力。<a href="#ref-21">Google Cloud Agent Identity：auth manager &#x2F; credential vault 管理凭证</a></p>
+<h3 id="Tool-Gateway-比直接-API-调用更重要"><a href="#Tool-Gateway-比直接-API-调用更重要" class="headerlink" title="Tool Gateway 比直接 API 调用更重要"></a>Tool Gateway 比直接 API 调用更重要</h3><p>Agent 不应该在 sandbox 里随便 curl 生产 API。OWASP 对 Agent 的建议是工具调用要有明确权限边界、输入校验和 least privilege；直接从 sandbox 调真实 API 会绕过这些控制点。<a href="#ref-18">OWASP AI Agent Security：least privilege、HITL、tool abuse 风险</a>；<a href="#ref-20">OWASP Secure Coding with AI：工具权限、输入校验、不可信上下文</a></p>
+<p>应该通过 Tool Gateway：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">send_email(...)</span><br><span class="line">create_ticket(...)</span><br><span class="line">query_database(...)</span><br><span class="line">create_pull_request(...)</span><br><span class="line">submit_form(...)</span><br></pre></td></tr></table></figure>
+
+<p>每个工具都应该有：</p>
+<ul>
+<li>schema validation；</li>
+<li>permission check；</li>
+<li>rate limit；</li>
+<li>idempotency key；</li>
+<li>dry-run；</li>
+<li>approval rule；</li>
+<li>audit event。</li>
+</ul>
+<hr>
+<h2 id="八、网络怎么管"><a href="#八、网络怎么管" class="headerlink" title="八、网络怎么管"></a>八、网络怎么管</h2><p>Sandbox 默认不应该拥有任意外网访问能力。OWASP SSRF 防护建议使用 allowlist、阻断内网&#x2F;metadata 地址等控制；Agent 场景还要叠加 prompt injection 风险，因为外部网页或文档可能诱导 Agent 访问恶意目的地。<a href="#ref-19">OWASP Prompt Injection：网页&#x2F;文档&#x2F;邮件可成为注入载体</a>；<a href="#ref-22">OWASP SSRF Prevention：allowlist、阻断内网和 metadata endpoint</a></p>
+<p>推荐策略：</p>
+<pre class="mermaid">graph TD
+    DEFAULT["default deny outbound"] --> ALLOW["allow by tenant policy"]
+    ALLOW --> PROXY["proxy all HTTP / API / browser traffic"]
+    PROXY --> BLOCK_INTERNAL["block internal IP ranges"]
+    PROXY --> BLOCK_METADATA["block cloud metadata endpoints"]
+    BLOCK_INTERNAL --> LOG["log destination and method"]
+    BLOCK_METADATA --> LOG</pre>
+
+<p>尤其要防：</p>
+<ul>
+<li>SSRF；</li>
+<li>访问云 metadata；</li>
+<li>扫描内网；</li>
+<li>将数据 POST 到未知域名；</li>
+<li>被网页 prompt injection 引导访问恶意地址。</li>
+</ul>
+<p>Browser Agent 也一样。浏览器不是“天然安全”的工具，浏览器只是另一个高风险执行环境；OWASP Prompt Injection 文档明确把网页、文档、邮件等外部内容视为可注入载体。<a href="#ref-19">OWASP Prompt Injection：网页&#x2F;文档&#x2F;邮件可成为注入载体</a></p>
+<hr>
+<h2 id="九、Browser-Agent-怎么用-Sandbox"><a href="#九、Browser-Agent-怎么用-Sandbox" class="headerlink" title="九、Browser Agent 怎么用 Sandbox"></a>九、Browser Agent 怎么用 Sandbox</h2><p>Browser Agent 要单独建模，因为它有登录态和真实外部动作。Browserbase 文档中的 session、recording、timeout、keep-alive 等能力说明浏览器自动化本身需要被当作可观察、可管理的会话，而不是一次普通函数调用。<a href="#ref-17">Browserbase：云浏览器 session、录制、timeout 与 keep-alive</a>；<a href="#ref-29">Browserbase：云浏览器、会话管理、录制、代理</a></p>
+<p>推荐规则：</p>
+<pre class="mermaid">graph TD
+    PROFILE["one browser profile per tenant / session"] --> COOKIES["no shared cookies"]
+    PROFILE --> ALLOWLIST["domain allowlist"]
+    PROFILE --> FILES["controlled uploads / downloads"]
+    PROFILE --> TRACE["record screenshots / action trace"]
+    PROFILE --> APPROVAL["approval before submit / payment / delete / post"]
+    PROFILE --> TTL["session TTL"]</pre>
+
+<p>如果 Agent 只是浏览网页，风险还可控；如果它要提交表单、发消息、下单、改设置，就必须走审批或明确的 tenant policy。Cloudflare HITL 文档提供了“暂停 workflow 等待人工确认”的实现参考，OWASP 也建议对高风险 Agent 动作引入 human-in-the-loop。<a href="#ref-18">OWASP AI Agent Security：least privilege、HITL、tool abuse 风险</a>；<a href="#ref-24">Cloudflare HITL：workflow 暂停等待人工确认</a></p>
+<p>中断恢复时尤其要注意：</p>
+<blockquote>
+<p>不要盲目 replay click。</p>
+</blockquote>
+<p>如果上一次中断发生在“提交”附近，恢复时应该先检查外部系统状态，确认动作是否已经完成，再决定继续、跳过或让用户确认。</p>
+<hr>
+<h2 id="十、产物怎么管理"><a href="#十、产物怎么管理" class="headerlink" title="十、产物怎么管理"></a>十、产物怎么管理</h2><p>Sandbox 里的文件不应该直接变成用户可下载文件。OpenAI Code Interpreter 和 E2B 都支持文件进入&#x2F;离开 sandbox，但 SaaS 产品应在这层之上增加 artifact metadata、访问控制、扫描和审计。<a href="#ref-16">OpenAI&#x2F;E2B&#x2F;CubeSandbox：sandbox 用于隔离代码执行和文件处理</a>；<a href="#ref-26">OpenAI Code Interpreter &#x2F; E2B：文件进出 sandbox 与产物处理</a></p>
+<p>推荐所有产物先进入 Artifact Store：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">artifact_id</span><br><span class="line">tenant_id</span><br><span class="line">session_id</span><br><span class="line">task_id</span><br><span class="line">created_by_agent</span><br><span class="line">mime_type</span><br><span class="line">size</span><br><span class="line">classification</span><br><span class="line">scan_status</span><br><span class="line">retention_policy</span><br><span class="line">access_policy</span><br></pre></td></tr></table></figure>
+
+<p>Artifact Store 要解决：</p>
+<ul>
+<li>谁能下载；</li>
+<li>保存多久；</li>
+<li>是否包含敏感信息；</li>
+<li>是否需要病毒扫描；</li>
+<li>是否可以外发；</li>
+<li>是否进入审计日志。</li>
+</ul>
+<p>对于 coding agent，最重要的 artifact 往往不是文件本身，而是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">diff + test result + logs + explanation</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="十一、危险动作怎么审批"><a href="#十一、危险动作怎么审批" class="headerlink" title="十一、危险动作怎么审批"></a>十一、危险动作怎么审批</h2><p>可以把动作分成四级。这个分级是对 OWASP least privilege &#x2F; human-in-the-loop 建议、Cloudflare workflow approval 模式和 SaaS 审计需求的产品化表达。<a href="#ref-18">OWASP AI Agent Security：least privilege、HITL、tool abuse 风险</a>；<a href="#ref-20">OWASP Secure Coding with AI：工具权限、输入校验、不可信上下文</a>；<a href="#ref-23">Google Workflows &#x2F; Browserbase：execution logs 与 session recording</a>；<a href="#ref-24">Cloudflare HITL：workflow 暂停等待人工确认</a></p>
+<h3 id="Level-0：只读动作"><a href="#Level-0：只读动作" class="headerlink" title="Level 0：只读动作"></a>Level 0：只读动作</h3><p>例如读取文件、读取公开网页、查询已授权文档。</p>
+<p>策略：自动允许，记录日志。</p>
+<h3 id="Level-1：Sandbox-内部写入"><a href="#Level-1：Sandbox-内部写入" class="headerlink" title="Level 1：Sandbox 内部写入"></a>Level 1：Sandbox 内部写入</h3><p>例如生成文件、修改临时 repo、运行测试。</p>
+<p>策略：允许，但不能自动影响生产。</p>
+<h3 id="Level-2：外部可见动作"><a href="#Level-2：外部可见动作" class="headerlink" title="Level 2：外部可见动作"></a>Level 2：外部可见动作</h3><p>例如发 Slack、创建 ticket、提交网页表单、创建 PR。</p>
+<p>策略：需要 policy allowlist，中高风险时需要用户确认。</p>
+<h3 id="Level-3：高风险动作"><a href="#Level-3：高风险动作" class="headerlink" title="Level 3：高风险动作"></a>Level 3：高风险动作</h3><p>例如删除数据、付款、改权限、发布生产、导出大量数据。</p>
+<p>策略：默认禁止，除非显式授权 + human approval + full audit。</p>
+<hr>
+<h2 id="十二、选型只需要粗略判断"><a href="#十二、选型只需要粗略判断" class="headerlink" title="十二、选型只需要粗略判断"></a>十二、选型只需要粗略判断</h2><p>不要一开始陷入过多 sandbox 实现细节。产品早期更重要的是使用方式，而不是底层技术完美；不同厂商提供的 sandbox 能力不同，但都需要被接入同一套权限、状态、审计和产物管理框架。<a href="#ref-16">OpenAI&#x2F;E2B&#x2F;CubeSandbox：sandbox 用于隔离代码执行和文件处理</a>；<a href="#ref-17">Browserbase：云浏览器 session、录制、timeout 与 keep-alive</a>；<a href="#ref-27">E2B：on-demand isolated sandbox、代码&#x2F;命令&#x2F;文件操作</a>；<a href="#ref-28">CubeSandbox：VM-based sandbox、代码执行和浏览器自动化示例</a>；<a href="#ref-29">Browserbase：云浏览器、会话管理、录制、代理</a>；<a href="#ref-30">OpenAI Code Interpreter：sandboxed Python、文件和图像产物</a>；<a href="#ref-37">Modal Sandboxes：隔离运行代码、命令和文件操作</a>；<a href="#ref-38">Daytona：agent &#x2F; developer workspace infrastructure</a></p>
+<p>粗略选型即可：</p>
+<table>
+<thead>
+<tr>
+<th>需求</th>
+<th>可选方案</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>执行代码 &#x2F; 数据分析</td>
+<td>OpenAI Code Interpreter、E2B、Modal、CubeSandbox</td>
+</tr>
+<tr>
+<td>自托管 &#x2F; 更强隔离</td>
+<td>CubeSandbox、Firecracker-based、自建 microVM</td>
+</tr>
+<tr>
+<td>浏览器自动化</td>
+<td>Browserbase、Playwright Sandbox、CubeSandbox Browser 示例</td>
+</tr>
+<tr>
+<td>持久 coding workspace</td>
+<td>Daytona、Codespaces-like workspace、自建 persistent workspace</td>
+</tr>
+<tr>
+<td>内部低风险任务</td>
+<td>Docker &#x2F; Kubernetes</td>
+</tr>
+</tbody></table>
+<p>这里的重点不是“哪个技术最强”，而是：</p>
+<blockquote>
+<p>不管选哪个 sandbox，都要放在同一套 policy、credential、network、artifact、audit 框架下面使用。<a href="#ref-18">OWASP AI Agent Security：least privilege、HITL、tool abuse 风险</a>；<a href="#ref-20">OWASP Secure Coding with AI：工具权限、输入校验、不可信上下文</a>；<a href="#ref-21">Google Cloud Agent Identity：auth manager &#x2F; credential vault 管理凭证</a>；<a href="#ref-22">OWASP SSRF Prevention：allowlist、阻断内网和 metadata endpoint</a>；<a href="#ref-23">Google Workflows &#x2F; Browserbase：execution logs 与 session recording</a>；<a href="#ref-24">Cloudflare HITL：workflow 暂停等待人工确认</a>；<a href="#ref-26">OpenAI Code Interpreter &#x2F; E2B：文件进出 sandbox 与产物处理</a></p>
+</blockquote>
+<hr>
+<h2 id="十三、推荐默认方案"><a href="#十三、推荐默认方案" class="headerlink" title="十三、推荐默认方案"></a>十三、推荐默认方案</h2><p>如果要做一个 SaaS Agent 产品，我会建议默认这样用。这个默认方案不是来自单一厂商，而是把 OWASP Agent 安全、Google Agent Identity、SSRF 防护、HITL、durable workflow、artifact&#x2F;file handling 等来源组合成 SaaS Agent 的控制面设计。<a href="#ref-18">OWASP AI Agent Security：least privilege、HITL、tool abuse 风险</a>；<a href="#ref-20">OWASP Secure Coding with AI：工具权限、输入校验、不可信上下文</a>；<a href="#ref-21">Google Cloud Agent Identity：auth manager &#x2F; credential vault 管理凭证</a>；<a href="#ref-22">OWASP SSRF Prevention：allowlist、阻断内网和 metadata endpoint</a>；<a href="#ref-23">Google Workflows &#x2F; Browserbase：execution logs 与 session recording</a>；<a href="#ref-24">Cloudflare HITL：workflow 暂停等待人工确认</a>；<a href="#ref-25">Cloudflare &#x2F; Dapr Workflows：durable workflow、history、幂等恢复</a>；<a href="#ref-26">OpenAI Code Interpreter &#x2F; E2B：文件进出 sandbox 与产物处理</a></p>
+<pre class="mermaid">graph TD
+    PRODUCT["SaaS Agent Product"] --> SANDBOX["Sandbox"]
+    PRODUCT --> CONTROL["Control Plane"]
+
+    SANDBOX --> CODE["code sandbox for code / file / data work"]
+    SANDBOX --> BROWSER["browser sandbox for web automation"]
+    SANDBOX --> WORKSPACE["persistent workspace only when needed"]
+
+    CONTROL --> STATE["Agent State Store"]
+    CONTROL --> POLICY["Policy Engine"]
+    CONTROL --> TOOL["Tool Gateway"]
+    CONTROL --> CRED["Credential Broker"]
+    CONTROL --> EGRESS["Egress Proxy"]
+    CONTROL --> ARTIFACT["Artifact Store"]
+    CONTROL --> AUDIT["Audit Log"]
+    CONTROL --> APPROVAL["Human Approval"]</pre>
+
+<p>默认策略：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">one sandbox per tenant/session/task</span><br><span class="line">ephemeral by default</span><br><span class="line">checkpoint for long-running tasks</span><br><span class="line">no raw long-lived secrets in sandbox</span><br><span class="line">default-deny network</span><br><span class="line">all tools mediated</span><br><span class="line">all high-risk actions approved</span><br><span class="line">all artifacts exported through artifact store</span><br><span class="line">all boundary-crossing actions audited</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="十四、最重要的反模式"><a href="#十四、最重要的反模式" class="headerlink" title="十四、最重要的反模式"></a>十四、最重要的反模式</h2><h3 id="1-把-Sandbox-当成安全模型本身"><a href="#1-把-Sandbox-当成安全模型本身" class="headerlink" title="1. 把 Sandbox 当成安全模型本身"></a>1. 把 Sandbox 当成安全模型本身</h3><p>Sandbox 只是执行隔离。真正的安全模型还包括 policy、credential、network、approval 和 audit。<a href="#ref-18">OWASP AI Agent Security：least privilege、HITL、tool abuse 风险</a>；<a href="#ref-20">OWASP Secure Coding with AI：工具权限、输入校验、不可信上下文</a>；<a href="#ref-21">Google Cloud Agent Identity：auth manager &#x2F; credential vault 管理凭证</a>；<a href="#ref-22">OWASP SSRF Prevention：allowlist、阻断内网和 metadata endpoint</a>；<a href="#ref-23">Google Workflows &#x2F; Browserbase：execution logs 与 session recording</a>；<a href="#ref-24">Cloudflare HITL：workflow 暂停等待人工确认</a></p>
+<h3 id="2-给-Agent-一个永不销毁的容器"><a href="#2-给-Agent-一个永不销毁的容器" class="headerlink" title="2. 给 Agent 一个永不销毁的容器"></a>2. 给 Agent 一个永不销毁的容器</h3><p>这会导致成本不可控、状态不可解释、secret 残留、依赖漂移和恢复困难。AWS Lambda execution lifecycle 对环境复用状态的说明、以及 durable workflow 文档对外置状态的强调，都支持“不依赖永不销毁执行环境”的设计。<a href="#ref-3">AWS Lambda Execution Lifecycle：复用会保留 &#x2F;tmp 与进程内状态</a>；<a href="#ref-25">Cloudflare &#x2F; Dapr Workflows：durable workflow、history、幂等恢复</a></p>
+<h3 id="3-把客户-Secret-放进-Sandbox"><a href="#3-把客户-Secret-放进-Sandbox" class="headerlink" title="3. 把客户 Secret 放进 Sandbox"></a>3. 把客户 Secret 放进 Sandbox</h3><p>Agent 不应该直接持有长期凭证。应该用短期、窄权限、可撤销的 capability。<a href="#ref-21">Google Cloud Agent Identity：auth manager &#x2F; credential vault 管理凭证</a></p>
+<h3 id="4-让-Browser-Agent-自动提交关键动作"><a href="#4-让-Browser-Agent-自动提交关键动作" class="headerlink" title="4. 让 Browser Agent 自动提交关键动作"></a>4. 让 Browser Agent 自动提交关键动作</h3><p>浏览器里的“点击提交”可能意味着发邮件、下单、付款、删数据。必须有审批边界。<a href="#ref-18">OWASP AI Agent Security：least privilege、HITL、tool abuse 风险</a>；<a href="#ref-19">OWASP Prompt Injection：网页&#x2F;文档&#x2F;邮件可成为注入载体</a>；<a href="#ref-24">Cloudflare HITL：workflow 暂停等待人工确认</a></p>
+<h3 id="5-没有外部副作用记录"><a href="#5-没有外部副作用记录" class="headerlink" title="5. 没有外部副作用记录"></a>5. 没有外部副作用记录</h3><p>恢复时最怕重复执行：重复发邮件、重复付款、重复删除。所有外部写动作都要有 idempotency key 和 operation log。<a href="#ref-23">Google Workflows &#x2F; Browserbase：execution logs 与 session recording</a>；<a href="#ref-25">Cloudflare &#x2F; Dapr Workflows：durable workflow、history、幂等恢复</a></p>
+<hr>
+<h2 id="十五、多租户-SaaS-下的-Sandbox-配额问题"><a href="#十五、多租户-SaaS-下的-Sandbox-配额问题" class="headerlink" title="十五、多租户 SaaS 下的 Sandbox 配额问题"></a>十五、多租户 SaaS 下的 Sandbox 配额问题</h2><p>前面的章节讨论的是“一个 Agent 任务如何安全使用 Sandbox”。但在 SaaS 场景里，还有一个更现实的问题：</p>
+<blockquote>
+<p>如果主账号下同时只能存在很少的 sandbox 实例，例如 10 个，那么一个租户多个用户、一个用户多个 session 时，怎么支撑多租户使用？</p>
+</blockquote>
+<p>这里首先要拆清楚四个概念：</p>
+<pre class="mermaid">graph TD
+    TENANT["Tenant"] --> USER["User"]
+    USER --> SESSION["Session"]
+    SESSION --> RUN["Run / Execution"]
+    RUN --> SANDBOX["Sandbox Instance"]</pre>
+
+<p>它们不应该是一一绑定关系。一个租户可以有多个用户，一个用户可以打开多个 session，一个 session 里又可能发起多次 run。真正消耗稀缺资源的，通常不是 tenant、user 或 session 本身，而是<strong>正在运行的 run &#x2F; execution</strong>。这是把 workflow&#x2F;queue 系统里“持久状态”和“执行资源”分离的思路应用到 sandbox 池后的设计推导。<a href="#ref-6">Kubernetes ResourceQuota：共享资源池需要配额限制</a>；<a href="#ref-7">Kueue ClusterQueue：quota &#x2F; borrowing &#x2F; queueing</a>；<a href="#ref-9">Inngest Fair Multi-Tenant Queue：队列层处理公平性与并发</a>；<a href="#ref-25">Cloudflare &#x2F; Dapr Workflows：durable workflow、history、幂等恢复</a></p>
+<h3 id="1-10-个实例不是-10-个租户，而是-10-个并发执行位"><a href="#1-10-个实例不是-10-个租户，而是-10-个并发执行位" class="headerlink" title="1. 10 个实例不是 10 个租户，而是 10 个并发执行位"></a>1. 10 个实例不是 10 个租户，而是 10 个并发执行位</h3><p>文档里写“sandbox 实例数配额 10”时，容易被误读成“最多支持 10 个租户”。这其实不准确；Kubernetes ResourceQuota 和 Kueue ClusterQueue 都把配额建模为共享资源池中的可消耗资源，而不是用户或租户数量本身。<a href="#ref-6">Kubernetes ResourceQuota：共享资源池需要配额限制</a>；<a href="#ref-7">Kueue ClusterQueue：quota &#x2F; borrowing &#x2F; queueing</a></p>
+<p>更准确的说法是：</p>
+<blockquote>
+<p>10 个实例表示在这个主账号资源池里，最多同时存在 10 个正在运行或空闲保留的 sandbox 实例。</p>
+</blockquote>
+<p>租户、用户、session 的数量可以远大于 10，因为它们主要是数据库、权限、文件和状态记录；但是<strong>同时占用 sandbox 的执行任务</strong>不能超过这个上限。共享池能够提升效率，但也会引入 noisy neighbor、blast radius 和更复杂的隔离问题，因此需要显式配额与调度策略。<a href="#ref-4">AWS SaaS Lens Pool Isolation：共享池有 noisy neighbor &#x2F; blast radius 风险</a>；<a href="#ref-6">Kubernetes ResourceQuota：共享资源池需要配额限制</a>；<a href="#ref-7">Kueue ClusterQueue：quota &#x2F; borrowing &#x2F; queueing</a></p>
+<p>所以系统容量要先估算单位时间内会有多少 run 到达，再估算每个 run 平均占用 sandbox 多久：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">需要的 sandbox 并发数</span><br><span class="line">≈ run 到达率 × 平均 sandbox 占用时长</span><br><span class="line"></span><br><span class="line">run 到达率</span><br><span class="line">≈ 活跃租户数</span><br><span class="line">  × 每租户活跃用户数</span><br><span class="line">  × 每用户活跃 session 数</span><br><span class="line">  × 每 session 单位时间内发起 run 的概率/频率</span><br></pre></td></tr></table></figure>
+
+<p>这个公式是排队论意义上的容量估算，不是任何 vendor 文档的直接公式；它用于帮助判断配额是否和产品承诺匹配。</p>
+<p>如果你的产品是强交互式的，例如用户打开 session 后就期望 sandbox 一直在线，那么这个乘数会非常大。举例：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">5 个租户</span><br><span class="line">× 每租户 5 个活跃用户</span><br><span class="line">× 每用户 2 个 session</span><br><span class="line">= 50 个活跃 session</span><br></pre></td></tr></table></figure>
+
+<p>哪怕只有一半 session 同时需要执行，也已经是 25 个并发，远超 10。此时问题不是“调度算法不够好”，而是<strong>资源池规模与产品承诺不匹配</strong>；调度系统能改善公平性和利用率，但不能突破资源池的物理或供应商配额。<a href="#ref-6">Kubernetes ResourceQuota：共享资源池需要配额限制</a>；<a href="#ref-7">Kueue ClusterQueue：quota &#x2F; borrowing &#x2F; queueing</a>；<a href="#ref-8">Kueue Fair Sharing：多队列共享资源需要公平性</a>；<a href="#ref-9">Inngest Fair Multi-Tenant Queue：队列层处理公平性与并发</a></p>
+<h3 id="2-“每个-session-都要-sandbox”要继续拆语义"><a href="#2-“每个-session-都要-sandbox”要继续拆语义" class="headerlink" title="2. “每个 session 都要 sandbox”要继续拆语义"></a>2. “每个 session 都要 sandbox”要继续拆语义</h3><p>你前面提到“基本每个 session 都要”。这句话需要继续拆成三种不同含义：</p>
+<table>
+<thead>
+<tr>
+<th>语义</th>
+<th align="right">是否必须长期占用 sandbox</th>
+<th>设计含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>session 需要保存文件、上下文、浏览器状态</td>
+<td align="right">不一定</td>
+<td>状态可以外置到 workspace &#x2F; artifact &#x2F; profile store</td>
+</tr>
+<tr>
+<td>session 随时可能发起代码执行或浏览器动作</td>
+<td align="right">不一定</td>
+<td>只在 run 期间绑定 sandbox</td>
+</tr>
+<tr>
+<td>session 必须保持一个低延迟、独占、在线 runtime</td>
+<td align="right">是</td>
+<td>每个活跃 session 接近占用 1 个 sandbox</td>
+</tr>
+</tbody></table>
+<p>如果是前两种，仍然可以做“session 很多、sandbox 很少”。如果是第三种，那就要按活跃 session 数规划 sandbox 配额，10 个实例几乎一定不够。这是把 session state 外置、run 临时占用 compute 的设计推导。<a href="#ref-15">E2B Sandbox：按需创建、暂停、恢复 sandbox</a>；<a href="#ref-25">Cloudflare &#x2F; Dapr Workflows：durable workflow、history、幂等恢复</a></p>
+<p>也就是说，产品定义要从：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">session = sandbox</span><br></pre></td></tr></table></figure>
+
+<p>改成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">session = durable state + execution lease</span><br></pre></td></tr></table></figure>
+
+<p>其中 durable state 是长期的，execution lease 是临时的。</p>
+<p>如果设计成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1 session = 1 长驻 sandbox</span><br></pre></td></tr></table></figure>
+
+<p>那么容量会按乘法爆炸：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">活跃租户数 × 每租户活跃用户数 × 每用户活跃 session 数</span><br></pre></td></tr></table></figure>
+
+<p>这个数量很容易远远超过 10。也就是说，<strong>10 个 sandbox 实例不是多租户规模，而只是全局并发执行上限</strong>。<a href="#ref-6">Kubernetes ResourceQuota：共享资源池需要配额限制</a>；<a href="#ref-7">Kueue ClusterQueue：quota &#x2F; borrowing &#x2F; queueing</a>；<a href="#ref-9">Inngest Fair Multi-Tenant Queue：队列层处理公平性与并发</a></p>
+<h3 id="3-排队不是可选项，而是背压机制"><a href="#3-排队不是可选项，而是背压机制" class="headerlink" title="3. 排队不是可选项，而是背压机制"></a>3. 排队不是可选项，而是背压机制</h3><p>只要资源池有上限，就一定会出现第 11 个请求。第 11 个请求来了，系统必须有明确策略。Kueue 和 Inngest 的资料都说明，多租户共享执行池需要显式处理 admission、queue、fairness 和并发控制。<a href="#ref-7">Kueue ClusterQueue：quota &#x2F; borrowing &#x2F; queueing</a>；<a href="#ref-8">Kueue Fair Sharing：多队列共享资源需要公平性</a>；<a href="#ref-9">Inngest Fair Multi-Tenant Queue：队列层处理公平性与并发</a></p>
+<pre class="mermaid">graph TD
+    REQUEST["第 11 个请求"] --> QUEUE["accept and queue"]
+    REQUEST --> REJECT["reject with capacity error"]
+    REQUEST --> ASYNC["degrade to async mode"]
+    REQUEST --> ROUTE["route to another pool"]
+    REQUEST --> PREEMPT["preempt lower-priority work"]</pre>
+
+<p>如果不设计队列，排队并不会消失，只是会变成更差的形式：</p>
+<ul>
+<li>API 请求随机超时；</li>
+<li>用户看到“运行中”但实际没有资源；</li>
+<li>某个租户连续提交任务占满全部 sandbox；</li>
+<li>后台任务挤掉交互任务；</li>
+<li>worker 之间争抢同一个空闲实例；</li>
+<li>清理中的 sandbox 被过早复用。</li>
+</ul>
+<p>所以队列&#x2F;调度层不是“高级优化”，而是有限资源池的基本背压机制。Kueue、Kubernetes ResourceQuota、Pod Priority、Inngest fair queue 这些资料可以作为类比：<strong>共享资源池通常需要 admission control、quota、priority 和 fairness</strong>。<a href="#ref-6">Kubernetes ResourceQuota：共享资源池需要配额限制</a>；<a href="#ref-7">Kueue ClusterQueue：quota &#x2F; borrowing &#x2F; queueing</a>；<a href="#ref-8">Kueue Fair Sharing：多队列共享资源需要公平性</a>；<a href="#ref-9">Inngest Fair Multi-Tenant Queue：队列层处理公平性与并发</a>；<a href="#ref-11">Kubernetes Pod Priority：调度优先级与抢占</a></p>
+<h3 id="4-等待耗时必须产品化"><a href="#4-等待耗时必须产品化" class="headerlink" title="4. 等待耗时必须产品化"></a>4. 等待耗时必须产品化</h3><p>排队以后，等待时间会进入用户体验。调度和队列资料通常解决资源公平性，但在 SaaS Agent 产品中，这个状态还必须被产品化展示，否则用户无法区分“正在排队”和“系统卡死”。这是由队列背压机制推导出的交互设计建议。<a href="#ref-7">Kueue ClusterQueue：quota &#x2F; borrowing &#x2F; queueing</a>；<a href="#ref-8">Kueue Fair Sharing：多队列共享资源需要公平性</a>；<a href="#ref-9">Inngest Fair Multi-Tenant Queue：队列层处理公平性与并发</a></p>
+<p>对后台任务来说，等待几十秒甚至几分钟可能可接受；对交互式 Agent session 来说，等待几秒就会明显影响体验。因此不能只在后端排队，还要在产品层表达资源状态：</p>
+<pre class="mermaid">graph LR
+    QUEUED["Queued"] --> STARTING["Starting sandbox"]
+    STARTING --> RESTORING["Restoring workspace"]
+    RESTORING --> RUNNING["Running"]
+    RUNNING --> UPLOADING["Uploading artifacts"]
+    UPLOADING --> RELEASING["Releasing sandbox"]</pre>
+
+<p>建议交互式 session 至少提供：</p>
+<ul>
+<li>当前队列位置；</li>
+<li>预计等待时间；</li>
+<li>取消按钮；</li>
+<li>超时提示；</li>
+<li>降级为后台执行；</li>
+<li>任务完成后的通知；</li>
+<li>企业&#x2F;高优先级通道。</li>
+</ul>
+<p>如果做不到这些，用户会把“资源池排队”理解成“Agent 卡死”。</p>
+<h3 id="5-频繁重启有成本，但长驻也有成本"><a href="#5-频繁重启有成本，但长驻也有成本" class="headerlink" title="5. 频繁重启有成本，但长驻也有成本"></a>5. 频繁重启有成本，但长驻也有成本</h3><p>每次新建 sandbox 可能包含：</p>
+<pre class="mermaid">graph TD
+    CREATE["create VM / container"] --> MOUNT["mount filesystem"]
+    MOUNT --> IMAGE["pull image"]
+    IMAGE --> WORKSPACE["restore workspace"]
+    WORKSPACE --> DEPS["install dependencies"]
+    DEPS --> RUNTIME["start browser / runtime"]
+    RUNTIME --> CRED["inject scoped credentials"]
+    CRED --> HEALTH["run health check"]</pre>
+
+<p>所以频繁重启会带来冷启动延迟，也会增加镜像拉取、依赖安装和状态恢复成本。warm pool、snapshot、pause&#x2F;resume 这些机制都存在，正是因为冷启动和状态恢复有成本。<a href="#ref-10">OpenKruise Warm Pool：预创建资源降低启动延迟</a>；<a href="#ref-13">Firecracker Snapshot &#x2F; Jailer：snapshot 恢复与隔离增强</a>；<a href="#ref-15">E2B Sandbox：按需创建、暂停、恢复 sandbox</a></p>
+<p>但反过来，让每个 session 都长驻 sandbox 也有成本；AWS Lambda lifecycle 文档说明执行环境复用会保留状态，SaaS Lens 也提醒共享资源池会带来 noisy neighbor 和 blast radius 风险。<a href="#ref-3">AWS Lambda Execution Lifecycle：复用会保留 &#x2F;tmp 与进程内状态</a>；<a href="#ref-4">AWS SaaS Lens Pool Isolation：共享池有 noisy neighbor &#x2F; blast radius 风险</a></p>
+<ul>
+<li>空闲 session 占住实例；</li>
+<li>内存、磁盘、浏览器进程长期占用；</li>
+<li>secret、cookie、缓存残留时间变长；</li>
+<li>依赖状态逐渐漂移；</li>
+<li>失败恢复更依赖“这个 sandbox 还活着”；</li>
+<li>10 个实例很快被 idle session 吃完。</li>
+</ul>
+<p>所以这里不是“重启好”或“长驻好”，而是要有分层策略：</p>
+<table>
+<thead>
+<tr>
+<th>策略</th>
+<th>适用场景</th>
+<th>代价</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>每次 run 新建</td>
+<td>不可信、跨租户、高安全</td>
+<td>冷启动高</td>
+</tr>
+<tr>
+<td>同租户复用</td>
+<td>同 trust boundary、交互式、多轮任务</td>
+<td>需要严格 reset 和健康检查</td>
+</tr>
+<tr>
+<td>idle timeout 后释放</td>
+<td>大多数 SaaS session</td>
+<td>用户再次运行时要恢复</td>
+</tr>
+<tr>
+<td>pause &#x2F; resume</td>
+<td>需要保留 runtime 状态</td>
+<td>占用快照&#x2F;磁盘资源</td>
+</tr>
+<tr>
+<td>snapshot restore</td>
+<td>高并发短任务</td>
+<td>需要维护基础镜像和快照兼容性</td>
+</tr>
+<tr>
+<td>warm pool</td>
+<td>降低启动延迟</td>
+<td>占用一部分固定配额</td>
+</tr>
+</tbody></table>
+<p>Firecracker snapshot、E2B pause&#x2F;resume、OpenKruise warm pool 都是在不同层面降低“重启成本”，但它们都没有消除并发上限。<a href="#ref-10">OpenKruise Warm Pool：预创建资源降低启动延迟</a>；<a href="#ref-13">Firecracker Snapshot &#x2F; Jailer：snapshot 恢复与隔离增强</a>；<a href="#ref-15">E2B Sandbox：按需创建、暂停、恢复 sandbox</a></p>
+<h3 id="6-清理-sandbox-内容可以切换，但要区分安全等级"><a href="#6-清理-sandbox-内容可以切换，但要区分安全等级" class="headerlink" title="6. 清理 sandbox 内容可以切换，但要区分安全等级"></a>6. 清理 sandbox 内容可以切换，但要区分安全等级</h3><p>“能不能清理 sandbox 内容后切换 session？”答案是：<strong>可以做，但不能把它当成跨租户强隔离</strong>。</p>
+<p>清理复用至少要清：</p>
+<pre class="mermaid">graph TD
+    RESET["soft reset before reuse"] --> WORKSPACE["workspace files"]
+    RESET --> TEMP["temporary files"]
+    RESET --> PROCESS["process tree"]
+    RESET --> PORTS["open ports"]
+    RESET --> JOBS["background jobs"]
+    RESET --> ENV["environment variables"]
+    RESET --> CRED["short-lived credentials"]
+    RESET --> BROWSER["browser profile"]
+    RESET --> COOKIES["cookies / localStorage"]
+    RESET --> CACHE["package caches"]
+    RESET --> NETWORK["network namespace / egress policy"]
+    RESET --> VOLUMES["mounted volumes"]
+    RESET --> TOOLS["tool call state"]</pre>
+
+<p>即使这样，也只能算 soft reset。它适合：</p>
+<ul>
+<li>同一 tenant；</li>
+<li>同一 user；</li>
+<li>同一 session 的连续 run；</li>
+<li>低风险代码；</li>
+<li>明确不处理敏感数据；</li>
+<li>可接受残留风险的内部工具。</li>
+</ul>
+<p>它不适合：</p>
+<ul>
+<li>跨 tenant；</li>
+<li>执行任意用户代码；</li>
+<li>带客户凭证；</li>
+<li>带浏览器登录态；</li>
+<li>合规要求高；</li>
+<li>强安全隔离场景。</li>
+</ul>
+<p>AWS Lambda 的 tenant isolation 模型很好地说明了这个边界：平台允许同 tenant 的执行环境复用，但不会跨 tenant 复用同一个执行环境。<a href="#ref-1">AWS Lambda Tenant Isolation：tenant 作为执行环境隔离边界</a> 这不是因为 <code>rm -rf /tmp</code> 做得更好，而是因为隔离边界和路由策略从一开始就按 tenant 设计。</p>
+<h3 id="7-更实用的隔离分级"><a href="#7-更实用的隔离分级" class="headerlink" title="7. 更实用的隔离分级"></a>7. 更实用的隔离分级</h3><p>可以把 sandbox 复用策略分成四级：</p>
+<table>
+<thead>
+<tr>
+<th>级别</th>
+<th>策略</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>L0：进程级清理</td>
+<td>杀进程、清目录、清环境变量</td>
+<td>内部低风险任务</td>
+</tr>
+<tr>
+<td>L1：同租户复用</td>
+<td>tenant sticky sandbox，跨 user&#x2F;session 受策略限制</td>
+<td>同租户交互式 Agent</td>
+</tr>
+<tr>
+<td>L2：快照恢复</td>
+<td>从可信 snapshot 恢复文件系统和内存基线</td>
+<td>不可信短任务、高频执行</td>
+</tr>
+<tr>
+<td>L3：销毁重建</td>
+<td>每次跨租户或高风险任务新建隔离环境</td>
+<td>强隔离、多租户 SaaS、客户代码</td>
+</tr>
+</tbody></table>
+<p>跨租户默认应该从 L2 或 L3 起步，而不是 L0。AWS Lambda tenant isolation、Kubernetes multi-tenancy、gVisor&#x2F;Kata&#x2F;Firecracker 的共同启发是：跨 tenant 边界应优先依赖明确隔离边界，而不是事后清理脚本。<a href="#ref-1">AWS Lambda Tenant Isolation：tenant 作为执行环境隔离边界</a>；<a href="#ref-2">AWS Lambda Tenant Isolation 配置：隔离在生命周期早期绑定</a>；<a href="#ref-5">Kubernetes Multi-tenancy：多租户需要控制面&#x2F;数据面&#x2F;工作负载隔离</a>；<a href="#ref-12">gVisor Security Model：sandbox 降低宿主机攻击面</a>；<a href="#ref-13">Firecracker Snapshot &#x2F; Jailer：snapshot 恢复与隔离增强</a>；<a href="#ref-14">Kata Containers：用 VM sandbox 增强容器隔离</a></p>
+<h3 id="8-最终判断：如果每个活跃-session-都要独占-sandbox，10-个就是不够"><a href="#8-最终判断：如果每个活跃-session-都要独占-sandbox，10-个就是不够" class="headerlink" title="8. 最终判断：如果每个活跃 session 都要独占 sandbox，10 个就是不够"></a>8. 最终判断：如果每个活跃 session 都要独占 sandbox，10 个就是不够</h3><p>更合理的建模是：</p>
+<pre class="mermaid">graph TD
+    SESSION["Session 可以很多"] --> RUN["Run / Execution 临时绑定 Sandbox"]
+    SANDBOX["Sandbox 很少"] --> RUN
+    RUN --> RELEASE["执行结束后释放、重置、休眠或销毁"]</pre>
+
+<p>这可以参考 Serverless &#x2F; Batch &#x2F; Kubernetes 的资源管理思路：执行环境可以 warm reuse，但并发资源仍需要调度层、配额层和隔离层共同管理。AWS Lambda 的执行环境生命周期文档明确说明，执行环境可能在多次调用之间复用，<code>/tmp</code>、进程内对象、连接等状态可能保留，因此不能把执行环境复用等同于天然干净状态。<a href="#ref-3">AWS Lambda Execution Lifecycle：复用会保留 &#x2F;tmp 与进程内状态</a>；<a href="#ref-6">Kubernetes ResourceQuota：共享资源池需要配额限制</a>；<a href="#ref-7">Kueue ClusterQueue：quota &#x2F; borrowing &#x2F; queueing</a>；<a href="#ref-8">Kueue Fair Sharing：多队列共享资源需要公平性</a></p>
+<p>如果业务上真的要求：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">每个活跃 session 都有一个独立、在线、低延迟 sandbox</span><br></pre></td></tr></table></figure>
+
+<p>那就不要试图用调度层“变魔术”。这时应该直接承认配额不够，并做：</p>
+<ul>
+<li>提高供应商配额；</li>
+<li>多主账号 &#x2F; 多区域资源池；</li>
+<li>企业租户专属池；</li>
+<li>免费租户严格 idle timeout；</li>
+<li>限制单用户多开 session；</li>
+<li>把 session 从“长驻 runtime”改成“可恢复 workspace”；</li>
+<li>对交互式和后台任务分池。</li>
+</ul>
+<p>一句话：</p>
+<blockquote>
+<p>Scheduler 解决公平性，queue 解决背压，warm pool 解决冷启动，snapshot 解决恢复速度；但它们都不能把 10 个 sandbox 实例变成无限并发。</p>
+</blockquote>
+<hr>
+<h2 id="十六、有限-Sandbox-下的推荐架构"><a href="#十六、有限-Sandbox-下的推荐架构" class="headerlink" title="十六、有限 Sandbox 下的推荐架构"></a>十六、有限 Sandbox 下的推荐架构</h2><p>当 sandbox 实例配额很少时，系统里建议出现一个明确的 <strong>Sandbox Scheduler &#x2F; Sandbox Manager</strong>。这是把 Kubernetes ResourceQuota、Kueue ClusterQueue&#x2F;Fair Sharing、Pod Priority 和多租户队列思想应用到 sandbox 资源池后的设计推导；它们是资源调度参考，不是 SaaS Agent 安全模型的完整证明。<a href="#ref-6">Kubernetes ResourceQuota：共享资源池需要配额限制</a>；<a href="#ref-7">Kueue ClusterQueue：quota &#x2F; borrowing &#x2F; queueing</a>；<a href="#ref-8">Kueue Fair Sharing：多队列共享资源需要公平性</a>；<a href="#ref-9">Inngest Fair Multi-Tenant Queue：队列层处理公平性与并发</a>；<a href="#ref-11">Kubernetes Pod Priority：调度优先级与抢占</a></p>
+<p>推荐结构：</p>
+<pre class="mermaid">graph TD
+    ACTOR["Tenant / User / Session"] --> ORCH["Agent Orchestrator"]
+    ORCH --> SCHED["Sandbox Scheduler"]
+    SCHED --> GLOBAL["Global Quota"]
+    SCHED --> TENANT["Tenant Quota"]
+    SCHED --> USER["User Quota"]
+    SCHED --> SESSION["Session / Run Quota"]
+    SCHED --> FAIR["Priority / Fairness"]
+    SCHED --> QUEUE["Queue / Timeout / Cancel"]
+
+    ORCH --> WARM["Warm Pool"]
+    ORCH --> SNAPSHOT["Snapshot / Workspace Store"]
+    ORCH --> ARTIFACT["Artifact Store"]
+    ORCH --> AUDIT["Audit Log"]</pre>
+
+<h3 id="1-队列和调度层是必须的"><a href="#1-队列和调度层是必须的" class="headerlink" title="1. 队列和调度层是必须的"></a>1. 队列和调度层是必须的</h3><p>如果 10 个 sandbox 都被占用，第 11 个 run 只有四种结果：</p>
+<ul>
+<li>排队等待；</li>
+<li>直接失败；</li>
+<li>降级为非交互模式；</li>
+<li>进入其他资源池。</li>
+</ul>
+<p>如果没有显式队列，系统不会“自动公平”，只会表现为随机超时、资源争抢或某个租户占满全部实例。Kueue 的 ClusterQueue &#x2F; Fair Sharing 文档就是一个很好的类比：共享资源池需要 nominal quota、borrowing &#x2F; lending、队列策略和公平调度规则。<a href="#ref-7">Kueue ClusterQueue：quota &#x2F; borrowing &#x2F; queueing</a>；<a href="#ref-8">Kueue Fair Sharing：多队列共享资源需要公平性</a></p>
+<p>Inngest 的多租户队列文章也说明了同一个问题：多租户任务系统不能只靠普通 worker 拉取任务，否则容易出现某个函数、账号或队列独占 worker 的情况，需要在队列层实现公平性、并发控制和低延迟调度。<a href="#ref-9">Inngest Fair Multi-Tenant Queue：队列层处理公平性与并发</a></p>
+<h3 id="2-配额要分层，而不是只看全局-10-个"><a href="#2-配额要分层，而不是只看全局-10-个" class="headerlink" title="2. 配额要分层，而不是只看全局 10 个"></a>2. 配额要分层，而不是只看全局 10 个</h3><p>推荐至少有四层配额：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">global_sandbox_limit = 10</span><br><span class="line">tenant_concurrency_limit</span><br><span class="line">user_concurrency_limit</span><br><span class="line">session_concurrency_limit</span><br></pre></td></tr></table></figure>
+
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">全局最多 10 个 sandbox</span><br><span class="line">租户 A 最多 4 个并发</span><br><span class="line">租户 B 最多 2 个并发</span><br><span class="line">单用户最多 2 个并发</span><br><span class="line">单 session 最多 1 个活跃 run</span><br></pre></td></tr></table></figure>
+
+<p>Kubernetes ResourceQuota 的官方文档把这个问题讲得很直接：多个团队共享固定节点时，一个团队可能消耗超过公平份额，所以需要 namespace 级资源配额来限制总资源消耗。<a href="#ref-6">Kubernetes ResourceQuota：共享资源池需要配额限制</a> SaaS sandbox 池可以参考这个资源配额模型，只是资源对象从 Pod &#x2F; CPU &#x2F; Memory 换成了 Sandbox Instance，并且还要额外处理凭证、浏览器状态和外部副作用。</p>
+<h3 id="3-交互式-session-和后台-run-要分池"><a href="#3-交互式-session-和后台-run-要分池" class="headerlink" title="3. 交互式 session 和后台 run 要分池"></a>3. 交互式 session 和后台 run 要分池</h3><p>不是所有 sandbox 请求都一样。</p>
+<p>可以分成：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>特点</th>
+<th>策略</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>交互式 session</td>
+<td>用户正在等结果，延迟敏感</td>
+<td>高优先级、短超时、可使用 warm pool</td>
+</tr>
+<tr>
+<td>后台任务</td>
+<td>用户不盯着屏幕等</td>
+<td>可排队、可重试、可低优先级</td>
+</tr>
+<tr>
+<td>长任务</td>
+<td>容易长期占用 sandbox</td>
+<td>最大运行时长、checkpoint、可中断恢复</td>
+</tr>
+<tr>
+<td>免费租户任务</td>
+<td>成本敏感</td>
+<td>更低并发、更长排队、更短 idle timeout</td>
+</tr>
+<tr>
+<td>企业租户任务</td>
+<td>SLA 敏感</td>
+<td>保留并发、独立 quota、可选专属池</td>
+</tr>
+</tbody></table>
+<p>这和 Kubernetes PriorityClass &#x2F; Pod Priority 的思路一致：调度队列需要知道哪些任务应该优先进入资源池，哪些任务可以等待，哪些任务可以被延迟或抢占。<a href="#ref-11">Kubernetes Pod Priority：调度优先级与抢占</a></p>
+<h3 id="4-Warm-Pool-只能降低冷启动，不能增加容量"><a href="#4-Warm-Pool-只能降低冷启动，不能增加容量" class="headerlink" title="4. Warm Pool 只能降低冷启动，不能增加容量"></a>4. Warm Pool 只能降低冷启动，不能增加容量</h3><p>Warm pool 的作用是提前准备好若干空闲 sandbox，让新的 run 可以快速绑定。</p>
+<p>例如：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">10 个总配额</span><br><span class="line">2 个保持 warm idle</span><br><span class="line">8 个按需运行</span><br></pre></td></tr></table></figure>
+
+<p>它能降低冷启动时间，但不能突破 10 个并发上限。OpenKruise Warm Pool 文档展示了类似机制：提前创建一组 standby 资源，业务需要时再 claim，从而降低启动延迟。<a href="#ref-10">OpenKruise Warm Pool：预创建资源降低启动延迟</a></p>
+<p>Firecracker 的 snapshot &#x2F; restore 则是另一种降低冷启动的方式：把已经初始化好的 microVM 状态快照化，需要时快速恢复。<a href="#ref-13">Firecracker Snapshot &#x2F; Jailer：snapshot 恢复与隔离增强</a> 对 sandbox 平台来说，这比“每次从零启动完整环境”更适合高频短任务。</p>
+<h3 id="5-Session-状态必须外置"><a href="#5-Session-状态必须外置" class="headerlink" title="5. Session 状态必须外置"></a>5. Session 状态必须外置</h3><p>如果每个 session 都依赖一个永远活着的 sandbox，那么配额很快耗尽，恢复也很脆弱。</p>
+<p>更稳的方式是：</p>
+<pre class="mermaid">graph LR
+    SESSION["Session State"] --> METADATA["session metadata"]
+    METADATA --> DB["database"]
+    SESSION --> PLAN["agent plan / cursor"]
+    PLAN --> STATE["workflow / state store"]
+    SESSION --> HISTORY["execution history"]
+    HISTORY --> LOG["workflow event history / execution log"]
+    SESSION --> WORKSPACE["workspace files"]
+    WORKSPACE --> OBJECT["object store / volume / git branch"]
+    SESSION --> UPLOADS["user uploads"]
+    UPLOADS --> FILES["user file store / artifact store"]
+    SESSION --> BROWSER["browser profile"]
+    BROWSER --> PROFILE["encrypted profile store"]
+    SESSION --> ARTIFACTS["execution artifacts"]
+    ARTIFACTS --> ARTIFACT_STORE["artifact store"]
+    SESSION --> RUNTIME["sandbox runtime"]
+    RUNTIME --> COMPUTE["disposable / resumable compute / runtime snapshot"]</pre>
+
+<p>这样 session 可以很多，但真正占用 sandbox 的只有正在执行的 run。E2B 的 sandbox 文档可以作为“会话级 sandbox 可以暂停、恢复、保留状态”的参考，但这类能力仍然需要配额和生命周期管理，不能等同于无限长驻。<a href="#ref-15">E2B Sandbox：按需创建、暂停、恢复 sandbox</a></p>
+<h3 id="6-清理后切换-session-可以做，但不能当成跨租户强隔离"><a href="#6-清理后切换-session-可以做，但不能当成跨租户强隔离" class="headerlink" title="6. 清理后切换 session 可以做，但不能当成跨租户强隔离"></a>6. 清理后切换 session 可以做，但不能当成跨租户强隔离</h3><p>这是最容易误判的地方。</p>
+<p>在同一租户、同一 trust boundary、低风险场景下，可以考虑 sandbox 复用：</p>
+<pre class="mermaid">graph TD
+    KILL["kill processes"] --> WORKSPACE["clear workspace"]
+    WORKSPACE --> ENV["clear env vars"]
+    ENV --> NETWORK["reset network rules"]
+    NETWORK --> TEMP["clear temp files"]
+    TEMP --> CRED["rotate short-lived credentials"]
+    CRED --> HEALTH["health check"]
+    HEALTH --> POOL["return to pool"]</pre>
+
+<p>但跨租户场景不能只靠 <code>rm -rf workspace</code>。原因是执行环境里可能残留：</p>
+<ul>
+<li><code>/tmp</code> 文件；</li>
+<li>内存对象；</li>
+<li>后台进程；</li>
+<li>打开的 socket；</li>
+<li>浏览器 cookie &#x2F; localStorage；</li>
+<li>包缓存；</li>
+<li>语言运行时状态；</li>
+<li>用户凭证或短期 token；</li>
+<li>网络连接池。</li>
+</ul>
+<p>AWS Lambda 的 tenant isolation 文档正是为了解决这个问题：同一个函数服务多个租户时，执行环境会按 tenant id 隔离，<strong>同一 tenant 的调用可以复用执行环境，不同 tenant 的调用不会复用同一个执行环境</strong>。<a href="#ref-1">AWS Lambda Tenant Isolation：tenant 作为执行环境隔离边界</a> 而且这类隔离通常是生命周期早期配置，不是运行中随便打开的开关。<a href="#ref-2">AWS Lambda Tenant Isolation 配置：隔离在生命周期早期绑定</a> 这说明“同租户 warm reuse”和“跨租户复用”在安全语义上不是一回事。</p>
+<p>Kubernetes 多租户文档也提醒，容器共享宿主机内核，隔离强度取决于安全边界；对不可信工作负载，通常需要更强的 sandboxed containers 或 VM 级隔离。<a href="#ref-5">Kubernetes Multi-tenancy：多租户需要控制面&#x2F;数据面&#x2F;工作负载隔离</a> gVisor、Kata Containers、Firecracker 这类方案，本质上都是在增强这个隔离边界。<a href="#ref-12">gVisor Security Model：sandbox 降低宿主机攻击面</a>；<a href="#ref-13">Firecracker Snapshot &#x2F; Jailer：snapshot 恢复与隔离增强</a>；<a href="#ref-14">Kata Containers：用 VM sandbox 增强容器隔离</a></p>
+<h3 id="7-什么时候-10-个就是根本不够"><a href="#7-什么时候-10-个就是根本不够" class="headerlink" title="7. 什么时候 10 个就是根本不够"></a>7. 什么时候 10 个就是根本不够</h3><p>如果产品承诺的是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">每个活跃 session 都有一个独立、低延迟、随时可运行的 sandbox</span><br></pre></td></tr></table></figure>
+
+<p>那么 10 个实例就是结构性不足，而不是调度层能完全解决的问题。</p>
+<p>这时只有几类解法：</p>
+<ul>
+<li>向供应商申请更高 sandbox 实例配额；</li>
+<li>多主账号 &#x2F; 多区域 &#x2F; 多资源池分片；</li>
+<li>企业租户提供专属池；</li>
+<li>免费租户限制并发和 idle 时间；</li>
+<li>把产品语义从“session 长驻 sandbox”改成“run 临时占用 sandbox”；</li>
+<li>用 pause &#x2F; resume &#x2F; snapshot 降低恢复成本；</li>
+<li>把 session 状态外置，避免把 sandbox 当数据库。</li>
+</ul>
+<p>一句话：</p>
+<blockquote>
+<p>Scheduler 解决公平性和利用率，warm pool 解决冷启动，snapshot 解决恢复速度，但它们都不能把 10 个并发实例变成无限并发。</p>
+</blockquote>
+<hr>
+<h2 id="十七、参考文献"><a href="#十七、参考文献" class="headerlink" title="十七、参考文献"></a>十七、参考文献</h2><p>以下仅保留完整出处。正文中的引用链接已经直接写明该来源支撑的具体内容。</p>
+<ul>
+<li><a id="ref-1"></a>[1] <a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/lambda/latest/dg/tenant-isolation.html">AWS Lambda Tenant Isolation</a></li>
+<li><a id="ref-2"></a>[2] <a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/lambda/latest/dg/tenant-isolation-configure.html">Enabling Tenant Isolation for Lambda Functions</a></li>
+<li><a id="ref-3"></a>[3] <a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtime-environment.html">AWS Lambda Execution Environment Lifecycle</a></li>
+<li><a id="ref-4"></a>[4] <a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/wellarchitected/latest/saas-lens/pool-isolation.html">AWS SaaS Lens - Pool Isolation</a></li>
+<li><a id="ref-5"></a>[5] <a target="_blank" rel="noopener" href="https://kubernetes.io/docs/concepts/security/multi-tenancy/">Kubernetes Multi-tenancy</a></li>
+<li><a id="ref-6"></a>[6] <a target="_blank" rel="noopener" href="https://kubernetes.io/docs/concepts/policy/resource-quotas/">Kubernetes Resource Quotas</a></li>
+<li><a id="ref-7"></a>[7] <a target="_blank" rel="noopener" href="https://kueue.sigs.k8s.io/docs/concepts/cluster_queue/">Kueue ClusterQueue</a></li>
+<li><a id="ref-8"></a>[8] <a target="_blank" rel="noopener" href="https://kueue.sigs.k8s.io/docs/concepts/fair_sharing/">Kueue Fair Sharing</a></li>
+<li><a id="ref-9"></a>[9] <a target="_blank" rel="noopener" href="https://www.inngest.com/blog/building-the-inngest-queue-pt-i-fairness-multi-tenancy">Inngest: Building a Fair Multi-Tenant Queue</a></li>
+<li><a id="ref-10"></a>[10] <a target="_blank" rel="noopener" href="https://openkruise.io/kruiseagents/user-manuals/warmpool-management">OpenKruise Warm Pool Management</a></li>
+<li><a id="ref-11"></a>[11] <a target="_blank" rel="noopener" href="https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/">Kubernetes Pod Priority and Preemption</a></li>
+<li><a id="ref-12"></a>[12] <a target="_blank" rel="noopener" href="https://gvisor.dev/docs/architecture_guide/security/">gVisor Security Model</a></li>
+<li><a id="ref-13"></a>[13] <a target="_blank" rel="noopener" href="https://github.com/firecracker-microvm/firecracker/blob/main/docs/snapshotting/snapshot-support.md">Firecracker Snapshot Support &#x2F; Jailer</a></li>
+<li><a id="ref-14"></a>[14] <a target="_blank" rel="noopener" href="https://github.com/kata-containers/kata-containers/blob/main/docs/design/architecture/README.md">Kata Containers Architecture</a></li>
+<li><a id="ref-15"></a>[15] <a target="_blank" rel="noopener" href="https://e2b.dev/docs/sandbox">E2B Sandbox Documentation</a></li>
+<li><a id="ref-16"></a>[16] <a target="_blank" rel="noopener" href="https://developers.openai.com/api/docs/guides/tools-code-interpreter">OpenAI Code Interpreter</a></li>
+<li><a id="ref-17"></a>[17] <a target="_blank" rel="noopener" href="https://docs.browserbase.com/">Browserbase Documentation</a></li>
+<li><a id="ref-18"></a>[18] <a target="_blank" rel="noopener" href="https://cheatsheetseries.owasp.org/cheatsheets/AI_Agent_Security_Cheat_Sheet.html">OWASP AI Agent Security Cheat Sheet</a></li>
+<li><a id="ref-19"></a>[19] <a target="_blank" rel="noopener" href="https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html">OWASP LLM Prompt Injection Prevention</a></li>
+<li><a id="ref-20"></a>[20] <a target="_blank" rel="noopener" href="https://cheatsheetseries.owasp.org/cheatsheets/Secure_Coding_with_AI_Cheat_Sheet.html">OWASP Secure Coding with AI Cheat Sheet</a></li>
+<li><a id="ref-21"></a>[21] <a target="_blank" rel="noopener" href="https://docs.cloud.google.com/agent-builder/agent-engine/agent-identity">Google Cloud Agent Identity</a></li>
+<li><a id="ref-22"></a>[22] <a target="_blank" rel="noopener" href="https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html">OWASP SSRF Prevention Cheat Sheet</a></li>
+<li><a id="ref-23"></a>[23] <a target="_blank" rel="noopener" href="https://docs.cloud.google.com/workflows/docs/security-overview">Google Cloud Workflows Security Overview</a></li>
+<li><a id="ref-24"></a>[24] <a target="_blank" rel="noopener" href="https://developers.cloudflare.com/agents/guides/human-in-the-loop/">Cloudflare Human-in-the-loop Patterns</a></li>
+<li><a id="ref-25"></a>[25] <a target="_blank" rel="noopener" href="https://developers.cloudflare.com/workflows/build/rules-of-workflows">Cloudflare Rules of Workflows</a></li>
+<li><a id="ref-26"></a>[26] <a target="_blank" rel="noopener" href="https://e2b.dev/docs/sdk-reference/code-interpreter-js-sdk/v2.3.3/sandbox">E2B Code Interpreter Sandbox Reference</a></li>
+<li><a id="ref-27"></a>[27] <a target="_blank" rel="noopener" href="https://docs.e2b.dev/">E2B Docs</a></li>
+<li><a id="ref-28"></a>[28] <a target="_blank" rel="noopener" href="https://docs.cubesandbox.ai/">CubeSandbox Docs</a></li>
+<li><a id="ref-29"></a>[29] <a target="_blank" rel="noopener" href="https://docs.browserbase.com/fundamentals/manage-browser-session">Browserbase Manage Browser Session</a></li>
+<li><a id="ref-30"></a>[30] <a target="_blank" rel="noopener" href="https://developers.openai.com/api/docs/guides/tools-code-interpreter">OpenAI Code Interpreter</a></li>
+<li><a id="ref-31"></a>[31] <a target="_blank" rel="noopener" href="https://e2b.dev/docs/sandbox/persistence">E2B Sandbox Persistence</a></li>
+<li><a id="ref-32"></a>[32] <a target="_blank" rel="noopener" href="https://e2b.dev/docs/sandbox/snapshots">E2B Sandbox Snapshots</a></li>
+<li><a id="ref-33"></a>[33] <a target="_blank" rel="noopener" href="https://github.com/firecracker-microvm/firecracker/blob/main/docs/snapshotting/handling-page-faults-on-snapshot-resume.md">Firecracker Snapshot Page Fault Handling</a></li>
+<li><a id="ref-34"></a>[34] <a target="_blank" rel="noopener" href="https://docs.docker.com/reference/cli/docker/checkpoint/">Docker checkpoint CLI</a></li>
+<li><a id="ref-35"></a>[35] <a target="_blank" rel="noopener" href="https://playwright.dev/docs/api/class-browsertype">Playwright BrowserType API</a></li>
+<li><a id="ref-36"></a>[36] <a target="_blank" rel="noopener" href="https://chromium.googlesource.com/chromium/src/+/HEAD/docs/user_data_dir.md">Chromium User Data Directory</a></li>
+<li><a id="ref-37"></a>[37] <a target="_blank" rel="noopener" href="https://modal.com/docs/guide/sandbox">Modal Sandboxes</a></li>
+<li><a id="ref-38"></a>[38] <a target="_blank" rel="noopener" href="https://www.daytona.io/docs">Daytona Docs</a></li>
+</ul>
+<h2 id="十八、最终判断"><a href="#十八、最终判断" class="headerlink" title="十八、最终判断"></a>十八、最终判断</h2><p>SaaS Agent 使用 Sandbox 的重点不是“选 Docker、KVM 还是 Firecracker”。</p>
+<p>真正的问题是：</p>
+<blockquote>
+<p>Agent 的每一次行动，是否都被放进了可控、可恢复、可审计的执行边界里？</p>
+</blockquote>
+<p>最实用的原则是：</p>
+<pre class="mermaid">graph TD
+    THINK["Think freely"] --> ACT["Act through controlled sandboxed workflows"]
+    ACT --> STATE["Persist state outside the sandbox"]
+    ACT --> APPROVE["Approve dangerous actions"]
+    ACT --> AUDIT["Audit everything that crosses a boundary"]</pre>
+
+<p>这才是 SaaS Agent 场景下 Sandbox 的正确使用方式。</p>
+
+    </article>
+    <!-- license -->
+        <div class="license-wrapper">
+            <p>Author：<a href="https://edison-a-n.github.io">Edison</a>
+            <p>Link：<a href="https://edison-a-n.github.io/2026/05/12/saas-agent-sandbox-research/">https://edison-a-n.github.io/2026/05/12/saas-agent-sandbox-research/</a>
+            <p>Publish date：<a href="https://edison-a-n.github.io/2026/05/12/saas-agent-sandbox-research/">May 12th 2026, 12:00:00 am</a>
+            <p>Update date：<a href="https://edison-a-n.github.io/2026/05/12/saas-agent-sandbox-research/">May 12th 2026, 10:56:30 pm</a>
+            <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+        </li>
+        <li class="previous">
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2026/05/08/agent-engineer-interview-2026/" title="2026 Agent 开发工程师面试指南：从架构、MCP 到生产化">
+                    <div class="prevTitle">2026 Agent 开发工程师面试指南：从架构、MCP 到生产化</div>
+                </a>
+        </li>
+    </ul>
+    <!-- comment -->
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+            
+            
+            
+            <!-- utteranc评论 -->
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+            
+            
+            
+        </div>
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    <!-- Mathjax -->
+</main>
+
+                <!-- profile -->
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+        <div class="social">
+                            <a href="mailto:zhangn661@gmail.com" class="iconfont-archer email" title="email" ></a>
+                <a href="//github.com/Edison-A-N" class="iconfont-archer github" target="_blank" title="github"></a>
+
+        </div>
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    <!-- 不蒜子  -->
+        <div class="busuanzi-container">
+                <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+        </div>
+</footer>
+
+        </div>
+        <!-- toc -->
+            <div class="toc-wrapper toc-wrapper-loding" style=    top:50vh;
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%A0%B8%E5%BF%83%E7%BB%93%E8%AE%BA"><span class="toc-number">1.</span> <span class="toc-text">一、核心结论</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E9%9C%80%E8%A6%81-Sandbox"><span class="toc-number">2.</span> <span class="toc-text">二、什么时候需要 Sandbox</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9C%80%E8%A6%81-Sandbox-%E7%9A%84%E5%9C%BA%E6%99%AF"><span class="toc-number">2.1.</span> <span class="toc-text">需要 Sandbox 的场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8D%E4%B8%80%E5%AE%9A%E9%9C%80%E8%A6%81-Sandbox-%E7%9A%84%E5%9C%BA%E6%99%AF"><span class="toc-number">2.2.</span> <span class="toc-text">不一定需要 Sandbox 的场景</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Sandbox-%E5%9C%A8%E4%BA%A7%E5%93%81%E9%87%8C%E7%9A%84%E4%BD%8D%E7%BD%AE"><span class="toc-number">3.</span> <span class="toc-text">三、Sandbox 在产品里的位置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Orchestrator-%E8%B4%9F%E8%B4%A3%E4%BB%80%E4%B9%88"><span class="toc-number">3.1.</span> <span class="toc-text">Orchestrator 负责什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Sandbox-%E8%B4%9F%E8%B4%A3%E4%BB%80%E4%B9%88"><span class="toc-number">3.2.</span> <span class="toc-text">Sandbox 负责什么</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E4%B8%80%E6%AC%A1-Agent-%E4%BB%BB%E5%8A%A1%E5%BA%94%E8%AF%A5%E6%80%8E%E4%B9%88%E4%BD%BF%E7%94%A8-Sandbox"><span class="toc-number">4.</span> <span class="toc-text">四、一次 Agent 任务应该怎么使用 Sandbox</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81Sandbox-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E6%80%8E%E4%B9%88%E8%AE%BE%E8%AE%A1"><span class="toc-number">5.</span> <span class="toc-text">五、Sandbox 生命周期怎么设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E7%9F%AD%E4%BB%BB%E5%8A%A1-Sandbox"><span class="toc-number">5.1.</span> <span class="toc-text">1. 短任务 Sandbox</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E4%BC%9A%E8%AF%9D%E7%BA%A7-Sandbox"><span class="toc-number">5.2.</span> <span class="toc-text">2. 会话级 Sandbox</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E9%A1%B9%E7%9B%AE%E7%BA%A7-Workspace"><span class="toc-number">5.3.</span> <span class="toc-text">3. 项目级 Workspace</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E6%8C%81%E7%BB%AD%E8%BF%90%E8%A1%8C-Agent%EF%BC%9A%E7%8A%B6%E6%80%81%E6%80%8E%E4%B9%88%E4%BF%9D%E6%8C%81"><span class="toc-number">6.</span> <span class="toc-text">六、持续运行 Agent：状态怎么保持</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E7%B1%BB%E7%8A%B6%E6%80%81"><span class="toc-number">6.1.</span> <span class="toc-text">三类状态</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-Agent-%E6%8E%A7%E5%88%B6%E7%8A%B6%E6%80%81"><span class="toc-number">6.1.1.</span> <span class="toc-text">1. Agent 控制状态</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-Sandbox-%E6%89%A7%E8%A1%8C%E7%8A%B6%E6%80%81"><span class="toc-number">6.1.2.</span> <span class="toc-text">2. Sandbox 执行状态</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#Snapshot-x2F-Checkpoint-%E5%88%B0%E5%BA%95%E5%BA%94%E8%AF%A5%E4%BF%9D%E5%AD%98%E4%BB%80%E4%B9%88"><span class="toc-number">6.1.2.1.</span> <span class="toc-text">Snapshot &#x2F; Checkpoint 到底应该保存什么</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-%E5%A4%96%E9%83%A8%E5%89%AF%E4%BD%9C%E7%94%A8%E7%8A%B6%E6%80%81"><span class="toc-number">6.1.3.</span> <span class="toc-text">3. 外部副作用状态</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A8%E8%8D%90%E6%81%A2%E5%A4%8D%E6%B5%81%E7%A8%8B"><span class="toc-number">6.2.</span> <span class="toc-text">推荐恢复流程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%B7%A5%E5%85%B7%E5%92%8C%E5%87%AD%E8%AF%81%E6%80%8E%E4%B9%88%E6%8E%A5%E5%85%A5-Sandbox"><span class="toc-number">7.</span> <span class="toc-text">七、工具和凭证怎么接入 Sandbox</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8D%E8%A6%81%E6%8A%8A%E9%95%BF%E6%9C%9F-Secret-%E6%94%BE%E8%BF%9B-Sandbox"><span class="toc-number">7.1.</span> <span class="toc-text">不要把长期 Secret 放进 Sandbox</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Tool-Gateway-%E6%AF%94%E7%9B%B4%E6%8E%A5-API-%E8%B0%83%E7%94%A8%E6%9B%B4%E9%87%8D%E8%A6%81"><span class="toc-number">7.2.</span> <span class="toc-text">Tool Gateway 比直接 API 调用更重要</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E7%BD%91%E7%BB%9C%E6%80%8E%E4%B9%88%E7%AE%A1"><span class="toc-number">8.</span> <span class="toc-text">八、网络怎么管</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81Browser-Agent-%E6%80%8E%E4%B9%88%E7%94%A8-Sandbox"><span class="toc-number">9.</span> <span class="toc-text">九、Browser Agent 怎么用 Sandbox</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E4%BA%A7%E7%89%A9%E6%80%8E%E4%B9%88%E7%AE%A1%E7%90%86"><span class="toc-number">10.</span> <span class="toc-text">十、产物怎么管理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E5%8D%B1%E9%99%A9%E5%8A%A8%E4%BD%9C%E6%80%8E%E4%B9%88%E5%AE%A1%E6%89%B9"><span class="toc-number">11.</span> <span class="toc-text">十一、危险动作怎么审批</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Level-0%EF%BC%9A%E5%8F%AA%E8%AF%BB%E5%8A%A8%E4%BD%9C"><span class="toc-number">11.1.</span> <span class="toc-text">Level 0：只读动作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Level-1%EF%BC%9ASandbox-%E5%86%85%E9%83%A8%E5%86%99%E5%85%A5"><span class="toc-number">11.2.</span> <span class="toc-text">Level 1：Sandbox 内部写入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Level-2%EF%BC%9A%E5%A4%96%E9%83%A8%E5%8F%AF%E8%A7%81%E5%8A%A8%E4%BD%9C"><span class="toc-number">11.3.</span> <span class="toc-text">Level 2：外部可见动作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Level-3%EF%BC%9A%E9%AB%98%E9%A3%8E%E9%99%A9%E5%8A%A8%E4%BD%9C"><span class="toc-number">11.4.</span> <span class="toc-text">Level 3：高风险动作</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81%E9%80%89%E5%9E%8B%E5%8F%AA%E9%9C%80%E8%A6%81%E7%B2%97%E7%95%A5%E5%88%A4%E6%96%AD"><span class="toc-number">12.</span> <span class="toc-text">十二、选型只需要粗略判断</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%89%E3%80%81%E6%8E%A8%E8%8D%90%E9%BB%98%E8%AE%A4%E6%96%B9%E6%A1%88"><span class="toc-number">13.</span> <span class="toc-text">十三、推荐默认方案</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E5%9B%9B%E3%80%81%E6%9C%80%E9%87%8D%E8%A6%81%E7%9A%84%E5%8F%8D%E6%A8%A1%E5%BC%8F"><span class="toc-number">14.</span> <span class="toc-text">十四、最重要的反模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E6%8A%8A-Sandbox-%E5%BD%93%E6%88%90%E5%AE%89%E5%85%A8%E6%A8%A1%E5%9E%8B%E6%9C%AC%E8%BA%AB"><span class="toc-number">14.1.</span> <span class="toc-text">1. 把 Sandbox 当成安全模型本身</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E7%BB%99-Agent-%E4%B8%80%E4%B8%AA%E6%B0%B8%E4%B8%8D%E9%94%80%E6%AF%81%E7%9A%84%E5%AE%B9%E5%99%A8"><span class="toc-number">14.2.</span> <span class="toc-text">2. 给 Agent 一个永不销毁的容器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%8A%8A%E5%AE%A2%E6%88%B7-Secret-%E6%94%BE%E8%BF%9B-Sandbox"><span class="toc-number">14.3.</span> <span class="toc-text">3. 把客户 Secret 放进 Sandbox</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E8%AE%A9-Browser-Agent-%E8%87%AA%E5%8A%A8%E6%8F%90%E4%BA%A4%E5%85%B3%E9%94%AE%E5%8A%A8%E4%BD%9C"><span class="toc-number">14.4.</span> <span class="toc-text">4. 让 Browser Agent 自动提交关键动作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E6%B2%A1%E6%9C%89%E5%A4%96%E9%83%A8%E5%89%AF%E4%BD%9C%E7%94%A8%E8%AE%B0%E5%BD%95"><span class="toc-number">14.5.</span> <span class="toc-text">5. 没有外部副作用记录</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%BA%94%E3%80%81%E5%A4%9A%E7%A7%9F%E6%88%B7-SaaS-%E4%B8%8B%E7%9A%84-Sandbox-%E9%85%8D%E9%A2%9D%E9%97%AE%E9%A2%98"><span class="toc-number">15.</span> <span class="toc-text">十五、多租户 SaaS 下的 Sandbox 配额问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-10-%E4%B8%AA%E5%AE%9E%E4%BE%8B%E4%B8%8D%E6%98%AF-10-%E4%B8%AA%E7%A7%9F%E6%88%B7%EF%BC%8C%E8%80%8C%E6%98%AF-10-%E4%B8%AA%E5%B9%B6%E5%8F%91%E6%89%A7%E8%A1%8C%E4%BD%8D"><span class="toc-number">15.1.</span> <span class="toc-text">1. 10 个实例不是 10 个租户，而是 10 个并发执行位</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E2%80%9C%E6%AF%8F%E4%B8%AA-session-%E9%83%BD%E8%A6%81-sandbox%E2%80%9D%E8%A6%81%E7%BB%A7%E7%BB%AD%E6%8B%86%E8%AF%AD%E4%B9%89"><span class="toc-number">15.2.</span> <span class="toc-text">2. “每个 session 都要 sandbox”要继续拆语义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%8E%92%E9%98%9F%E4%B8%8D%E6%98%AF%E5%8F%AF%E9%80%89%E9%A1%B9%EF%BC%8C%E8%80%8C%E6%98%AF%E8%83%8C%E5%8E%8B%E6%9C%BA%E5%88%B6"><span class="toc-number">15.3.</span> <span class="toc-text">3. 排队不是可选项，而是背压机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E7%AD%89%E5%BE%85%E8%80%97%E6%97%B6%E5%BF%85%E9%A1%BB%E4%BA%A7%E5%93%81%E5%8C%96"><span class="toc-number">15.4.</span> <span class="toc-text">4. 等待耗时必须产品化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E9%A2%91%E7%B9%81%E9%87%8D%E5%90%AF%E6%9C%89%E6%88%90%E6%9C%AC%EF%BC%8C%E4%BD%86%E9%95%BF%E9%A9%BB%E4%B9%9F%E6%9C%89%E6%88%90%E6%9C%AC"><span class="toc-number">15.5.</span> <span class="toc-text">5. 频繁重启有成本，但长驻也有成本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E6%B8%85%E7%90%86-sandbox-%E5%86%85%E5%AE%B9%E5%8F%AF%E4%BB%A5%E5%88%87%E6%8D%A2%EF%BC%8C%E4%BD%86%E8%A6%81%E5%8C%BA%E5%88%86%E5%AE%89%E5%85%A8%E7%AD%89%E7%BA%A7"><span class="toc-number">15.6.</span> <span class="toc-text">6. 清理 sandbox 内容可以切换，但要区分安全等级</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-%E6%9B%B4%E5%AE%9E%E7%94%A8%E7%9A%84%E9%9A%94%E7%A6%BB%E5%88%86%E7%BA%A7"><span class="toc-number">15.7.</span> <span class="toc-text">7. 更实用的隔离分级</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-%E6%9C%80%E7%BB%88%E5%88%A4%E6%96%AD%EF%BC%9A%E5%A6%82%E6%9E%9C%E6%AF%8F%E4%B8%AA%E6%B4%BB%E8%B7%83-session-%E9%83%BD%E8%A6%81%E7%8B%AC%E5%8D%A0-sandbox%EF%BC%8C10-%E4%B8%AA%E5%B0%B1%E6%98%AF%E4%B8%8D%E5%A4%9F"><span class="toc-number">15.8.</span> <span class="toc-text">8. 最终判断：如果每个活跃 session 都要独占 sandbox，10 个就是不够</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E5%85%AD%E3%80%81%E6%9C%89%E9%99%90-Sandbox-%E4%B8%8B%E7%9A%84%E6%8E%A8%E8%8D%90%E6%9E%B6%E6%9E%84"><span class="toc-number">16.</span> <span class="toc-text">十六、有限 Sandbox 下的推荐架构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E9%98%9F%E5%88%97%E5%92%8C%E8%B0%83%E5%BA%A6%E5%B1%82%E6%98%AF%E5%BF%85%E9%A1%BB%E7%9A%84"><span class="toc-number">16.1.</span> <span class="toc-text">1. 队列和调度层是必须的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E9%85%8D%E9%A2%9D%E8%A6%81%E5%88%86%E5%B1%82%EF%BC%8C%E8%80%8C%E4%B8%8D%E6%98%AF%E5%8F%AA%E7%9C%8B%E5%85%A8%E5%B1%80-10-%E4%B8%AA"><span class="toc-number">16.2.</span> <span class="toc-text">2. 配额要分层，而不是只看全局 10 个</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E4%BA%A4%E4%BA%92%E5%BC%8F-session-%E5%92%8C%E5%90%8E%E5%8F%B0-run-%E8%A6%81%E5%88%86%E6%B1%A0"><span class="toc-number">16.3.</span> <span class="toc-text">3. 交互式 session 和后台 run 要分池</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-Warm-Pool-%E5%8F%AA%E8%83%BD%E9%99%8D%E4%BD%8E%E5%86%B7%E5%90%AF%E5%8A%A8%EF%BC%8C%E4%B8%8D%E8%83%BD%E5%A2%9E%E5%8A%A0%E5%AE%B9%E9%87%8F"><span class="toc-number">16.4.</span> <span class="toc-text">4. Warm Pool 只能降低冷启动，不能增加容量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-Session-%E7%8A%B6%E6%80%81%E5%BF%85%E9%A1%BB%E5%A4%96%E7%BD%AE"><span class="toc-number">16.5.</span> <span class="toc-text">5. Session 状态必须外置</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-%E6%B8%85%E7%90%86%E5%90%8E%E5%88%87%E6%8D%A2-session-%E5%8F%AF%E4%BB%A5%E5%81%9A%EF%BC%8C%E4%BD%86%E4%B8%8D%E8%83%BD%E5%BD%93%E6%88%90%E8%B7%A8%E7%A7%9F%E6%88%B7%E5%BC%BA%E9%9A%94%E7%A6%BB"><span class="toc-number">16.6.</span> <span class="toc-text">6. 清理后切换 session 可以做，但不能当成跨租户强隔离</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99-10-%E4%B8%AA%E5%B0%B1%E6%98%AF%E6%A0%B9%E6%9C%AC%E4%B8%8D%E5%A4%9F"><span class="toc-number">16.7.</span> <span class="toc-text">7. 什么时候 10 个就是根本不够</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%83%E3%80%81%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="toc-number">17.</span> <span class="toc-text">十七、参考文献</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E5%85%AB%E3%80%81%E6%9C%80%E7%BB%88%E5%88%A4%E6%96%AD"><span class="toc-number">18.</span> <span class="toc-text">十八、最终判断</span></a></li></ol>
+            </div>
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 39
+        </div>
+        <!-- search  -->
+    </div>
+    <div class="post-archive">
+            <div class="archive-year"> 2026 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/12</span>
+            <a class="archive-post-title" href="/2026/05/12/saas-agent-sandbox-research/">SaaS Agent Sandbox 使用指南：不要把 Sandbox 当成一个容器</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span>
+            <a class="archive-post-title" href="/2026/05/08/agent-engineer-interview-2026/">2026 Agent 开发工程师面试指南：从架构、MCP 到生产化</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/19</span>
+            <a class="archive-post-title" href="/2026/04/19/multi-agent-architecture-survey/">Multi-Agent LLM 系统架构全景调研（2023–2026）</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/14</span>
+            <a class="archive-post-title" href="/2026/04/14/llm-tool-calling-decision-bias/">LLM Agent 中 Skill/Tool 调用决策偏差：技术调研报告</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span>
+            <a class="archive-post-title" href="/2026/04/12/harness-engineering/">Harness Engineering：当 AI 的缰绳比 AI 本身更重要</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span>
+            <a class="archive-post-title" href="/2026/03/30/coding-agent-evolution/">从代码到行动：Coding Agent 如何演变为通用数字助手</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2026/03/21/multi-agent-investment-research/">用 OpenAgents Workspace 协调多 Agent 投研</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/16</span>
+            <a class="archive-post-title" href="/2026/03/16/agent-loop-study/">Agent Loop 技术调研报告</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/14</span>
+            <a class="archive-post-title" href="/2026/03/14/harness-engineering-practical-guide/">Harness Engineering 实践指南：来自 OpenAI、Stripe、Anthropic 等团队的一线经验</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/17</span>
+            <a class="archive-post-title" href="/2026/01/17/trading-drawdown-control-guide/">交易回撤控制指南：认知、守心与仓位管理</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2025 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/28</span>
+            <a class="archive-post-title" href="/2025/12/28/code-execution-sandbox-mcp/">LLM-Driven Agent Architecture with Sandbox and MCP Integration</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2025/11/10/mcp-recent-sharing/">MCP 近期内容分享：从 Resources、Tools 到 Prompts 的实践探索</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span>
+            <a class="archive-post-title" href="/2025/10/28/args_doc_format_comparison/">Tool Args Documentation Format Comparison Analysis</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span>
+            <a class="archive-post-title" href="/2025/10/27/asgi_lifespan_complete_guide/">ASGI Lifespan 完整指南</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/mcp-output-schema/">MCP Output Schema：数据验证与结构化输出的技术实现</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/stop-converting-rest-api-to-mcp/">停止转换REST API到MCP：设计AI原生接口的正确方式</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span>
+            <a class="archive-post-title" href="/2025/09/20/llm-consistency-challenges-large-data-processing/">大型语言模型在处理大批量数据时的一致性挑战与解决方案</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/01</span>
+            <a class="archive-post-title" href="/2024/02/01/nextjs-pagination/">nextjs-pagination</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span>
+            <a class="archive-post-title" href="/2023/09/20/smart-contract-demo/">smart-contract-demo</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/30</span>
+            <a class="archive-post-title" href="/2023/08/30/multi-tenant/">多租户应用与架构设计关注点</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2022 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span>
+            <a class="archive-post-title" href="/2022/12/13/go-ddd/">go-ddd</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/07</span>
+            <a class="archive-post-title" href="/2022/12/07/git-rebase/">使用 `git pull --rebase`</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span>
+            <a class="archive-post-title" href="/2022/12/03/opentelemetry-jaeger/">opnetelemetry-jaeger</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/09</span>
+            <a class="archive-post-title" href="/2022/06/09/ddd-thinking/">ddd-thinking</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/23</span>
+            <a class="archive-post-title" href="/2022/05/23/mvc-and-ddd/">mvc-and-ddd</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span>
+            <a class="archive-post-title" href="/2022/02/13/commit-format-and-auto-changelog/">Git commit 规范</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/tight-lipped/">思考与交流</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/30</span>
+            <a class="archive-post-title" href="/2022/01/30/knowledge-breath-and-depth/">知识掌握的广度与深度</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2021 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/16</span>
+            <a class="archive-post-title" href="/2021/12/16/software-design-doc/">如何撰写技术设计文档</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/21</span>
+            <a class="archive-post-title" href="/2021/11/21/breaking-creation-product/">突破式创新的产品设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span>
+            <a class="archive-post-title" href="/2021/07/15/parallel-and-asynchronous-python/">DRF Exception Handle</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/17</span>
+            <a class="archive-post-title" href="/2021/06/17/DRF-Exception/">DRF Exception Handle</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span>
+            <a class="archive-post-title" href="/2021/06/15/Django-With-DDD/">Django With DDD</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/09</span>
+            <a class="archive-post-title" href="/2021/05/09/Agile-Design/">敏捷软件开发：设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span>
+            <a class="archive-post-title" href="/2021/03/30/DRF-Bussiness-Logic/">Django Restful Framework Business Logic</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2021/03/21/graphql-and-restful/">Graphql and Restful API</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/08</span>
+            <a class="archive-post-title" href="/2021/03/08/grpc-hello-world/">grpc hello world</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/03</span>
+            <a class="archive-post-title" href="/2021/01/03/New-Coding-Language/">我如何学一门新的编程语言</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2020 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/08</span>
+            <a class="archive-post-title" href="/2020/11/08/Agile-Dev/">敏捷开发辅助新项目验证与落地</a>
+        </li>
+            </ul>
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+            <span class="sidebar-tag-name" data-tags="agile">
+                <span class="iconfont-archer">&#xe606;</span>
+                agile
+            </span>
+            <span class="sidebar-tag-name" data-tags="LLM">
+                <span class="iconfont-archer">&#xe606;</span>
+                LLM
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Format">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Format
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent Loop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent Loop
+            </span>
+            <span class="sidebar-tag-name" data-tags="ASGI, Python, FastAPI">
+                <span class="iconfont-archer">&#xe606;</span>
+                ASGI, Python, FastAPI
+            </span>
+            <span class="sidebar-tag-name" data-tags="Architecture">
+                <span class="iconfont-archer">&#xe606;</span>
+                Architecture
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="Sandbox">
+                <span class="iconfont-archer">&#xe606;</span>
+                Sandbox
+            </span>
+            <span class="sidebar-tag-name" data-tags="MCP">
+                <span class="iconfont-archer">&#xe606;</span>
+                MCP
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI
+            </span>
+            <span class="sidebar-tag-name" data-tags="Claude Code">
+                <span class="iconfont-archer">&#xe606;</span>
+                Claude Code
+            </span>
+            <span class="sidebar-tag-name" data-tags="Harness Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Harness Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="thinking">
+                <span class="iconfont-archer">&#xe606;</span>
+                thinking
+            </span>
+            <span class="sidebar-tag-name" data-tags="DDD">
+                <span class="iconfont-archer">&#xe606;</span>
+                DDD
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Calling">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Calling
+            </span>
+            <span class="sidebar-tag-name" data-tags="Prompt Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Prompt Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="OpenAgents">
+                <span class="iconfont-archer">&#xe606;</span>
+                OpenAgents
+            </span>
+            <span class="sidebar-tag-name" data-tags="投研">
+                <span class="iconfont-archer">&#xe606;</span>
+                投研
+            </span>
+            <span class="sidebar-tag-name" data-tags="Multi-Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                Multi-Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="multi-tenant">
+                <span class="iconfont-archer">&#xe606;</span>
+                multi-tenant
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI Architecture">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI Architecture
+            </span>
+            <span class="sidebar-tag-name" data-tags="可观测性">
+                <span class="iconfont-archer">&#xe606;</span>
+                可观测性
+            </span>
+            <span class="sidebar-tag-name" data-tags="opentelemetry">
+                <span class="iconfont-archer">&#xe606;</span>
+                opentelemetry
+            </span>
+            <span class="sidebar-tag-name" data-tags="API Design">
+                <span class="iconfont-archer">&#xe606;</span>
+                API Design
+            </span>
+            <span class="sidebar-tag-name" data-tags="Trading">
+                <span class="iconfont-archer">&#xe606;</span>
+                Trading
+            </span>
+            <span class="sidebar-tag-name" data-tags="面试">
+                <span class="iconfont-archer">&#xe606;</span>
+                面试
+            </span>
+            <span class="sidebar-tag-name" data-tags="SaaS">
+                <span class="iconfont-archer">&#xe606;</span>
+                SaaS
+            </span>
+            <span class="sidebar-tag-name" data-tags="Security">
+                <span class="iconfont-archer">&#xe606;</span>
+                Security
+            </span>
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+        <span class="sidebar-category-name" data-categories="AI Agent">
+            <span class="iconfont-archer">&#xe60a;</span>
+            AI Agent
+        </span>
+        <span class="sidebar-category-name" data-categories="交易策略">
+            <span class="iconfont-archer">&#xe60a;</span>
+            交易策略
+        </span>
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "https://edison-a-n.github.io",
+        root: siteMetaRoot,
+        author: "Edison"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+        <!-- main func -->
+        <script src="/scripts/main.js"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.umd.js" onload="window.Fancybox.bind('[data-fancybox]')" defer></script>
+        <!-- algolia -->
+        <!-- busuanzi -->
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        <!-- async load share.js -->
+            <script src="/scripts/share.js" async></script>
+        <!-- mermaid -->
+    </body>
+</html>

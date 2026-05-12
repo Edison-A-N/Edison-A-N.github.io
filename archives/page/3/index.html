@@ -431,6 +431,50 @@
                 <main class="main index-page">
             
         <article class="index-post">
+            <a class="abstract-title" href="/2022/12/13/go-ddd/">
+                <span class="abstract-title-text">go-ddd</span>
+            </a>
+            <div class="abstract-content">
+                基于 internal 规划工程目录Go internal package design介绍了设计的原因
+
+Go encourages structuring a program as a collection of packages interacting using exported APIs. However, all packages can be imported. This creates a tension when implementing a library or command: it may grow large enough to structure as mul...
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2023/08/29">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2022/12/13</span>
+                </div>
+                <!-- tags -->
+                    <div class="abstract-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="DDD">DDD</a>
+</div>
+
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+            
+        <article class="index-post">
+            <a class="abstract-title" href="/2022/12/07/git-rebase/">
+                <span class="abstract-title-text">使用 `git pull --rebase`</span>
+            </a>
+            <div class="abstract-content">
+                git-rebase使用 git pull 的时候，要加上 --rebase，减少merge，保持 log 整洁
+参考git rebase
+
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2023/08/29">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2022/12/07</span>
+                </div>
+                <!-- tags -->
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+            
+        <article class="index-post">
             <a class="abstract-title" href="/2022/12/03/opentelemetry-jaeger/">
                 <span class="abstract-title-text">opnetelemetry-jaeger</span>
             </a>
@@ -640,48 +684,6 @@ conf: 仅配置变化，Spring配置、propert...
             </div>
         </article>
         <div class="index-post-divider"></div>
-            
-        <article class="index-post">
-            <a class="abstract-title" href="/2021/07/15/parallel-and-asynchronous-python/">
-                <span class="abstract-title-text">DRF Exception Handle</span>
-            </a>
-            <div class="abstract-content">
-                持续更新关于python并行计算与异步计算的包，后续再根据篇章拆分。
-Python 并行并行库threadingmultiprocessing
-multiprocessing 中的一些问题问题
-开启子进程的方法与问题  spawn相比fork会更耗时，但是fork在处理一个多线程的进程时可能会陷入死锁等问题。这是由于fork本身的机制造成的。这也使得在使用包的过程中常常遇到一些问题。
-IO问题  fork本身会继承打开文件的描述符，所以对于多进程的处理，要留意IO处理带来的不良影响建议由于使用多进程更多是因为，CPython本身的GIL造成无法使用多个CPU核，而使用多进程的方式进行处理...
-            </div>
-            <!-- read more -->
-            <div class="abstract-post-meta">
-                <!-- date -->
-                <div class="abstract-date" title="Last updated: 2022/06/13">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/07/15</span>
-                </div>
-                <!-- tags -->
-            </div>
-        </article>
-        <div class="index-post-divider"></div>
-            
-        <article class="index-post">
-            <a class="abstract-title" href="/2021/06/17/DRF-Exception/">
-                <span class="abstract-title-text">DRF Exception Handle</span>
-            </a>
-            <div class="abstract-content">
-                框架报错源码解析
-exception 处理器
-1234567891011121314151617181920212223242526272829303132# rest_framework.views 71-101def exception_handler(exc, context):    &quot;&quot;&quot;    Returns the response that should be used for any given exception.    By default we handle the REST framework `APIException`, and...
-            </div>
-            <!-- read more -->
-            <div class="abstract-post-meta">
-                <!-- date -->
-                <div class="abstract-date" title="Last updated: 2022/06/13">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/06/17</span>
-                </div>
-                <!-- tags -->
-            </div>
-        </article>
-        <div class="index-post-divider"></div>
     <!-- paginator  -->
         <nav class="page-nav">
             <a class="extend prev" rel="prev" href="/archives/page/2/">&lt; PREV</a><a class="page-number" href="/archives/">1</a><a class="page-number" href="/archives/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/archives/page/4/">4</a><a class="extend next" rel="next" href="/archives/page/4/">NEXT &gt;</a>
@@ -757,15 +759,25 @@ exception 处理器
         
         
         
+        
+        
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 37
+        Total : 39
         </div>
         <!-- search  -->
     </div>
     <div class="post-archive">
             <div class="archive-year"> 2026 </div>
             <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/12</span>
+            <a class="archive-post-title" href="/2026/05/12/saas-agent-sandbox-research/">SaaS Agent Sandbox 使用指南：不要把 Sandbox 当成一个容器</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span>
+            <a class="archive-post-title" href="/2026/05/08/agent-engineer-interview-2026/">2026 Agent 开发工程师面试指南：从架构、MCP 到生产化</a>
+        </li>
         <li class="archive-post-item">
             <span class="archive-post-date">04/19</span>
             <a class="archive-post-title" href="/2026/04/19/multi-agent-architecture-survey/">Multi-Agent LLM 系统架构全景调研（2023–2026）</a>
@@ -1041,6 +1053,18 @@ exception 处理器
             <span class="sidebar-tag-name" data-tags="Trading">
                 <span class="iconfont-archer">&#xe606;</span>
                 Trading
+            </span>
+            <span class="sidebar-tag-name" data-tags="面试">
+                <span class="iconfont-archer">&#xe606;</span>
+                面试
+            </span>
+            <span class="sidebar-tag-name" data-tags="SaaS">
+                <span class="iconfont-archer">&#xe606;</span>
+                SaaS
+            </span>
+            <span class="sidebar-tag-name" data-tags="Security">
+                <span class="iconfont-archer">&#xe606;</span>
+                Security
             </span>
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
