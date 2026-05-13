@@ -430,16 +430,41 @@
             <div class="container container-unloaded">
                 <main class="main index-page">
         <article class="index-post">
-            <a class="abstract-title" href="/2026/05/12/saas-agent-sandbox-research/">
-                <span class="abstract-title-text">SaaS Agent Sandbox 使用指南：不要把 Sandbox 当成一个容器</span>
+            <a class="abstract-title" href="/2026/05/13/saas-agent-design-doc/">
+                <span class="abstract-title-text">SaaS Agent 应该怎么设计：从竞品实践到生产级架构</span>
             </a>
             <div class="abstract-content">
-                聚焦 SaaS Agent 场景，讨论 Agent Sandbox 到底应该怎么使用。重点不是 KVM、Docker、Firecracker 等实现细节，而是 Sandbox 如何嵌入 Agent 产品：生命周期、权限、凭证、工具调用、状态恢复、多租户配额、调度隔离和人类审批。
+                基于 OpenAI、Anthropic、LangGraph、Microsoft Agent Framework、Intercom Fin、Salesforce Agentforce、Zapier Agents、Dify、CrewAI、Relevance AI、Lindy、OpenHands 等公开资料，系统整理 SaaS Agent 的产品边界、技术架构、权限治理、工具调用、审批、评估、可观测性与 MVP 路线图。
             </div>
             <!-- read more -->
             <div class="abstract-post-meta">
                 <!-- date -->
-                <div class="abstract-date" title="Last updated: 2026/05/12">
+                <div class="abstract-date" title="Last updated: 2026/05/13">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2026/05/13</span>
+                </div>
+                <!-- tags -->
+                    <div class="abstract-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="LLM">LLM</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="SaaS">SaaS</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="系统设计">系统设计</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="产品设计">产品设计</a>
+</div>
+
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+        <article class="index-post">
+            <a class="abstract-title" href="/2026/05/12/saas-agent-sandbox-research/">
+                <span class="abstract-title-text">SaaS Agent Sandbox 设计原则：不要把 Sandbox 当成容器</span>
+            </a>
+            <div class="abstract-content">
+                聚焦 SaaS Agent 场景，讨论 Sandbox 如何成为受控、可恢复、可审计的执行边界。重点不是 Docker、KVM、Firecracker 等实现细节，而是生命周期、权限、凭证、网络、状态恢复、多租户配额和人类审批如何进入同一套控制面。
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2026/05/13">
                     <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2026/05/12</span>
                 </div>
                 <!-- tags -->
@@ -589,9 +614,9 @@
                 <!-- tags -->
                     <div class="abstract-tags" >
         <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Multi-Agent">Multi-Agent</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="OpenAgents">OpenAgents</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="投研">投研</a>
-        <a class="post-tag" href="javascript:void(0);" data-tags="Multi-Agent">Multi-Agent</a>
 </div>
 
             </div>
@@ -638,27 +663,6 @@
         <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="LLM">LLM</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="Harness Engineering">Harness Engineering</a>
-</div>
-
-            </div>
-        </article>
-        <div class="index-post-divider"></div>
-        <article class="index-post">
-            <a class="abstract-title" href="/2026/01/17/trading-drawdown-control-guide/">
-                <span class="abstract-title-text">交易回撤控制指南：认知、守心与仓位管理</span>
-            </a>
-            <div class="abstract-content">
-                回撤是每个交易者都必须面对的核心问题。本文从认知层、心理层和技术层三个维度，深入探讨如何科学地控制回撤：明确交易模式的回撤范围、守心遵循自己的模式、准确理解市场并匹配正确仓位，构建完整的回撤控制体系。
-            </div>
-            <!-- read more -->
-            <div class="abstract-post-meta">
-                <!-- date -->
-                <div class="abstract-date" title="Last updated: 2026/01/17">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2026/01/17</span>
-                </div>
-                <!-- tags -->
-                    <div class="abstract-tags" >
-        <a class="post-tag" href="javascript:void(0);" data-tags="Trading">Trading</a>
 </div>
 
             </div>
@@ -741,9 +745,10 @@
         
         
         
+        
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 39
+        Total : 40
         </div>
         <!-- search  -->
     </div>
@@ -751,8 +756,12 @@
             <div class="archive-year"> 2026 </div>
             <ul class="year-list">
         <li class="archive-post-item">
+            <span class="archive-post-date">05/13</span>
+            <a class="archive-post-title" href="/2026/05/13/saas-agent-design-doc/">SaaS Agent 应该怎么设计：从竞品实践到生产级架构</a>
+        </li>
+        <li class="archive-post-item">
             <span class="archive-post-date">05/12</span>
-            <a class="archive-post-title" href="/2026/05/12/saas-agent-sandbox-research/">SaaS Agent Sandbox 使用指南：不要把 Sandbox 当成一个容器</a>
+            <a class="archive-post-title" href="/2026/05/12/saas-agent-sandbox-research/">SaaS Agent Sandbox 设计原则：不要把 Sandbox 当成容器</a>
         </li>
         <li class="archive-post-item">
             <span class="archive-post-date">05/08</span>
@@ -974,6 +983,10 @@
                 <span class="iconfont-archer">&#xe606;</span>
                 Sandbox
             </span>
+            <span class="sidebar-tag-name" data-tags="thinking">
+                <span class="iconfont-archer">&#xe606;</span>
+                thinking
+            </span>
             <span class="sidebar-tag-name" data-tags="AI">
                 <span class="iconfont-archer">&#xe606;</span>
                 AI
@@ -985,10 +998,6 @@
             <span class="sidebar-tag-name" data-tags="Harness Engineering">
                 <span class="iconfont-archer">&#xe606;</span>
                 Harness Engineering
-            </span>
-            <span class="sidebar-tag-name" data-tags="thinking">
-                <span class="iconfont-archer">&#xe606;</span>
-                thinking
             </span>
             <span class="sidebar-tag-name" data-tags="DDD">
                 <span class="iconfont-archer">&#xe606;</span>
@@ -1002,14 +1011,6 @@
                 <span class="iconfont-archer">&#xe606;</span>
                 Prompt Engineering
             </span>
-            <span class="sidebar-tag-name" data-tags="OpenAgents">
-                <span class="iconfont-archer">&#xe606;</span>
-                OpenAgents
-            </span>
-            <span class="sidebar-tag-name" data-tags="投研">
-                <span class="iconfont-archer">&#xe606;</span>
-                投研
-            </span>
             <span class="sidebar-tag-name" data-tags="Multi-Agent">
                 <span class="iconfont-archer">&#xe606;</span>
                 Multi-Agent
@@ -1017,6 +1018,14 @@
             <span class="sidebar-tag-name" data-tags="AI Architecture">
                 <span class="iconfont-archer">&#xe606;</span>
                 AI Architecture
+            </span>
+            <span class="sidebar-tag-name" data-tags="OpenAgents">
+                <span class="iconfont-archer">&#xe606;</span>
+                OpenAgents
+            </span>
+            <span class="sidebar-tag-name" data-tags="投研">
+                <span class="iconfont-archer">&#xe606;</span>
+                投研
             </span>
             <span class="sidebar-tag-name" data-tags="multi-tenant">
                 <span class="iconfont-archer">&#xe606;</span>
@@ -1033,6 +1042,14 @@
             <span class="sidebar-tag-name" data-tags="SaaS">
                 <span class="iconfont-archer">&#xe606;</span>
                 SaaS
+            </span>
+            <span class="sidebar-tag-name" data-tags="系统设计">
+                <span class="iconfont-archer">&#xe606;</span>
+                系统设计
+            </span>
+            <span class="sidebar-tag-name" data-tags="产品设计">
+                <span class="iconfont-archer">&#xe606;</span>
+                产品设计
             </span>
             <span class="sidebar-tag-name" data-tags="Security">
                 <span class="iconfont-archer">&#xe606;</span>
