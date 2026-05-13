@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /page/
+Disallow: /tags/
+Disallow: /categories/
+
+Sitemap: https://edison-a-n.github.io/sitemap.xml
