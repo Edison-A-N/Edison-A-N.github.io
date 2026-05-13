@@ -23,10 +23,10 @@
 <meta property="article:modified_time" content="2026-03-30T14:33:42.915Z">
 <meta property="article:author" content="Edison">
 <meta property="article:tag" content="LLM">
+<meta property="article:tag" content="MCP">
 <meta property="article:tag" content="Architecture">
 <meta property="article:tag" content="Agent">
 <meta property="article:tag" content="Sandbox">
-<meta property="article:tag" content="MCP">
 <meta name="twitter:card" content="summary">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -307,15 +307,15 @@
                 <!-- 文章页标签  -->
                     <div class="post-intro-tags" >
         <a class="post-tag" href="javascript:void(0);" data-tags="LLM">LLM</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="MCP">MCP</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="Architecture">Architecture</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="Agent">Agent</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="Sandbox">Sandbox</a>
-        <a class="post-tag" href="javascript:void(0);" data-tags="MCP">MCP</a>
 </div>
 
                 <!-- 文章字数统计 -->
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">7.5k</span>Reading time: <span class="post-count reading-time">27 min</span></span>
+                        <span>Word count: <span class="post-count word-count">7.4k</span>Reading time: <span class="post-count reading-time">26 min</span></span>
                     </div>
                 <div class="post-intro-meta">
                     <!-- 撰写日期 -->
@@ -521,7 +521,39 @@
 </ul>
 </li>
 </ol>
-<h3 id="工作流程"><a href="#工作流程" class="headerlink" title="工作流程"></a>工作流程</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">graph LR</span><br><span class="line">    subgraph &quot;LLM 控制层&quot;</span><br><span class="line">        LLM[LLM 模型]</span><br><span class="line">        CC[生成控制代码&lt;br/&gt;Control Code]</span><br><span class="line">    end</span><br><span class="line">    </span><br><span class="line">    subgraph &quot;代码执行沙箱&quot;</span><br><span class="line">        SB[轻量级沙箱环境&lt;br/&gt;Lightweight Sandbox]</span><br><span class="line">        NET[网络访问控制&lt;br/&gt;Network Access Control]</span><br><span class="line">    end</span><br><span class="line">    </span><br><span class="line">    subgraph &quot;数据存储层&quot;</span><br><span class="line">        STORAGE[数据存储&lt;br/&gt;Storage]</span><br><span class="line">    end</span><br><span class="line">    </span><br><span class="line">    subgraph &quot;MCP 服务层&quot;</span><br><span class="line">        MCP[MCP 服务&lt;br/&gt;MCP Service]</span><br><span class="line">    end</span><br><span class="line">    </span><br><span class="line">    LLM --&gt;|生成| CC</span><br><span class="line">    CC --&gt;|执行| SB</span><br><span class="line">    SB --&gt;|调用| MCP</span><br><span class="line">    SB -.-&gt;|受限网络访问| NET</span><br><span class="line">    MCP -.-&gt;|返回结果| SB</span><br><span class="line">    SB -.-&gt;|执行结果| CC</span><br><span class="line">    STORAGE ~~~ MCP</span><br><span class="line">    </span><br><span class="line">    style LLM fill:#e1f5ff</span><br><span class="line">    style CC fill:#b3e5fc</span><br><span class="line">    style SB fill:#fff9c4</span><br><span class="line">    style NET fill:#fff9c4</span><br><span class="line">    style MCP fill:#c8e6c9</span><br><span class="line">    style STORAGE fill:#f3e5f5</span><br></pre></td></tr></table></figure>
+<h3 id="工作流程"><a href="#工作流程" class="headerlink" title="工作流程"></a>工作流程</h3><pre class="mermaid">graph LR
+    subgraph "LLM 控制层"
+        LLM[LLM 模型]
+        CC[生成控制代码<br/>Control Code]
+    end
+    
+    subgraph "代码执行沙箱"
+        SB[轻量级沙箱环境<br/>Lightweight Sandbox]
+        NET[网络访问控制<br/>Network Access Control]
+    end
+    
+    subgraph "数据存储层"
+        STORAGE[数据存储<br/>Storage]
+    end
+    
+    subgraph "MCP 服务层"
+        MCP[MCP 服务<br/>MCP Service]
+    end
+    
+    LLM -->|生成| CC
+    CC -->|执行| SB
+    SB -->|调用| MCP
+    SB -.->|受限网络访问| NET
+    MCP -.->|返回结果| SB
+    SB -.->|执行结果| CC
+    STORAGE ~~~ MCP
+    
+    style LLM fill:#e1f5ff
+    style CC fill:#b3e5fc
+    style SB fill:#fff9c4
+    style NET fill:#fff9c4
+    style MCP fill:#c8e6c9
+    style STORAGE fill:#f3e5f5</pre>
 
 <h4 id="架构说明"><a href="#架构说明" class="headerlink" title="架构说明"></a>架构说明</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LLM → 生成控制代码 → 沙箱执行控制代码 → 调用 MCP 服务 → 执行功能代码</span><br></pre></td></tr></table></figure>
 
@@ -1486,21 +1518,29 @@
                 <span class="iconfont-archer">&#xe606;</span>
                 agile
             </span>
-            <span class="sidebar-tag-name" data-tags="LLM">
-                <span class="iconfont-archer">&#xe606;</span>
-                LLM
-            </span>
             <span class="sidebar-tag-name" data-tags="AI Agent">
                 <span class="iconfont-archer">&#xe606;</span>
                 AI Agent
             </span>
-            <span class="sidebar-tag-name" data-tags="Tool Format">
+            <span class="sidebar-tag-name" data-tags="LLM">
                 <span class="iconfont-archer">&#xe606;</span>
-                Tool Format
+                LLM
+            </span>
+            <span class="sidebar-tag-name" data-tags="MCP">
+                <span class="iconfont-archer">&#xe606;</span>
+                MCP
+            </span>
+            <span class="sidebar-tag-name" data-tags="面试">
+                <span class="iconfont-archer">&#xe606;</span>
+                面试
             </span>
             <span class="sidebar-tag-name" data-tags="Agent Loop">
                 <span class="iconfont-archer">&#xe606;</span>
                 Agent Loop
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Format">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Format
             </span>
             <span class="sidebar-tag-name" data-tags="ASGI, Python, FastAPI">
                 <span class="iconfont-archer">&#xe606;</span>
@@ -1517,10 +1557,6 @@
             <span class="sidebar-tag-name" data-tags="Sandbox">
                 <span class="iconfont-archer">&#xe606;</span>
                 Sandbox
-            </span>
-            <span class="sidebar-tag-name" data-tags="MCP">
-                <span class="iconfont-archer">&#xe606;</span>
-                MCP
             </span>
             <span class="sidebar-tag-name" data-tags="AI">
                 <span class="iconfont-archer">&#xe606;</span>
@@ -1562,13 +1598,13 @@
                 <span class="iconfont-archer">&#xe606;</span>
                 Multi-Agent
             </span>
-            <span class="sidebar-tag-name" data-tags="multi-tenant">
-                <span class="iconfont-archer">&#xe606;</span>
-                multi-tenant
-            </span>
             <span class="sidebar-tag-name" data-tags="AI Architecture">
                 <span class="iconfont-archer">&#xe606;</span>
                 AI Architecture
+            </span>
+            <span class="sidebar-tag-name" data-tags="multi-tenant">
+                <span class="iconfont-archer">&#xe606;</span>
+                multi-tenant
             </span>
             <span class="sidebar-tag-name" data-tags="可观测性">
                 <span class="iconfont-archer">&#xe606;</span>
@@ -1578,18 +1614,6 @@
                 <span class="iconfont-archer">&#xe606;</span>
                 opentelemetry
             </span>
-            <span class="sidebar-tag-name" data-tags="API Design">
-                <span class="iconfont-archer">&#xe606;</span>
-                API Design
-            </span>
-            <span class="sidebar-tag-name" data-tags="Trading">
-                <span class="iconfont-archer">&#xe606;</span>
-                Trading
-            </span>
-            <span class="sidebar-tag-name" data-tags="面试">
-                <span class="iconfont-archer">&#xe606;</span>
-                面试
-            </span>
             <span class="sidebar-tag-name" data-tags="SaaS">
                 <span class="iconfont-archer">&#xe606;</span>
                 SaaS
@@ -1597,6 +1621,14 @@
             <span class="sidebar-tag-name" data-tags="Security">
                 <span class="iconfont-archer">&#xe606;</span>
                 Security
+            </span>
+            <span class="sidebar-tag-name" data-tags="API Design">
+                <span class="iconfont-archer">&#xe606;</span>
+                API Design
+            </span>
+            <span class="sidebar-tag-name" data-tags="Trading">
+                <span class="iconfont-archer">&#xe606;</span>
+                Trading
             </span>
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
@@ -1650,5 +1682,6 @@
         <!-- async load share.js -->
             <script src="/scripts/share.js" async></script>
         <!-- mermaid -->
+            <script src='https://cdn.jsdelivr.net/npm/mermaid@8.11.0/dist/mermaid.min.js' onload="window.mermaid.initialize({theme: 'dark'})" async></script>
     </body>
 </html>
