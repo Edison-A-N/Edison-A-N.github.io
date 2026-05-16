@@ -10,17 +10,17 @@
     <meta name="renderer" content="webkit">
     <meta name="copyright" content="Edison">
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog,software architecture,domain-driven design,DDD,AI agents,MCP,Model Context Protocol,Python,Go,full-stack development,LLM,software engineering,hexo blog">
-    <meta name="description" content="基于 OpenAI、Anthropic、LangGraph、Microsoft Agent Framework、Intercom Fin、Salesforce Agentforce、Zapier Agents、Dify、CrewAI、Relevance AI、Lindy、OpenHands 等公开资料，系统整理 SaaS Agent 的产品边界、技术架构、权限治理、工具调用、审批、评估、可观测性与 MVP 路线图。">
+    <meta name="description" content="基于 OpenAI、Anthropic、LangGraph、Microsoft Agent Framework、Intercom Fin、Salesforce Agentforce、Oracle AI Agent Studio、Google Gemini Enterprise Agent Platform、Zapier Agents、Dify、CrewAI、Relevance AI、Lindy、OpenHands 等公开资料，系统整理 SaaS Agent 的产品边界、技术架构、权限治理、工具调用、审批、评估、可观测性与 MVP 路线图。">
     <link rel="canonical" href="https://edison-a-n.github.io/2026/05/13/saas-agent-design-doc/"/>
-    <meta name="description" content="基于 OpenAI、Anthropic、LangGraph、Microsoft Agent Framework、Intercom Fin、Salesforce Agentforce、Zapier Agents、Dify、CrewAI、Relevance AI、Lindy、OpenHands 等公开资料，系统整理 SaaS Agent 的产品边界、技术架构、权限治理、工具调用、审批、评估、可观测性与">
+    <meta name="description" content="基于 OpenAI、Anthropic、LangGraph、Microsoft Agent Framework、Intercom Fin、Salesforce Agentforce、Oracle AI Agent Studio、Google Gemini Enterprise Agent Platform、Zapier Agents、Dify、CrewAI、Relevance AI、Lindy、O">
 <meta property="og:type" content="article">
 <meta property="og:title" content="SaaS Agent 应该怎么设计：从竞品实践到生产级架构">
 <meta property="og:url" content="https://edison-a-n.github.io/2026/05/13/saas-agent-design-doc/">
 <meta property="og:site_name" content="Edison&#39;s Tech Blog">
-<meta property="og:description" content="基于 OpenAI、Anthropic、LangGraph、Microsoft Agent Framework、Intercom Fin、Salesforce Agentforce、Zapier Agents、Dify、CrewAI、Relevance AI、Lindy、OpenHands 等公开资料，系统整理 SaaS Agent 的产品边界、技术架构、权限治理、工具调用、审批、评估、可观测性与">
+<meta property="og:description" content="基于 OpenAI、Anthropic、LangGraph、Microsoft Agent Framework、Intercom Fin、Salesforce Agentforce、Oracle AI Agent Studio、Google Gemini Enterprise Agent Platform、Zapier Agents、Dify、CrewAI、Relevance AI、Lindy、O">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2026-05-12T16:00:00.000Z">
-<meta property="article:modified_time" content="2026-05-15T11:17:29.667Z">
+<meta property="article:modified_time" content="2026-05-15T11:42:18.863Z">
 <meta property="article:author" content="Edison">
 <meta property="article:tag" content="AI Agent">
 <meta property="article:tag" content="LLM">
@@ -315,7 +315,7 @@
 
                 <!-- 文章字数统计 -->
                     <div class="post-intro-read">
-                        <span>Word count: <span class="post-count word-count">9.3k</span>Reading time: <span class="post-count reading-time">38 min</span></span>
+                        <span>Word count: <span class="post-count word-count">11.8k</span>Reading time: <span class="post-count reading-time">48 min</span></span>
                     </div>
                 <div class="post-intro-meta">
                     <!-- 撰写日期 -->
@@ -491,14 +491,68 @@
 <blockquote>
 <p>标注说明：文中涉及外部产品、框架、官方文档或公开 blog 的事实性描述，会在对应段落后用“来源”标注；没有单独标注的架构图、数据模型、checklist 和路线图，主要是基于这些公开资料抽象出的设计建议。</p>
 </blockquote>
-<h2 id="一、先给结论：SaaS-Agent-的设计原则"><a href="#一、先给结论：SaaS-Agent-的设计原则" class="headerlink" title="一、先给结论：SaaS Agent 的设计原则"></a>一、先给结论：SaaS Agent 的设计原则</h2><h3 id="1-先-workflow，后-autonomy"><a href="#1-先-workflow，后-autonomy" class="headerlink" title="1. 先 workflow，后 autonomy"></a>1. 先 workflow，后 autonomy</h3><p>生产环境里最稳的设计不是“让 agent 全自动决定一切”，而是：</p>
+<blockquote>
+<p>资料时效性说明：Agent 领域变化很快，本文按 <strong>2026-05-14</strong> 可访问的公开资料整理，不会把早期 agent loop &#x2F; tool use 文档当成最新生产架构结论。文中把资料分成三类使用：第一类是 <strong>2025 年 10 月以后到 2026 年的最新工程资料</strong>，例如 Salesforce Agent Script &#x2F; Agent Graph、Microsoft Agent Framework Workflows &#x2F; Durable Agents、Oracle AI Agent Studio Workflow 等；第二类是仍在更新的官方产品文档，例如 Dify、Intercom Fin、CrewAI、LangGraph；第三类是 OpenAI &#x2F; Anthropic tool use 这类基础机制资料，主要用于解释工具调用原语，而不是直接证明生产级 SaaS Agent 的架构方向。没有明确发布日期的 live docs，只按“截至本文写作时的公开页面状态”使用。</p>
+</blockquote>
+<h2 id="一、从公开资料和工程实践归纳出的设计原则"><a href="#一、从公开资料和工程实践归纳出的设计原则" class="headerlink" title="一、从公开资料和工程实践归纳出的设计原则"></a>一、从公开资料和工程实践归纳出的设计原则</h2><h3 id="1-先-workflow，后-autonomy"><a href="#1-先-workflow，后-autonomy" class="headerlink" title="1. 先 workflow，后 autonomy"></a>1. 先 workflow，后 autonomy</h3><p>这个判断不是从“Agent 应该更保守”这个直觉出发，而是从公开官方资料、产品能力和工程实践里反复出现的同一个矛盾归纳出来的：<strong>模型擅长处理模糊输入，但生产系统需要可重复、可审计、可恢复、可测试的执行路径。</strong></p>
+<p>不同厂商和框架的表述不完全一样，但指向的设计取向很接近。下面的“原文摘录”保留英文原句，方便追踪来源；右侧才是本文的推导。</p>
+<table>
+<thead>
+<tr>
+<th>来源</th>
+<th>公开资料原文摘录</th>
+<th>对 SaaS Agent 的推导</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://architect.salesforce.com/docs/architect/fundamentals/guide/hybrid-reasoning-agentforce-builder-agent-script.html">Salesforce Agentforce hybrid reasoning</a> &#x2F; <a target="_blank" rel="noopener" href="https://www.salesforce.com/blog/agent-script-control-plane/">Agent Script control plane</a>（2025-10 到 2026-04）</td>
+<td>“separating deterministic execution from LLM reasoning”；“if you can express a decision as code, it should be written as logic”；“Agent Script lets you set control per decision.”</td>
+<td>这是对 workflow-first 最直接的工程实践支撑之一：先定义可执行结构和确定性决策，再在需要判断、解释、自然语言生成的节点调用 LLM</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://docs.dify.ai/en/use-dify/build/workflow-chatflow">Dify Workflow &amp; Chatflow</a></td>
+<td>“AI models are powerful, but on their own they can be unpredictable”；“you design a flow that orchestrates models, tools, and logic step by step—with clear conditions, checkpoints, and fallback paths.”</td>
+<td>workflow 是降低幻觉、漏步骤和不一致输出的产品化手段</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/agent-framework/journey/workflows">Microsoft Agent Framework Workflows</a> &#x2F; <a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/agent-framework/overview/">Overview</a>（2026-04）</td>
+<td>“the LLM decides what happens next”；“that’s powerful for open-ended tasks… but it’s a liability when the process itself has rules”；“Use a workflow when… The process has well-defined steps &#x2F; You need explicit control over execution order.”</td>
+<td>先判断任务是否能确定性表达；能确定的部分不应交给 agent 自由规划</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://fin.ai/procedures">Intercom Fin Procedures</a></td>
+<td>“Give Fin detailed, step-by-step instructions”；“Fin combines agentic behavior with deterministic control”；“Turn written rules into enforced logic.”</td>
+<td>面向业务团队的 Agent 产品也在把流程、规则、测试和升级路径显式化</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://docs.oracle.com/en/cloud/saas/fusion-ai/aiaas/create-custom-ai-agents-of-type-workflow.html">Oracle AI Agent Studio Workflow</a></td>
+<td>“Agent teams of type Workflow consist of a sequence of nodes used for deterministic, rule-based orchestration”；“Workflows are ideal for scenarios where compliance, repeatability, and governance are essential.”</td>
+<td>企业 SaaS 厂商也在把 Agent 拆成节点、条件、业务函数、LLM 节点和输出 schema</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/langgraph">LangGraph overview</a> &#x2F; <a target="_blank" rel="noopener" href="https://docs.crewai.com/en/concepts/flows.md">CrewAI Flows</a></td>
+<td>LangGraph: “orchestration framework and runtime for building, managing, and deploying long-running, stateful agents”；“durable execution, streaming, human-in-the-loop”；CrewAI: “structured, event-driven workflows”；“manage state”；“Flexible Control Flow”</td>
+<td>这是偏框架层的间接证据：生产 Agent 需要运行时编排、状态和恢复能力，而不是只靠一次聊天循环</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://docs.cloud.google.com/gemini-enterprise-agent-platform/overview">Google Gemini Enterprise Agent Platform overview</a></td>
+<td>“build, deploy, govern, and optimize enterprise-grade AI agents”；“Agent Registry”；“Agent Identity”；“Agent Gateway”；“Agent evaluation”；“Observability.”</td>
+<td>作为平台趋势信号：最新企业 Agent 已经从“能调用工具”扩展到全生命周期治理、评估和运行时管理</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://developers.openai.com/api/docs/guides/agents">OpenAI Agents SDK</a> &#x2F; <a target="_blank" rel="noopener" href="https://docs.claude.com/en/docs/agents-and-tools/tool-use/overview">Anthropic Claude tool use</a></td>
+<td>OpenAI: running agents、handoff、sessions、traces；Anthropic: tool schema、<code>tool_use</code> &#x2F; <code>tool_result</code>、tool execution model</td>
+<td>它们说明“模型如何调用工具”，但不足以单独推出“生产 SaaS 应该高度自治”；SaaS 侧还必须补 workflow、权限、审批和审计</td>
+</tr>
+</tbody></table>
+<p>所以本文里的“先 workflow，后 autonomy”更准确地说是：<strong>先把可确定的业务路径、状态和副作用边界显式建模，再把 LLM 放进无法完全规则化的局部节点。</strong> 对多数高风险、长流程 SaaS 场景，更稳妥的设计不是“让 agent 全自动决定一切”，而是：</p>
 <ol>
 <li>先把关键业务路径做成显式 workflow；</li>
 <li>再把 LLM 放进局部步骤做判断、总结、规划、生成；</li>
 <li>再逐步开放工具调用、记忆、专家路由、多 agent 协作；</li>
 <li>最后才考虑更高自治程度。</li>
 </ol>
-<p>LangGraph、Microsoft Agent Framework、Salesforce Agentforce、Dify、CrewAI 等框架和产品的公开资料，普遍支持类似设计取向：<strong>workflow 负责确定性，LLM 负责不确定性。</strong>（来源：<a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/langgraph">LangGraph overview</a>、<a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/agent-framework/overview/">Microsoft Agent Framework Overview</a>、<a target="_blank" rel="noopener" href="https://architect.salesforce.com/docs/architect/fundamentals/guide/hybrid-reasoning-agentforce-builder-agent-script.html">Salesforce Agentforce hybrid reasoning architecture</a>、<a target="_blank" rel="noopener" href="https://docs.dify.ai/en/use-dify/build/workflow-chatflow">Dify Workflow &amp; Chatflow</a>、<a target="_blank" rel="noopener" href="https://docs.crewai.com/llms.txt">CrewAI Docs index</a>）</p>
+<p>这里要避免过度解读：不是所有资料都直接说“必须先 workflow”。OpenAI &#x2F; Anthropic 这类模型厂商文档更多是在定义工具调用和 agent loop；LangGraph &#x2F; CrewAI 这类框架更多是在提供状态、编排和恢复能力；Salesforce、Dify、Microsoft、Intercom、Oracle 的资料则更直接把确定性流程、显式执行顺序、测试、审批和可审计性放在生产 Agent 的核心位置。把这些材料合在一起，才形成本文的设计判断：<strong>workflow 负责确定性，LLM 负责不确定性。</strong>（来源：<a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/langgraph">LangGraph overview</a>、<a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/agent-framework/overview/">Microsoft Agent Framework Overview</a>、<a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/agent-framework/journey/workflows">Microsoft Agent Framework Workflows</a>、<a target="_blank" rel="noopener" href="https://architect.salesforce.com/docs/architect/fundamentals/guide/hybrid-reasoning-agentforce-builder-agent-script.html">Salesforce Agentforce hybrid reasoning architecture</a>、<a target="_blank" rel="noopener" href="https://www.salesforce.com/blog/agent-script-control-plane/">Salesforce Blog - Agent Script control plane</a>、<a target="_blank" rel="noopener" href="https://docs.dify.ai/en/use-dify/build/workflow-chatflow">Dify Workflow &amp; Chatflow</a>、<a target="_blank" rel="noopener" href="https://fin.ai/procedures">Intercom Fin Procedures</a>、<a target="_blank" rel="noopener" href="https://docs.oracle.com/en/cloud/saas/fusion-ai/aiaas/create-custom-ai-agents-of-type-workflow.html">Oracle AI Agent Studio Workflow</a>、<a target="_blank" rel="noopener" href="https://docs.crewai.com/en/concepts/flows.md">CrewAI Flows</a>）</p>
 <h3 id="2-LLM-负责判断，系统负责执行"><a href="#2-LLM-负责判断，系统负责执行" class="headerlink" title="2. LLM 负责判断，系统负责执行"></a>2. LLM 负责判断，系统负责执行</h3><p>一个生产级 Agent 不能把“模型说要做什么”直接等同于“系统就执行什么”。更合理的分工是：</p>
 <table>
 <thead>
@@ -572,7 +626,7 @@
 <li>哪些 RAG 结果导致了错误答案？</li>
 <li>哪些 agent 进入了重复循环？</li>
 </ul>
-<p>Intercom Fin 的 Simulations &#x2F; Analyze、LangSmith、OpenAI Traces、CrewAI Traces、Relevance AI 的评估能力、Dify Logs 等公开能力，共同指向一个产品判断：<strong>Agent 产品应该把测试、评估、追踪、监控做成核心能力，而不是上线后再补。</strong>（来源：<a target="_blank" rel="noopener" href="https://fin.ai/testing">Intercom Fin Testing</a>、<a target="_blank" rel="noopener" href="https://fin.ai/analyze">Intercom Fin Analyze</a>、<a target="_blank" rel="noopener" href="https://docs.langchain.com/langsmith/observability">LangSmith Observability</a>、<a target="_blank" rel="noopener" href="https://developers.openai.com/api/docs/guides/agent-evals">OpenAI Agent evals</a>、<a target="_blank" rel="noopener" href="https://docs.crewai.com/llms.txt">CrewAI Docs index</a>、<a target="_blank" rel="noopener" href="https://docs.dify.ai/en/use-dify/build/workflow-chatflow">Dify Workflow &amp; Chatflow</a>）</p>
+<p>Intercom Fin 的 Simulations &#x2F; Analyze、LangSmith、OpenAI Traces、CrewAI Traces、Relevance AI 的评估能力、Dify Logs 等公开能力，共同指向一个产品判断：<strong>Agent 产品应该把测试、评估、追踪、监控做成核心能力，而不是上线后再补。</strong>（来源：<a target="_blank" rel="noopener" href="https://fin.ai/testing">Intercom Fin Testing</a>、<a target="_blank" rel="noopener" href="https://fin.ai/analyze">Intercom Fin Analyze</a>、<a target="_blank" rel="noopener" href="https://docs.langchain.com/langsmith/observability">LangSmith Observability</a>、<a target="_blank" rel="noopener" href="https://developers.openai.com/api/docs/guides/agent-evals">OpenAI Agent evals</a>、<a target="_blank" rel="noopener" href="https://docs.crewai.com/en/observability/tracing.md">CrewAI Tracing</a>、<a target="_blank" rel="noopener" href="https://docs.dify.ai/en/use-dify/build/workflow-chatflow">Dify Workflow &amp; Chatflow</a>）</p>
 <h2 id="二、别人是怎么做的：主流产品与框架实践"><a href="#二、别人是怎么做的：主流产品与框架实践" class="headerlink" title="二、别人是怎么做的：主流产品与框架实践"></a>二、别人是怎么做的：主流产品与框架实践</h2><p>这一节只基于公开文档、产品页面、开发者资料和开源仓库做归纳。下面的“可迁移设计”是从公开能力中抽象出的产品和架构启发，不代表这些厂商的未公开内部实现。</p>
 <h3 id="1-OpenAI-x2F-Anthropic：标准-agent-loop-与工具调用"><a href="#1-OpenAI-x2F-Anthropic：标准-agent-loop-与工具调用" class="headerlink" title="1. OpenAI &#x2F; Anthropic：标准 agent loop 与工具调用"></a>1. OpenAI &#x2F; Anthropic：标准 agent loop 与工具调用</h3><p>OpenAI 和 Anthropic 的官方文档都把 Agent 执行抽象成类似循环。（来源：<a target="_blank" rel="noopener" href="https://developers.openai.com/api/docs/guides/agents/running-agents">OpenAI Running agents</a>、<a target="_blank" rel="noopener" href="https://docs.claude.com/en/docs/agents-and-tools/tool-use/overview">Anthropic Claude tool use</a>）</p>
 <ol>
@@ -591,6 +645,7 @@
 <li>工具执行层必须由业务系统控制，而不是模型直接访问外部系统；</li>
 <li>trace 要覆盖模型调用、工具调用、handoff、guardrail。</li>
 </ul>
+<p>这一类资料是 Agent 系统的基础层证据：它告诉我们模型如何参与工具调用循环，但它本身并不解决业务流程的确定性、审批、回滚和审计。因此，在 SaaS 场景里，标准 agent loop 更适合作为 workflow 节点里的执行机制，而不是整个产品架构的唯一抽象。</p>
 <h3 id="2-LangGraph：把-Agent-当成有状态工作流"><a href="#2-LangGraph：把-Agent-当成有状态工作流" class="headerlink" title="2. LangGraph：把 Agent 当成有状态工作流"></a>2. LangGraph：把 Agent 当成有状态工作流</h3><p>LangGraph 的重要价值在于，它不是只提供一个“聊天循环”，而是强调以下能力。（来源：<a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/langgraph">LangGraph overview</a>、<a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/langgraph/interrupts">LangGraph interrupts</a>）</p>
 <ul>
 <li>stateful graph；</li>
@@ -601,7 +656,7 @@
 <li>memory；</li>
 <li>debugging。</li>
 </ul>
-<p>这对 SaaS Agent 非常关键。因为 SaaS Agent 往往不是一次请求就结束，而是会经历：</p>
+<p>这对 SaaS Agent 非常关键。LangGraph 的证据不是“所有 Agent 都必须先画流程图”，而是：一旦任务变成长时间、有状态、可能失败或需要人工介入的执行过程，系统就需要 workflow runtime 级别的能力。因为 SaaS Agent 往往不是一次请求就结束，而是会经历：</p>
 <ol>
 <li>收到用户任务；</li>
 <li>查询数据；</li>
@@ -614,7 +669,7 @@
 <li>记录审计。</li>
 </ol>
 <p>这更像 workflow，而不是普通 HTTP handler。</p>
-<h3 id="3-Microsoft-Agent-Framework：企业级-session、memory、workflow、telemetry"><a href="#3-Microsoft-Agent-Framework：企业级-session、memory、workflow、telemetry" class="headerlink" title="3. Microsoft Agent Framework：企业级 session、memory、workflow、telemetry"></a>3. Microsoft Agent Framework：企业级 session、memory、workflow、telemetry</h3><p>Microsoft Agent Framework &#x2F; Semantic Kernel 的公开资料强调以下企业级 agent 能力。（来源：<a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/agent-framework/overview/">Microsoft Agent Framework Overview</a>）</p>
+<h3 id="3-Microsoft-Agent-Framework：2026-年的-workflow-x2F-durable-agent-取向"><a href="#3-Microsoft-Agent-Framework：2026-年的-workflow-x2F-durable-agent-取向" class="headerlink" title="3. Microsoft Agent Framework：2026 年的 workflow &#x2F; durable agent 取向"></a>3. Microsoft Agent Framework：2026 年的 workflow &#x2F; durable agent 取向</h3><p>Microsoft Agent Framework &#x2F; Semantic Kernel 的公开资料强调以下企业级 agent 能力。尤其是 2026 年 4 月更新的 Workflows 文档，已经不是泛泛地说“支持多 Agent”，而是明确讨论什么时候不能让 LLM 决定下一步。（来源：<a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/agent-framework/overview/">Microsoft Agent Framework Overview</a>、<a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/agent-framework/journey/workflows">Microsoft Agent Framework Workflows</a>、<a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/agent-framework/user-guide/workflows/overview">Microsoft Agent Framework Workflows Overview</a>）</p>
 <ul>
 <li>agent session；</li>
 <li>context provider；</li>
@@ -625,6 +680,8 @@
 <li>memory。</li>
 </ul>
 <p>值得借鉴的是：它把 Agent 放在企业系统工程里理解，而不是单独看成模型 API 封装。尤其是 observability 中对敏感数据采集的控制，提醒 SaaS Agent 不能默认把 prompt、response、工具参数全量明文打进日志。</p>
+<p>Microsoft 的资料对 workflow-first 的支持比较直接：它明确把“open-ended or conversational”归给 agent，把“well-defined steps、explicit execution order、checkpointing、human-in-the-loop”归给 workflow；Workflows 文档进一步说明，前面那些 agent patterns 的共同点是 <strong>LLM decides what happens next</strong>，这在开放任务里有用，但当流程本身有规则时会成为 liability。它给出的折中方案是：workflow 定义结构、顺序和 gate，agent executor 只处理真正需要 LLM 推理的步骤。</p>
+<p>2026 年的 Durable Agents &#x2F; Azure Functions 集成又把这个方向推进了一步：它强调 stateful agents、deterministic multi-agent orchestrations、failure resume、human-in-the-loop pause &#x2F; resume 和可观测 dashboard。这个更新说明生产 Agent 的问题已经从“模型会不会调用工具”推进到“长任务如何可靠执行、失败后如何恢复、人审等待期间如何保存状态和控制成本”。（来源：<a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/agent-framework/integrations/azure-functions">Microsoft Agent Framework Durable Agents</a>）</p>
 <h3 id="4-Intercom-Fin：客服-Agent-的“流程-测试-分析”闭环"><a href="#4-Intercom-Fin：客服-Agent-的“流程-测试-分析”闭环" class="headerlink" title="4. Intercom Fin：客服 Agent 的“流程 + 测试 + 分析”闭环"></a>4. Intercom Fin：客服 Agent 的“流程 + 测试 + 分析”闭环</h3><p>Intercom Fin 的公开产品能力里有几个非常值得学习的设计。（来源：<a target="_blank" rel="noopener" href="https://fin.ai/procedures">Intercom Fin Procedures</a>、<a target="_blank" rel="noopener" href="https://fin.ai/testing">Intercom Fin Testing</a>、<a target="_blank" rel="noopener" href="https://fin.ai/analyze">Intercom Fin Analyze</a>、<a target="_blank" rel="noopener" href="https://fin.ai/integrations">Intercom Fin Integrations</a>）</p>
 <ul>
 <li><strong>Procedures</strong>：用自然语言和条件逻辑描述复杂客服流程；</li>
@@ -633,8 +690,8 @@
 <li><strong>Analyze &#x2F; Monitors &#x2F; Recommendations</strong>：上线后看会话质量、风险和改进建议；</li>
 <li><strong>Handoff</strong>：复杂或高风险问题升级人工。</li>
 </ul>
-<p>它说明客服 Agent 的关键不是“让模型自由聊天”，而是把业务流程、知识、连接器、测试、监控和人工升级组合成闭环。</p>
-<h3 id="5-Salesforce-Agentforce：确定性逻辑与-LLM-推理混合"><a href="#5-Salesforce-Agentforce：确定性逻辑与-LLM-推理混合" class="headerlink" title="5. Salesforce Agentforce：确定性逻辑与 LLM 推理混合"></a>5. Salesforce Agentforce：确定性逻辑与 LLM 推理混合</h3><p>Salesforce Agentforce 是企业 Agent 设计里非常值得单独研究的案例。它的公开资料反复传递一个信号：<strong>企业 Agent 不能只靠 prompt 驱动，而要把可确定的业务逻辑、权限边界、测试追踪和治理能力产品化。</strong>（来源：<a target="_blank" rel="noopener" href="https://architect.salesforce.com/docs/architect/fundamentals/guide/hybrid-reasoning-agentforce-builder-agent-script.html">Salesforce Agentforce hybrid reasoning architecture</a>、<a target="_blank" rel="noopener" href="https://developer.salesforce.com/docs/ai/agentforce/guide/agent-script.html">Salesforce Agent Script</a>、<a target="_blank" rel="noopener" href="https://www.salesforce.com/blog/agent-script-control-plane/">Salesforce Blog - Agent Script control plane</a>）</p>
+<p>它说明客服 Agent 的关键不是“让模型自由聊天”，而是把业务流程、知识、连接器、测试、监控和人工升级组合成闭环。Fin Procedures 对 workflow-first 的支撑也很直接：复杂 query 被拆成 step-by-step instructions、if&#x2F;else、code-enforced rules 和 Simulations，而不是只靠一个通用客服 prompt。</p>
+<h3 id="5-Salesforce-Agentforce：确定性逻辑与-LLM-推理混合"><a href="#5-Salesforce-Agentforce：确定性逻辑与-LLM-推理混合" class="headerlink" title="5. Salesforce Agentforce：确定性逻辑与 LLM 推理混合"></a>5. Salesforce Agentforce：确定性逻辑与 LLM 推理混合</h3><p>Salesforce Agentforce 是企业 Agent 设计里非常值得单独研究的案例，而且它的关键材料集中出现在 2025 年 10 月以后：2025 年 10 月 Salesforce Developers Blog 介绍 Agent Script 和 hybrid reasoning，2025 年 10 月 Salesforce Engineering 文章解释 Agent Graph 和 guided determinism，2026 年 2 月 Agent Script decoded 进一步拆解语言基础，2026 年 4 月 control plane 文章又把 Agent Script 描述成 agentic decisions 的控制平面。这些资料共同传递一个信号：<strong>企业 Agent 不能只靠 prompt 驱动，而要把可确定的业务逻辑、权限边界、测试追踪和治理能力产品化。</strong>（来源：<a target="_blank" rel="noopener" href="https://developer.salesforce.com/blogs/2025/10/introducing-hybrid-reasoning-with-agent-script">Salesforce Developers Blog - Introducing Hybrid Reasoning with Agent Script</a>、<a target="_blank" rel="noopener" href="https://engineering.salesforce.com/agentforces-agent-graph-toward-guided-determinism-with-hybrid-reasoning/">Salesforce Engineering - Agentforce Agent Graph</a>、<a target="_blank" rel="noopener" href="https://developer.salesforce.com/blogs/2026/02/agent-script-decoded-intro-to-agent-script-language-fundamentals">Salesforce Developers Blog - Agent Script decoded</a>、<a target="_blank" rel="noopener" href="https://www.salesforce.com/blog/agent-script-control-plane/">Salesforce Blog - Agent Script control plane</a>）</p>
 <p>官方 Architect 文档把 Agentforce 的新方向称为 <strong>hybrid reasoning</strong>。它的核心不是让 LLM 自由决定所有步骤，而是把系统拆成两类能力。（来源：<a target="_blank" rel="noopener" href="https://architect.salesforce.com/docs/architect/fundamentals/guide/hybrid-reasoning-agentforce-builder-agent-script.html">Salesforce Agentforce hybrid reasoning architecture</a>）</p>
 <table>
 <thead>
@@ -684,7 +741,9 @@
 <li>面向运营团队的 testing、simulation、run history、trace、评估和线上质量分析。</li>
 </ol>
 <p>可以把 Agentforce 的公开设计总结成一句话：<strong>它把 Agent 从“prompt 工程”推进到“可治理的业务执行系统”。</strong></p>
-<h3 id="6-Zapier-Agents：模板、连接器、治理边界"><a href="#6-Zapier-Agents：模板、连接器、治理边界" class="headerlink" title="6. Zapier Agents：模板、连接器、治理边界"></a>6. Zapier Agents：模板、连接器、治理边界</h3><p>Zapier Agents 的公开资料体现了自动化 SaaS 做 Agent 的优势。（来源：<a target="_blank" rel="noopener" href="https://zapier.com/agents">Zapier Agents</a>、<a target="_blank" rel="noopener" href="https://help.zapier.com/hc/en-us/articles/24393442652557-Build-an-agent-in-Zapier-Agents">Zapier Help - Build an agent in Zapier Agents</a>）</p>
+<h3 id="6-Oracle-x2F-Google：企业-Agent-平台也在走向-workflow、身份和治理"><a href="#6-Oracle-x2F-Google：企业-Agent-平台也在走向-workflow、身份和治理" class="headerlink" title="6. Oracle &#x2F; Google：企业 Agent 平台也在走向 workflow、身份和治理"></a>6. Oracle &#x2F; Google：企业 Agent 平台也在走向 workflow、身份和治理</h3><p>2026 年以后，企业软件厂商的 Agent 平台资料里也出现了同样方向。Oracle AI Agent Studio 的 Workflow 类型 agent team 被定义为“deterministic, rule-based orchestration”，强调每一步预配置，适合 compliance、repeatability、governance；示例里把采购申请拆成 set variables、business object function、IF conditional、document processor、LLM、send email 等节点，并要求定义 workflow-level variables、output schema、error handling 和 access roles。（来源：<a target="_blank" rel="noopener" href="https://docs.oracle.com/en/cloud/saas/fusion-ai/aiaas/create-custom-ai-agents-of-type-workflow.html">Oracle AI Agent Studio Workflow</a>）</p>
+<p>Google Gemini Enterprise Agent Platform 的公开产品资料则体现了另一个新趋势：企业 Agent 平台不再只讨论 agent loop，而是把 Agent Studio、Agent Runtime、Agent Registry、Agent Identity、Agent Gateway、治理策略、评估、仿真和观测放在同一个平台生命周期里。这个来源更适合作为“平台化趋势信号”，而不是 workflow-first 的单点证明。（来源：<a target="_blank" rel="noopener" href="https://docs.cloud.google.com/gemini-enterprise-agent-platform/overview">Google Gemini Enterprise Agent Platform overview</a>）</p>
+<h3 id="7-Zapier-Agents：模板、连接器、治理边界"><a href="#7-Zapier-Agents：模板、连接器、治理边界" class="headerlink" title="7. Zapier Agents：模板、连接器、治理边界"></a>7. Zapier Agents：模板、连接器、治理边界</h3><p>Zapier Agents 的公开资料体现了自动化 SaaS 做 Agent 的优势。（来源：<a target="_blank" rel="noopener" href="https://zapier.com/agents">Zapier Agents</a>、<a target="_blank" rel="noopener" href="https://help.zapier.com/hc/en-us/articles/24393442652557-Build-an-agent-in-Zapier-Agents">Zapier Help - Build an agent in Zapier Agents</a>）</p>
 <ul>
 <li>大量 app connectors；</li>
 <li>templates；</li>
@@ -695,7 +754,7 @@
 <li>Agent 与 Chatbot、Automation 的产品边界区分。</li>
 </ul>
 <p>可借鉴点是：Agent SaaS 的 onboarding 不应该从空白 prompt 开始，而应该从模板开始。用户先选一个“销售线索跟进 agent”“客服分流 agent”“会议纪要 agent”，连上工具，跑通测试，再逐步定制。</p>
-<h3 id="7-Relevance-AI-x2F-Lindy：团队化、治理化、运营化"><a href="#7-Relevance-AI-x2F-Lindy：团队化、治理化、运营化" class="headerlink" title="7. Relevance AI &#x2F; Lindy：团队化、治理化、运营化"></a>7. Relevance AI &#x2F; Lindy：团队化、治理化、运营化</h3><p>Relevance AI 和 Lindy 的公开资料都在强调团队化和治理化能力。（来源：<a target="_blank" rel="noopener" href="https://relevanceai.com/docs/llms.txt">Relevance AI Docs index</a>、<a target="_blank" rel="noopener" href="https://www.relevanceai.com/">Relevance AI product overview</a>、<a target="_blank" rel="noopener" href="https://www.lindy.ai/blog/lindy-enterprise-announcement">Lindy Enterprise</a>、<a target="_blank" rel="noopener" href="https://www.lindy.ai/blog/lindy-3-0">Lindy 3.0</a>）</p>
+<h3 id="8-Relevance-AI-x2F-Lindy：团队化、治理化、运营化"><a href="#8-Relevance-AI-x2F-Lindy：团队化、治理化、运营化" class="headerlink" title="8. Relevance AI &#x2F; Lindy：团队化、治理化、运营化"></a>8. Relevance AI &#x2F; Lindy：团队化、治理化、运营化</h3><p>Relevance AI 和 Lindy 的公开资料都在强调团队化和治理化能力。这里主要把它们作为市场产品信号，而不是像 Salesforce &#x2F; Microsoft &#x2F; Oracle 那样作为 workflow-first 的强架构证据；具体能力仍应以其最新 docs、changelog 或企业合同说明为准。（来源：<a target="_blank" rel="noopener" href="https://relevanceai.com/docs/llms.txt">Relevance AI Docs index</a>、<a target="_blank" rel="noopener" href="https://www.relevanceai.com/">Relevance AI product overview</a>、<a target="_blank" rel="noopener" href="https://www.lindy.ai/blog/lindy-enterprise-announcement">Lindy Enterprise</a>、<a target="_blank" rel="noopener" href="https://www.lindy.ai/blog/lindy-3-0">Lindy 3.0</a>）</p>
 <ul>
 <li>AI workforce &#x2F; multi-agent teams；</li>
 <li>marketplace &#x2F; templates；</li>
@@ -708,7 +767,7 @@
 <li>evals。</li>
 </ul>
 <p>这说明当 Agent 从个人效率工具进入团队 SaaS 后，真正重要的是治理：谁能创建 agent，谁能发布，谁能连接工具，谁能查看日志，谁能批准高风险动作，谁能导出数据。</p>
-<h3 id="8-Dify-x2F-CrewAI-x2F-AutoGPT-x2F-OpenHands：开源实现的工程启发"><a href="#8-Dify-x2F-CrewAI-x2F-AutoGPT-x2F-OpenHands：开源实现的工程启发" class="headerlink" title="8. Dify &#x2F; CrewAI &#x2F; AutoGPT &#x2F; OpenHands：开源实现的工程启发"></a>8. Dify &#x2F; CrewAI &#x2F; AutoGPT &#x2F; OpenHands：开源实现的工程启发</h3><p>几个开源生态分别提供了不同启发。（来源：<a target="_blank" rel="noopener" href="https://docs.dify.ai/en/use-dify/build/workflow-chatflow">Dify Workflow &amp; Chatflow</a>、<a target="_blank" rel="noopener" href="https://docs.dify.ai/en/use-dify/build/agent">Dify Agent</a>、<a target="_blank" rel="noopener" href="https://docs.dify.ai/en/use-dify/workspace/tools">Dify Tools</a>、<a target="_blank" rel="noopener" href="https://docs.crewai.com/llms.txt">CrewAI Docs index</a>、<a target="_blank" rel="noopener" href="https://github.com/Significant-Gravitas/AutoGPT">AutoGPT</a>、<a target="_blank" rel="noopener" href="https://github.com/OpenHands/OpenHands">OpenHands</a>）</p>
+<h3 id="9-Dify-x2F-CrewAI-x2F-AutoGPT-x2F-OpenHands：开源实现的工程启发"><a href="#9-Dify-x2F-CrewAI-x2F-AutoGPT-x2F-OpenHands：开源实现的工程启发" class="headerlink" title="9. Dify &#x2F; CrewAI &#x2F; AutoGPT &#x2F; OpenHands：开源实现的工程启发"></a>9. Dify &#x2F; CrewAI &#x2F; AutoGPT &#x2F; OpenHands：开源实现的工程启发</h3><p>几个开源生态分别提供了不同启发。这里要特别注意时效性：Dify 和 CrewAI 的文档仍适合作为当前能力参考；AutoGPT &#x2F; OpenHands 的 GitHub README 更适合作为开源平台化方向的启发，不能替代具体版本或 release notes 来证明 2026 年最新架构。（来源：<a target="_blank" rel="noopener" href="https://docs.dify.ai/en/use-dify/build/workflow-chatflow">Dify Workflow &amp; Chatflow</a>、<a target="_blank" rel="noopener" href="https://docs.dify.ai/en/use-dify/build/agent">Dify Agent</a>、<a target="_blank" rel="noopener" href="https://docs.dify.ai/en/use-dify/workspace/tools">Dify Tools</a>、<a target="_blank" rel="noopener" href="https://docs.crewai.com/en/concepts/flows">CrewAI Flows</a>、<a target="_blank" rel="noopener" href="https://docs.crewai.com/en/enterprise/introduction">CrewAI AMP</a>、<a target="_blank" rel="noopener" href="https://github.com/Significant-Gravitas/AutoGPT">AutoGPT</a>、<a target="_blank" rel="noopener" href="https://github.com/OpenHands/OpenHands">OpenHands</a>）</p>
 <ul>
 <li><strong>Dify</strong>：明确区分 Workflow &#x2F; Chatflow &#x2F; Agent，提供 logs、run history、version control、maximum iterations；</li>
 <li><strong>CrewAI</strong>：强调 agents、crews、flows、memory、checkpointing、event listeners、traces、HITL；</li>
@@ -722,6 +781,7 @@
 <li>工具与 sandbox 要隔离；</li>
 <li>版本、日志、benchmark、checkpoint 是生产系统的基础能力。</li>
 </ol>
+<p>这里的证据强度不完全相同：Dify 对 Workflow &#x2F; Chatflow &#x2F; Agent 的区分很直接；CrewAI 同时强调 Crews 和 Flows，更像是在说明“自主协作”和“显式流程”是两类可组合能力；AutoGPT、OpenHands 更多提供平台化、执行记录和治理方向的间接启发。因此本文不会把它们都解读成同一句口号，而是把它们共同归纳为：生产化 Agent 必须有流程、状态、评估和治理层。</p>
 <h2 id="三、SaaS-Agent-的推荐产品分层"><a href="#三、SaaS-Agent-的推荐产品分层" class="headerlink" title="三、SaaS Agent 的推荐产品分层"></a>三、SaaS Agent 的推荐产品分层</h2><p>不要把所有能力都叫 Agent。更清晰的产品分层是：</p>
 <table>
 <thead>
@@ -777,11 +837,57 @@
 <li>最后才做多 Agent 协作。</li>
 </ol>
 <h2 id="四、总体架构：一个生产级-SaaS-Agent-应该有哪些模块"><a href="#四、总体架构：一个生产级-SaaS-Agent-应该有哪些模块" class="headerlink" title="四、总体架构：一个生产级 SaaS Agent 应该有哪些模块"></a>四、总体架构：一个生产级 SaaS Agent 应该有哪些模块</h2><p>推荐架构如下：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">User / Admin / Auditor</span><br><span class="line">        │</span><br><span class="line">        ▼</span><br><span class="line">Web App / API / Webhook / Slack / Email</span><br><span class="line">        │</span><br><span class="line">        ▼</span><br><span class="line">AuthN → Tenant Resolve → RBAC / ABAC</span><br><span class="line">        │</span><br><span class="line">        ▼</span><br><span class="line">Agent Gateway</span><br><span class="line">  - quota check</span><br><span class="line">  - policy check</span><br><span class="line">  - risk classification</span><br><span class="line">  - prompt injection detection</span><br><span class="line">        │</span><br><span class="line">        ▼</span><br><span class="line">Orchestrator / Workflow Runtime</span><br><span class="line">  - state machine</span><br><span class="line">  - checkpoint</span><br><span class="line">  - retry / timeout</span><br><span class="line">  - human interrupt</span><br><span class="line">        │</span><br><span class="line">        ├───────────────► LLM Runtime</span><br><span class="line">        │                   - model routing</span><br><span class="line">        │                   - prompt assembly</span><br><span class="line">        │                   - context window control</span><br><span class="line">        │                   - structured output</span><br><span class="line">        │</span><br><span class="line">        ├───────────────► Tool Runtime</span><br><span class="line">        │                   - tool registry</span><br><span class="line">        │                   - schema validation</span><br><span class="line">        │                   - permission check</span><br><span class="line">        │                   - idempotency</span><br><span class="line">        │                   - connector secrets</span><br><span class="line">        │</span><br><span class="line">        ├───────────────► Memory / RAG</span><br><span class="line">        │                   - tenant namespace</span><br><span class="line">        │                   - retrieval policy</span><br><span class="line">        │                   - memory scope</span><br><span class="line">        │                   - delete / export</span><br><span class="line">        │</span><br><span class="line">        └───────────────► Approval Queue</span><br><span class="line">                            - risk explanation</span><br><span class="line">                            - diff preview</span><br><span class="line">                            - approver policy</span><br><span class="line">                            - resume execution</span><br><span class="line"></span><br><span class="line">Cross-cutting:</span><br><span class="line">Audit Log / Trace / Metrics / Evals / Billing / Cost Control / Admin Console</span><br></pre></td></tr></table></figure>
+<pre class="mermaid">flowchart TD
+  user["User / Admin / Auditor"]
+  entry["Web App / API / Webhook / Slack / Email"]
+  auth["AuthN → Tenant Resolve → RBAC / ABAC"]
+
+  gateway["Agent Gateway<br/>- quota check<br/>- policy check<br/>- risk classification<br/>- prompt injection detection"]
+  workflow["Orchestrator / Workflow Runtime<br/>- state machine<br/>- checkpoint<br/>- retry / timeout<br/>- human interrupt"]
+
+  llm["LLM Runtime<br/>- model routing<br/>- prompt assembly<br/>- context window control<br/>- structured output"]
+  tool["Tool Runtime<br/>- tool registry<br/>- schema validation<br/>- permission check<br/>- idempotency<br/>- connector secrets"]
+  memory["Memory / RAG<br/>- tenant namespace<br/>- retrieval policy<br/>- memory scope<br/>- delete / export"]
+  approval["Approval Queue<br/>- risk explanation<br/>- diff preview<br/>- approver policy<br/>- resume execution"]
+
+  governance["Cross-cutting Governance<br/>Audit Log / Trace / Metrics / Evals<br/>Billing / Cost Control / Admin Console"]
+
+  user --> entry --> auth --> gateway --> workflow
+  workflow --> llm
+  workflow --> tool
+  workflow --> memory
+  workflow --> approval
+
+  gateway -.-> governance
+  workflow -.-> governance
+  llm -.-> governance
+  tool -.-> governance
+  memory -.-> governance
+  approval -.-> governance</pre>
 
 <p>这套架构的核心思想是：<strong>Agent Gateway 管边界，Workflow Runtime 管过程，Tool Runtime 管副作用，Observability 管事实，Admin Console 管治理。</strong></p>
 <h2 id="五、关键模块设计"><a href="#五、关键模块设计" class="headerlink" title="五、关键模块设计"></a>五、关键模块设计</h2><h3 id="1-Tenant-与身份模型"><a href="#1-Tenant-与身份模型" class="headerlink" title="1. Tenant 与身份模型"></a>1. Tenant 与身份模型</h3><p>SaaS Agent 的最小身份模型应该包括：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Tenant</span><br><span class="line">  ├── Organization</span><br><span class="line">  ├── Workspace / Project</span><br><span class="line">  ├── User</span><br><span class="line">  ├── Role</span><br><span class="line">  ├── Agent</span><br><span class="line">  ├── Tool Connection</span><br><span class="line">  ├── Knowledge Base</span><br><span class="line">  ├── Policy</span><br><span class="line">  └── Billing Account</span><br></pre></td></tr></table></figure>
+<pre class="mermaid">flowchart TD
+  tenant["Tenant"]
+  org["Organization"]
+  workspace["Workspace / Project"]
+  user["User"]
+  role["Role"]
+  agent["Agent"]
+  tool_connection["Tool Connection"]
+  knowledge_base["Knowledge Base"]
+  policy["Policy"]
+  billing["Billing Account"]
+
+  tenant --> org
+  tenant --> workspace
+  tenant --> user
+  tenant --> role
+  tenant --> agent
+  tenant --> tool_connection
+  tenant --> knowledge_base
+  tenant --> policy
+  tenant --> billing</pre>
 
 <p>每次请求至少解析出：</p>
 <ul>
@@ -947,7 +1053,21 @@
 </ul>
 <p>Temporal、LangGraph、Microsoft workflow 都可以作为参考。关键不是选哪个框架，而是要有“长任务状态机”的意识。（来源：<a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/langgraph">LangGraph overview</a>、<a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/agent-framework/overview/">Microsoft Agent Framework Overview</a>）</p>
 <h3 id="5-Human-in-the-loop-审批"><a href="#5-Human-in-the-loop-审批" class="headerlink" title="5. Human-in-the-loop 审批"></a>5. Human-in-the-loop 审批</h3><p>审批不是简单弹一个确认框，而应该是一个完整对象：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">ApprovalRequest</span><br><span class="line">  - tenant_id</span><br><span class="line">  - agent_run_id</span><br><span class="line">  - actor_id</span><br><span class="line">  - proposed_action</span><br><span class="line">  - target_resource</span><br><span class="line">  - before / after diff</span><br><span class="line">  - risk_reason</span><br><span class="line">  - tool_input_redacted</span><br><span class="line">  - estimated_cost</span><br><span class="line">  - approver_policy</span><br><span class="line">  - expires_at</span><br><span class="line">  - status</span><br></pre></td></tr></table></figure>
+<pre class="mermaid">classDiagram
+  class ApprovalRequest {
+    tenant_id
+    agent_run_id
+    actor_id
+    proposed_action
+    target_resource
+    before_after_diff
+    risk_reason
+    tool_input_redacted
+    estimated_cost
+    approver_policy
+    expires_at
+    status
+  }</pre>
 
 <p>审批页面必须让人看懂：</p>
 <ol>
@@ -986,7 +1106,29 @@
 </tbody></table>
 <p>最容易被忽视的是工具 guardrail。真正造成损失的往往不是模型“说错话”，而是模型调用了不该调用的工具，或者用错误参数调用了真实系统。</p>
 <h3 id="7-Observability：trace-要能还原决策链"><a href="#7-Observability：trace-要能还原决策链" class="headerlink" title="7. Observability：trace 要能还原决策链"></a>7. Observability：trace 要能还原决策链</h3><p>每一次 Agent run 都应该有完整 trace：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">AgentRun</span><br><span class="line">  ├── user request</span><br><span class="line">  ├── policy checks</span><br><span class="line">  ├── prompt assembly</span><br><span class="line">  ├── model calls</span><br><span class="line">  ├── retrieval calls</span><br><span class="line">  ├── tool calls</span><br><span class="line">  ├── approvals</span><br><span class="line">  ├── retries</span><br><span class="line">  ├── final result</span><br><span class="line">  └── billing events</span><br></pre></td></tr></table></figure>
+<pre class="mermaid">flowchart TD
+  run["AgentRun"]
+  request["User request"]
+  policy["Policy checks"]
+  prompt["Prompt assembly"]
+  model["Model calls"]
+  retrieval["Retrieval calls"]
+  tool["Tool calls"]
+  approvals["Approvals"]
+  retries["Retries"]
+  result["Final result"]
+  billing["Billing events"]
+
+  run --> request
+  run --> policy
+  run --> prompt
+  run --> model
+  run --> retrieval
+  run --> tool
+  run --> approvals
+  run --> retries
+  run --> result
+  run --> billing</pre>
 
 <p>关键指标包括：</p>
 <ul>
@@ -1103,7 +1245,21 @@
 <li>集成断链要降级并提示重连。</li>
 </ol>
 <h3 id="11-授权委托：Agent-不能超过授权者的有效权限"><a href="#11-授权委托：Agent-不能超过授权者的有效权限" class="headerlink" title="11. 授权委托：Agent 不能超过授权者的有效权限"></a>11. 授权委托：Agent 不能超过授权者的有效权限</h3><p>SaaS Agent 的权限不是“用户权限”或“agent 权限”二选一，而应该取多个边界的交集：</p>
-<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">effective_permission = tenant policy</span><br><span class="line">                     ∩ actor permission</span><br><span class="line">                     ∩ agent policy</span><br><span class="line">                     ∩ tool scope</span><br><span class="line">                     ∩ target resource permission</span><br><span class="line">                     ∩ runtime risk policy</span><br></pre></td></tr></table></figure>
+<pre class="mermaid">flowchart TD
+  tenant_policy["Tenant policy"]
+  actor_permission["Actor permission"]
+  agent_policy["Agent policy"]
+  tool_scope["Tool scope"]
+  resource_permission["Target resource permission"]
+  runtime_risk["Runtime risk policy"]
+  effective["Effective permission<br/>取所有边界的交集"]
+
+  tenant_policy --> effective
+  actor_permission --> effective
+  agent_policy --> effective
+  tool_scope --> effective
+  resource_permission --> effective
+  runtime_risk --> effective</pre>
 
 <p>这意味着：</p>
 <ol>
@@ -1288,7 +1444,25 @@
 <li>查看 monitor；</li>
 <li>扩大流量。</li>
 </ol>
-<h3 id="2-执行路径"><a href="#2-执行路径" class="headerlink" title="2. 执行路径"></a>2. 执行路径</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">用户咨询退款</span><br><span class="line">  ↓</span><br><span class="line">识别意图：退款 / 投诉 / 普通问答</span><br><span class="line">  ↓</span><br><span class="line">检索退款政策和订单信息</span><br><span class="line">  ↓</span><br><span class="line">判断是否满足自动处理条件</span><br><span class="line">  ↓</span><br><span class="line">低风险：生成回复草稿</span><br><span class="line">高风险：创建审批请求</span><br><span class="line">  ↓</span><br><span class="line">审批通过后调用退款 API</span><br><span class="line">  ↓</span><br><span class="line">记录审计日志</span><br><span class="line">  ↓</span><br><span class="line">通知用户和客服团队</span><br></pre></td></tr></table></figure>
+<h3 id="2-执行路径"><a href="#2-执行路径" class="headerlink" title="2. 执行路径"></a>2. 执行路径</h3><pre class="mermaid">flowchart TD
+  start["用户咨询退款"]
+  intent["识别意图<br/>退款 / 投诉 / 普通问答"]
+  retrieve["检索退款政策和订单信息"]
+  decision{"是否满足自动处理条件？"}
+  low["低风险：生成回复草稿"]
+  high["高风险：创建审批请求"]
+  approve{"审批通过？"}
+  refund["调用退款 API"]
+  audit["记录审计日志"]
+  notify["通知用户和客服团队"]
+  escalate["升级人工处理"]
+
+  start --> intent --> retrieve --> decision
+  decision -->|低风险| low --> audit
+  decision -->|高风险| high --> approve
+  approve -->|是| refund --> audit
+  approve -->|否| escalate --> audit
+  audit --> notify</pre>
 
 <h3 id="3-关键-guardrail"><a href="#3-关键-guardrail" class="headerlink" title="3. 关键 guardrail"></a>3. 关键 guardrail</h3><ul>
 <li>金额超过阈值必须人工审批；</li>
@@ -1359,13 +1533,75 @@
 <li>Data warehouse：评估、成本、产品分析。</li>
 </ul>
 <p>多租户隔离和 SaaS 架构的底层原则可参考 AWS SaaS 架构资料；用量计费事件的设计可参考 Stripe usage-based billing。（参考：<a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/wellarchitected/latest/saas-lens/saas-lens.html">AWS SaaS Lens</a>、<a target="_blank" rel="noopener" href="https://docs.aws.amazon.com/whitepapers/latest/saas-architecture-fundamentals/tenant-isolation.html">AWS SaaS tenant isolation</a>、<a target="_blank" rel="noopener" href="https://docs.stripe.com/billing/subscriptions/usage-based/recording-usage">Stripe usage-based billing</a>）</p>
-<h2 id="十、数据模型草案"><a href="#十、数据模型草案" class="headerlink" title="十、数据模型草案"></a>十、数据模型草案</h2><h3 id="Agent"><a href="#Agent" class="headerlink" title="Agent"></a>Agent</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">Agent</span><br><span class="line">  - id</span><br><span class="line">  - tenant_id</span><br><span class="line">  - name</span><br><span class="line">  - description</span><br><span class="line">  - template_id</span><br><span class="line">  - version</span><br><span class="line">  - status</span><br><span class="line">  - system_prompt_version</span><br><span class="line">  - workflow_version</span><br><span class="line">  - tool_policy_id</span><br><span class="line">  - memory_policy_id</span><br><span class="line">  - risk_policy_id</span><br><span class="line">  - created_by</span><br><span class="line">  - updated_at</span><br></pre></td></tr></table></figure>
+<h2 id="十、数据模型草案"><a href="#十、数据模型草案" class="headerlink" title="十、数据模型草案"></a>十、数据模型草案</h2><h3 id="Agent"><a href="#Agent" class="headerlink" title="Agent"></a>Agent</h3><pre class="mermaid">classDiagram
+  class Agent {
+    id
+    tenant_id
+    name
+    description
+    template_id
+    version
+    status
+    system_prompt_version
+    workflow_version
+    tool_policy_id
+    memory_policy_id
+    risk_policy_id
+    created_by
+    updated_at
+  }</pre>
 
-<h3 id="AgentRun"><a href="#AgentRun" class="headerlink" title="AgentRun"></a>AgentRun</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">AgentRun</span><br><span class="line">  - id</span><br><span class="line">  - tenant_id</span><br><span class="line">  - agent_id</span><br><span class="line">  - actor_id</span><br><span class="line">  - session_id</span><br><span class="line">  - status</span><br><span class="line">  - input_summary</span><br><span class="line">  - current_step</span><br><span class="line">  - checkpoint_id</span><br><span class="line">  - cost_estimate</span><br><span class="line">  - cost_actual</span><br><span class="line">  - risk_level</span><br><span class="line">  - started_at</span><br><span class="line">  - finished_at</span><br></pre></td></tr></table></figure>
+<h3 id="AgentRun"><a href="#AgentRun" class="headerlink" title="AgentRun"></a>AgentRun</h3><pre class="mermaid">classDiagram
+  class AgentRun {
+    id
+    tenant_id
+    agent_id
+    actor_id
+    session_id
+    status
+    input_summary
+    current_step
+    checkpoint_id
+    cost_estimate
+    cost_actual
+    risk_level
+    started_at
+    finished_at
+  }</pre>
 
-<h3 id="ToolCall"><a href="#ToolCall" class="headerlink" title="ToolCall"></a>ToolCall</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">ToolCall</span><br><span class="line">  - id</span><br><span class="line">  - tenant_id</span><br><span class="line">  - run_id</span><br><span class="line">  - tool_id</span><br><span class="line">  - input_redacted</span><br><span class="line">  - output_redacted</span><br><span class="line">  - status</span><br><span class="line">  - idempotency_key</span><br><span class="line">  - approval_id</span><br><span class="line">  - latency_ms</span><br><span class="line">  - error_code</span><br><span class="line">  - created_at</span><br></pre></td></tr></table></figure>
+<h3 id="ToolCall"><a href="#ToolCall" class="headerlink" title="ToolCall"></a>ToolCall</h3><pre class="mermaid">classDiagram
+  class ToolCall {
+    id
+    tenant_id
+    run_id
+    tool_id
+    input_redacted
+    output_redacted
+    status
+    idempotency_key
+    approval_id
+    latency_ms
+    error_code
+    created_at
+  }</pre>
 
-<h3 id="AuditEvent"><a href="#AuditEvent" class="headerlink" title="AuditEvent"></a>AuditEvent</h3><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">AuditEvent</span><br><span class="line">  - id</span><br><span class="line">  - tenant_id</span><br><span class="line">  - actor_id</span><br><span class="line">  - agent_id</span><br><span class="line">  - run_id</span><br><span class="line">  - event_type</span><br><span class="line">  - resource_type</span><br><span class="line">  - resource_id</span><br><span class="line">  - action</span><br><span class="line">  - before_hash</span><br><span class="line">  - after_hash</span><br><span class="line">  - metadata_redacted</span><br><span class="line">  - trace_id</span><br><span class="line">  - created_at</span><br></pre></td></tr></table></figure>
+<h3 id="AuditEvent"><a href="#AuditEvent" class="headerlink" title="AuditEvent"></a>AuditEvent</h3><pre class="mermaid">classDiagram
+  class AuditEvent {
+    id
+    tenant_id
+    actor_id
+    agent_id
+    run_id
+    event_type
+    resource_type
+    resource_id
+    action
+    before_hash
+    after_hash
+    metadata_redacted
+    trace_id
+    created_at
+  }</pre>
 
 <h2 id="十一、上线与发布流程"><a href="#十一、上线与发布流程" class="headerlink" title="十一、上线与发布流程"></a>十一、上线与发布流程</h2><p>Agent 的发布应该像软件发布，而不是改完 prompt 直接上线。</p>
 <p>推荐流程：</p>
@@ -1525,7 +1761,12 @@
 <li>LangGraph interrupts: <a target="_blank" rel="noopener" href="https://docs.langchain.com/oss/python/langgraph/interrupts">https://docs.langchain.com/oss/python/langgraph/interrupts</a></li>
 <li>LangSmith Observability: <a target="_blank" rel="noopener" href="https://docs.langchain.com/langsmith/observability">https://docs.langchain.com/langsmith/observability</a></li>
 <li>Microsoft Agent Framework Overview: <a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/agent-framework/overview/">https://learn.microsoft.com/en-us/agent-framework/overview/</a></li>
-<li>CrewAI Docs index: <a target="_blank" rel="noopener" href="https://docs.crewai.com/llms.txt">https://docs.crewai.com/llms.txt</a></li>
+<li>Microsoft Agent Framework Workflows: <a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/agent-framework/journey/workflows">https://learn.microsoft.com/en-us/agent-framework/journey/workflows</a></li>
+<li>Microsoft Agent Framework Workflows Overview: <a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/agent-framework/user-guide/workflows/overview">https://learn.microsoft.com/en-us/agent-framework/user-guide/workflows/overview</a></li>
+<li>Microsoft Agent Framework Durable Agents: <a target="_blank" rel="noopener" href="https://learn.microsoft.com/en-us/agent-framework/integrations/azure-functions">https://learn.microsoft.com/en-us/agent-framework/integrations/azure-functions</a></li>
+<li>CrewAI Flows: <a target="_blank" rel="noopener" href="https://docs.crewai.com/en/concepts/flows">https://docs.crewai.com/en/concepts/flows</a></li>
+<li>CrewAI Tracing: <a target="_blank" rel="noopener" href="https://docs.crewai.com/en/observability/tracing.md">https://docs.crewai.com/en/observability/tracing.md</a></li>
+<li>CrewAI AMP: <a target="_blank" rel="noopener" href="https://docs.crewai.com/en/enterprise/introduction">https://docs.crewai.com/en/enterprise/introduction</a></li>
 <li>Dify Workflow &amp; Chatflow: <a target="_blank" rel="noopener" href="https://docs.dify.ai/en/use-dify/build/workflow-chatflow">https://docs.dify.ai/en/use-dify/build/workflow-chatflow</a></li>
 <li>Dify Agent: <a target="_blank" rel="noopener" href="https://docs.dify.ai/en/use-dify/build/agent">https://docs.dify.ai/en/use-dify/build/agent</a></li>
 <li>Dify Tools: <a target="_blank" rel="noopener" href="https://docs.dify.ai/en/use-dify/workspace/tools">https://docs.dify.ai/en/use-dify/workspace/tools</a></li>
@@ -1540,6 +1781,7 @@
 <li>Salesforce Agentforce Testing API: <a target="_blank" rel="noopener" href="https://developer.salesforce.com/docs/ai/agentforce/guide/testing-api-get-started.html">https://developer.salesforce.com/docs/ai/agentforce/guide/testing-api-get-started.html</a></li>
 <li>Salesforce Agentforce Session Tracing Data Export: <a target="_blank" rel="noopener" href="https://developer.salesforce.com/docs/ai/agentforce/guide/otel-api.html">https://developer.salesforce.com/docs/ai/agentforce/guide/otel-api.html</a></li>
 <li>Salesforce Agentforce Custom Connections: <a target="_blank" rel="noopener" href="https://developer.salesforce.com/docs/ai/agentforce/guide/custom-connections.html">https://developer.salesforce.com/docs/ai/agentforce/guide/custom-connections.html</a></li>
+<li>Salesforce Developers Blog - Introducing Hybrid Reasoning with Agent Script: <a target="_blank" rel="noopener" href="https://developer.salesforce.com/blogs/2025/10/introducing-hybrid-reasoning-with-agent-script">https://developer.salesforce.com/blogs/2025/10/introducing-hybrid-reasoning-with-agent-script</a></li>
 <li>Salesforce Engineering - Agentforce Agent Graph: <a target="_blank" rel="noopener" href="https://engineering.salesforce.com/agentforces-agent-graph-toward-guided-determinism-with-hybrid-reasoning/">https://engineering.salesforce.com/agentforces-agent-graph-toward-guided-determinism-with-hybrid-reasoning/</a></li>
 <li>Salesforce Developers Blog - Agent Script decoded: <a target="_blank" rel="noopener" href="https://developer.salesforce.com/blogs/2026/02/agent-script-decoded-intro-to-agent-script-language-fundamentals">https://developer.salesforce.com/blogs/2026/02/agent-script-decoded-intro-to-agent-script-language-fundamentals</a></li>
 <li>Salesforce Blog - Agent Script control plane: <a target="_blank" rel="noopener" href="https://www.salesforce.com/blog/agent-script-control-plane/">https://www.salesforce.com/blog/agent-script-control-plane/</a></li>
@@ -1548,6 +1790,8 @@
 <li>Salesforce Blog - Data governance for the agentic era: <a target="_blank" rel="noopener" href="https://www.salesforce.com/blog/data-governance-for-the-agentic-era/">https://www.salesforce.com/blog/data-governance-for-the-agentic-era/</a></li>
 <li>Salesforce Engineering - Enterprise agent platform: <a target="_blank" rel="noopener" href="https://engineering.salesforce.com/beyond-crm-how-salesforce-engineered-an-enterprise-agent-platform-for-any-workload/">https://engineering.salesforce.com/beyond-crm-how-salesforce-engineered-an-enterprise-agent-platform-for-any-workload/</a></li>
 <li>Salesforce Blog - Reducing Agentforce latency: <a target="_blank" rel="noopener" href="https://www.salesforce.com/blog/agentforce-reducing-latency/">https://www.salesforce.com/blog/agentforce-reducing-latency/</a></li>
+<li>Oracle AI Agent Studio Workflow: <a target="_blank" rel="noopener" href="https://docs.oracle.com/en/cloud/saas/fusion-ai/aiaas/create-custom-ai-agents-of-type-workflow.html">https://docs.oracle.com/en/cloud/saas/fusion-ai/aiaas/create-custom-ai-agents-of-type-workflow.html</a></li>
+<li>Google Gemini Enterprise Agent Platform overview: <a target="_blank" rel="noopener" href="https://docs.cloud.google.com/gemini-enterprise-agent-platform/overview">https://docs.cloud.google.com/gemini-enterprise-agent-platform/overview</a></li>
 <li>Zapier Agents: <a target="_blank" rel="noopener" href="https://zapier.com/agents">https://zapier.com/agents</a></li>
 <li>Zapier Help - Build an agent in Zapier Agents: <a target="_blank" rel="noopener" href="https://help.zapier.com/hc/en-us/articles/24393442652557-Build-an-agent-in-Zapier-Agents">https://help.zapier.com/hc/en-us/articles/24393442652557-Build-an-agent-in-Zapier-Agents</a></li>
 <li>Relevance AI Docs index: <a target="_blank" rel="noopener" href="https://relevanceai.com/docs/llms.txt">https://relevanceai.com/docs/llms.txt</a></li>
@@ -1573,7 +1817,7 @@
             <p>Author：<a href="https://edison-a-n.github.io">Edison</a>
             <p>Link：<a href="https://edison-a-n.github.io/2026/05/13/saas-agent-design-doc/">https://edison-a-n.github.io/2026/05/13/saas-agent-design-doc/</a>
             <p>Publish date：<a href="https://edison-a-n.github.io/2026/05/13/saas-agent-design-doc/">May 13th 2026, 12:00:00 am</a>
-            <p>Update date：<a href="https://edison-a-n.github.io/2026/05/13/saas-agent-design-doc/">May 15th 2026, 7:17:29 pm</a>
+            <p>Update date：<a href="https://edison-a-n.github.io/2026/05/13/saas-agent-design-doc/">May 15th 2026, 7:42:18 pm</a>
             <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     <!-- paginator -->
@@ -1635,7 +1879,7 @@
                 <div class="toc-catalog">
                     <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
                 </div>
-                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%85%88%E7%BB%99%E7%BB%93%E8%AE%BA%EF%BC%9ASaaS-Agent-%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99"><span class="toc-number">1.</span> <span class="toc-text">一、先给结论：SaaS Agent 的设计原则</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%85%88-workflow%EF%BC%8C%E5%90%8E-autonomy"><span class="toc-number">1.1.</span> <span class="toc-text">1. 先 workflow，后 autonomy</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-LLM-%E8%B4%9F%E8%B4%A3%E5%88%A4%E6%96%AD%EF%BC%8C%E7%B3%BB%E7%BB%9F%E8%B4%9F%E8%B4%A3%E6%89%A7%E8%A1%8C"><span class="toc-number">1.2.</span> <span class="toc-text">2. LLM 负责判断，系统负责执行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%A4%9A%E7%A7%9F%E6%88%B7%E8%BE%B9%E7%95%8C%E5%B0%B1%E6%98%AF%E7%B3%BB%E7%BB%9F%E8%BE%B9%E7%95%8C"><span class="toc-number">1.3.</span> <span class="toc-text">3. 多租户边界就是系统边界</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E9%AB%98%E9%A3%8E%E9%99%A9%E5%8A%A8%E4%BD%9C%E9%BB%98%E8%AE%A4-human-in-the-loop"><span class="toc-number">1.4.</span> <span class="toc-text">4. 高风险动作默认 human-in-the-loop</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E6%B2%A1%E6%9C%89-eval-%E5%92%8C-observability%EF%BC%8C%E5%B0%B1%E4%B8%8D%E8%A6%81%E8%B0%88%E7%94%9F%E4%BA%A7%E5%8C%96"><span class="toc-number">1.5.</span> <span class="toc-text">5. 没有 eval 和 observability，就不要谈生产化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%88%AB%E4%BA%BA%E6%98%AF%E6%80%8E%E4%B9%88%E5%81%9A%E7%9A%84%EF%BC%9A%E4%B8%BB%E6%B5%81%E4%BA%A7%E5%93%81%E4%B8%8E%E6%A1%86%E6%9E%B6%E5%AE%9E%E8%B7%B5"><span class="toc-number">2.</span> <span class="toc-text">二、别人是怎么做的：主流产品与框架实践</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-OpenAI-x2F-Anthropic%EF%BC%9A%E6%A0%87%E5%87%86-agent-loop-%E4%B8%8E%E5%B7%A5%E5%85%B7%E8%B0%83%E7%94%A8"><span class="toc-number">2.1.</span> <span class="toc-text">1. OpenAI &#x2F; Anthropic：标准 agent loop 与工具调用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-LangGraph%EF%BC%9A%E6%8A%8A-Agent-%E5%BD%93%E6%88%90%E6%9C%89%E7%8A%B6%E6%80%81%E5%B7%A5%E4%BD%9C%E6%B5%81"><span class="toc-number">2.2.</span> <span class="toc-text">2. LangGraph：把 Agent 当成有状态工作流</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-Microsoft-Agent-Framework%EF%BC%9A%E4%BC%81%E4%B8%9A%E7%BA%A7-session%E3%80%81memory%E3%80%81workflow%E3%80%81telemetry"><span class="toc-number">2.3.</span> <span class="toc-text">3. Microsoft Agent Framework：企业级 session、memory、workflow、telemetry</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-Intercom-Fin%EF%BC%9A%E5%AE%A2%E6%9C%8D-Agent-%E7%9A%84%E2%80%9C%E6%B5%81%E7%A8%8B-%E6%B5%8B%E8%AF%95-%E5%88%86%E6%9E%90%E2%80%9D%E9%97%AD%E7%8E%AF"><span class="toc-number">2.4.</span> <span class="toc-text">4. Intercom Fin：客服 Agent 的“流程 + 测试 + 分析”闭环</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-Salesforce-Agentforce%EF%BC%9A%E7%A1%AE%E5%AE%9A%E6%80%A7%E9%80%BB%E8%BE%91%E4%B8%8E-LLM-%E6%8E%A8%E7%90%86%E6%B7%B7%E5%90%88"><span class="toc-number">2.5.</span> <span class="toc-text">5. Salesforce Agentforce：确定性逻辑与 LLM 推理混合</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-Zapier-Agents%EF%BC%9A%E6%A8%A1%E6%9D%BF%E3%80%81%E8%BF%9E%E6%8E%A5%E5%99%A8%E3%80%81%E6%B2%BB%E7%90%86%E8%BE%B9%E7%95%8C"><span class="toc-number">2.6.</span> <span class="toc-text">6. Zapier Agents：模板、连接器、治理边界</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-Relevance-AI-x2F-Lindy%EF%BC%9A%E5%9B%A2%E9%98%9F%E5%8C%96%E3%80%81%E6%B2%BB%E7%90%86%E5%8C%96%E3%80%81%E8%BF%90%E8%90%A5%E5%8C%96"><span class="toc-number">2.7.</span> <span class="toc-text">7. Relevance AI &#x2F; Lindy：团队化、治理化、运营化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-Dify-x2F-CrewAI-x2F-AutoGPT-x2F-OpenHands%EF%BC%9A%E5%BC%80%E6%BA%90%E5%AE%9E%E7%8E%B0%E7%9A%84%E5%B7%A5%E7%A8%8B%E5%90%AF%E5%8F%91"><span class="toc-number">2.8.</span> <span class="toc-text">8. Dify &#x2F; CrewAI &#x2F; AutoGPT &#x2F; OpenHands：开源实现的工程启发</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81SaaS-Agent-%E7%9A%84%E6%8E%A8%E8%8D%90%E4%BA%A7%E5%93%81%E5%88%86%E5%B1%82"><span class="toc-number">3.</span> <span class="toc-text">三、SaaS Agent 的推荐产品分层</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%80%BB%E4%BD%93%E6%9E%B6%E6%9E%84%EF%BC%9A%E4%B8%80%E4%B8%AA%E7%94%9F%E4%BA%A7%E7%BA%A7-SaaS-Agent-%E5%BA%94%E8%AF%A5%E6%9C%89%E5%93%AA%E4%BA%9B%E6%A8%A1%E5%9D%97"><span class="toc-number">4.</span> <span class="toc-text">四、总体架构：一个生产级 SaaS Agent 应该有哪些模块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%85%B3%E9%94%AE%E6%A8%A1%E5%9D%97%E8%AE%BE%E8%AE%A1"><span class="toc-number">5.</span> <span class="toc-text">五、关键模块设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-Tenant-%E4%B8%8E%E8%BA%AB%E4%BB%BD%E6%A8%A1%E5%9E%8B"><span class="toc-number">5.1.</span> <span class="toc-text">1. Tenant 与身份模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%B7%A5%E5%85%B7%E7%B3%BB%E7%BB%9F%EF%BC%9AAgent-%E8%BF%9E%E6%8E%A5%E7%9C%9F%E5%AE%9E%E4%B8%96%E7%95%8C%E7%9A%84%E8%BE%B9%E7%95%8C"><span class="toc-number">5.2.</span> <span class="toc-text">2. 工具系统：Agent 连接真实世界的边界</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-Memory-%E4%B8%8E-RAG%EF%BC%9A%E4%B8%8D%E8%A6%81%E6%8A%8A%E6%89%80%E6%9C%89%E4%B8%9C%E8%A5%BF%E9%83%BD%E5%A1%9E%E8%BF%9B%E2%80%9C%E8%AE%B0%E5%BF%86%E2%80%9D"><span class="toc-number">5.3.</span> <span class="toc-text">3. Memory 与 RAG：不要把所有东西都塞进“记忆”</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-Orchestrator%EF%BC%9A%E4%B8%8D%E8%A6%81%E6%8A%8A%E9%95%BF%E4%BB%BB%E5%8A%A1%E5%A1%9E%E8%BF%9B%E4%B8%80%E6%AC%A1-HTTP-%E8%AF%B7%E6%B1%82"><span class="toc-number">5.4.</span> <span class="toc-text">4. Orchestrator：不要把长任务塞进一次 HTTP 请求</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-Human-in-the-loop-%E5%AE%A1%E6%89%B9"><span class="toc-number">5.5.</span> <span class="toc-text">5. Human-in-the-loop 审批</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-Guardrails%EF%BC%9A%E4%B8%8D%E6%98%AF%E4%B8%80%E4%B8%AA%E6%8F%90%E7%A4%BA%E8%AF%8D%EF%BC%8C%E8%80%8C%E6%98%AF%E4%B8%80%E6%95%B4%E5%B1%82%E6%8E%A7%E5%88%B6%E7%B3%BB%E7%BB%9F"><span class="toc-number">5.6.</span> <span class="toc-text">6. Guardrails：不是一个提示词，而是一整层控制系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-Observability%EF%BC%9Atrace-%E8%A6%81%E8%83%BD%E8%BF%98%E5%8E%9F%E5%86%B3%E7%AD%96%E9%93%BE"><span class="toc-number">5.7.</span> <span class="toc-text">7. Observability：trace 要能还原决策链</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-Eval%EF%BC%9A%E6%8A%8A%E2%80%9C%E6%84%9F%E8%A7%89%E5%8F%98%E5%A5%BD%E4%BA%86%E2%80%9D%E5%8F%98%E6%88%90%E5%8F%AF%E6%B5%8B%E9%87%8F"><span class="toc-number">5.8.</span> <span class="toc-text">8. Eval：把“感觉变好了”变成可测量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-%E8%AE%A1%E8%B4%B9%E3%80%81%E9%85%8D%E9%A2%9D%E4%B8%8E%E6%88%90%E6%9C%AC%E6%8E%A7%E5%88%B6"><span class="toc-number">5.9.</span> <span class="toc-text">9. 计费、配额与成本控制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-Secrets-%E4%B8%8E%E7%AC%AC%E4%B8%89%E6%96%B9%E8%BF%9E%E6%8E%A5%E5%99%A8"><span class="toc-number">5.10.</span> <span class="toc-text">10. Secrets 与第三方连接器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-%E6%8E%88%E6%9D%83%E5%A7%94%E6%89%98%EF%BC%9AAgent-%E4%B8%8D%E8%83%BD%E8%B6%85%E8%BF%87%E6%8E%88%E6%9D%83%E8%80%85%E7%9A%84%E6%9C%89%E6%95%88%E6%9D%83%E9%99%90"><span class="toc-number">5.11.</span> <span class="toc-text">11. 授权委托：Agent 不能超过授权者的有效权限</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-%E6%95%B0%E6%8D%AE%E4%BF%9D%E7%95%99%E3%80%81%E5%88%A0%E9%99%A4%E4%B8%8E%E5%AF%BC%E5%87%BA%E7%AD%96%E7%95%A5"><span class="toc-number">5.12.</span> <span class="toc-text">12. 数据保留、删除与导出策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#13-Kill-switch-%E4%B8%8E%E7%8E%AF%E5%A2%83%E9%9A%94%E7%A6%BB"><span class="toc-number">5.13.</span> <span class="toc-text">13. Kill switch 与环境隔离</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E4%B8%80%E4%B8%AA%E6%8E%A8%E8%8D%90%E7%9A%84-MVP-%E8%8C%83%E5%9B%B4"><span class="toc-number">6.</span> <span class="toc-text">六、一个推荐的 MVP 范围</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#MVP-%E7%9B%AE%E6%A0%87"><span class="toc-number">6.1.</span> <span class="toc-text">MVP 目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MVP-%E4%B8%8D%E5%81%9A%E4%BB%80%E4%B9%88"><span class="toc-number">6.2.</span> <span class="toc-text">MVP 不做什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A8%E8%8D%90-MVP-%E6%A8%A1%E5%9D%97%E4%BC%98%E5%85%88%E7%BA%A7"><span class="toc-number">6.3.</span> <span class="toc-text">推荐 MVP 模块优先级</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%80%E5%B0%8F%E5%8F%AF%E8%A1%8C-eval-%E5%9F%BA%E7%BA%BF"><span class="toc-number">6.4.</span> <span class="toc-text">最小可行 eval 基线</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%85%B8%E5%9E%8B%E5%9C%BA%E6%99%AF%E8%AE%BE%E8%AE%A1%E7%A4%BA%E4%BE%8B%EF%BC%9A%E5%AE%A2%E6%9C%8D-SaaS-Agent"><span class="toc-number">7.</span> <span class="toc-text">七、典型场景设计示例：客服 SaaS Agent</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E7%94%A8%E6%88%B7%E8%B7%AF%E5%BE%84"><span class="toc-number">7.1.</span> <span class="toc-text">1. 用户路径</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%89%A7%E8%A1%8C%E8%B7%AF%E5%BE%84"><span class="toc-number">7.2.</span> <span class="toc-text">2. 执行路径</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%85%B3%E9%94%AE-guardrail"><span class="toc-number">7.3.</span> <span class="toc-text">3. 关键 guardrail</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E5%85%B8%E5%9E%8B%E5%9C%BA%E6%99%AF%E8%AE%BE%E8%AE%A1%E7%A4%BA%E4%BE%8B%EF%BC%9A%E9%94%80%E5%94%AE%E8%BF%90%E8%90%A5-Agent"><span class="toc-number">8.</span> <span class="toc-text">八、典型场景设计示例：销售运营 Agent</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A8%E8%8D%90%E8%BE%B9%E7%95%8C"><span class="toc-number">8.1.</span> <span class="toc-text">推荐边界</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88"><span class="toc-number">8.2.</span> <span class="toc-text">为什么</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E6%8A%80%E6%9C%AF%E9%80%89%E5%9E%8B%E5%BB%BA%E8%AE%AE"><span class="toc-number">9.</span> <span class="toc-text">九、技术选型建议</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E7%BC%96%E6%8E%92%E5%B1%82"><span class="toc-number">9.1.</span> <span class="toc-text">1. 编排层</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%A8%A1%E5%9E%8B%E5%B1%82"><span class="toc-number">9.2.</span> <span class="toc-text">2. 模型层</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%B7%A5%E5%85%B7%E5%8D%8F%E8%AE%AE"><span class="toc-number">9.3.</span> <span class="toc-text">3. 工具协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E6%95%B0%E6%8D%AE%E5%B1%82"><span class="toc-number">9.4.</span> <span class="toc-text">4. 数据层</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E6%95%B0%E6%8D%AE%E6%A8%A1%E5%9E%8B%E8%8D%89%E6%A1%88"><span class="toc-number">10.</span> <span class="toc-text">十、数据模型草案</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Agent"><span class="toc-number">10.1.</span> <span class="toc-text">Agent</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AgentRun"><span class="toc-number">10.2.</span> <span class="toc-text">AgentRun</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ToolCall"><span class="toc-number">10.3.</span> <span class="toc-text">ToolCall</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AuditEvent"><span class="toc-number">10.4.</span> <span class="toc-text">AuditEvent</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E4%B8%8A%E7%BA%BF%E4%B8%8E%E5%8F%91%E5%B8%83%E6%B5%81%E7%A8%8B"><span class="toc-number">11.</span> <span class="toc-text">十一、上线与发布流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81%E9%A3%8E%E9%99%A9%E6%B8%85%E5%8D%95"><span class="toc-number">12.</span> <span class="toc-text">十二、风险清单</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%AE%89%E5%85%A8%E9%A3%8E%E9%99%A9"><span class="toc-number">12.1.</span> <span class="toc-text">1. 安全风险</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E4%BA%A7%E5%93%81%E9%A3%8E%E9%99%A9"><span class="toc-number">12.2.</span> <span class="toc-text">2. 产品风险</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%B7%A5%E7%A8%8B%E9%A3%8E%E9%99%A9"><span class="toc-number">12.3.</span> <span class="toc-text">3. 工程风险</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E5%90%88%E8%A7%84%E9%A3%8E%E9%99%A9"><span class="toc-number">12.4.</span> <span class="toc-text">4. 合规风险</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%89%E3%80%81%E8%90%BD%E5%9C%B0-checklist"><span class="toc-number">13.</span> <span class="toc-text">十三、落地 checklist</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%A7%E5%93%81%E4%BE%A7"><span class="toc-number">13.1.</span> <span class="toc-text">产品侧</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%A5%E7%A8%8B%E4%BE%A7"><span class="toc-number">13.2.</span> <span class="toc-text">工程侧</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E5%85%A8%E4%B8%8E%E5%90%88%E8%A7%84%E4%BE%A7"><span class="toc-number">13.3.</span> <span class="toc-text">安全与合规侧</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%84%E4%BC%B0%E4%BE%A7"><span class="toc-number">13.4.</span> <span class="toc-text">评估侧</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E5%9B%9B%E3%80%81%E6%8E%A8%E8%8D%90%E8%B7%AF%E7%BA%BF%E5%9B%BE"><span class="toc-number">14.</span> <span class="toc-text">十四、推荐路线图</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Phase-0%EF%BC%9A%E7%A0%94%E7%A9%B6%E4%B8%8E%E5%AE%9A%E4%B9%89"><span class="toc-number">14.1.</span> <span class="toc-text">Phase 0：研究与定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Phase-1%EF%BC%9ACopilot-MVP"><span class="toc-number">14.2.</span> <span class="toc-text">Phase 1：Copilot MVP</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Phase-2%EF%BC%9AWorkflow-Agent"><span class="toc-number">14.3.</span> <span class="toc-text">Phase 2：Workflow Agent</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Phase-3%EF%BC%9ATeam-SaaS"><span class="toc-number">14.4.</span> <span class="toc-text">Phase 3：Team SaaS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Phase-4%EF%BC%9AAgent-Platform"><span class="toc-number">14.5.</span> <span class="toc-text">Phase 4：Agent Platform</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%BA%94%E3%80%81%E6%9C%80%E5%90%8E%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%88%A4%E6%96%AD"><span class="toc-number">15.</span> <span class="toc-text">十五、最后的设计判断</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-number">16.</span> <span class="toc-text">参考资料</span></a></li></ol>
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%BB%8E%E5%85%AC%E5%BC%80%E8%B5%84%E6%96%99%E5%92%8C%E5%B7%A5%E7%A8%8B%E5%AE%9E%E8%B7%B5%E5%BD%92%E7%BA%B3%E5%87%BA%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99"><span class="toc-number">1.</span> <span class="toc-text">一、从公开资料和工程实践归纳出的设计原则</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%85%88-workflow%EF%BC%8C%E5%90%8E-autonomy"><span class="toc-number">1.1.</span> <span class="toc-text">1. 先 workflow，后 autonomy</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-LLM-%E8%B4%9F%E8%B4%A3%E5%88%A4%E6%96%AD%EF%BC%8C%E7%B3%BB%E7%BB%9F%E8%B4%9F%E8%B4%A3%E6%89%A7%E8%A1%8C"><span class="toc-number">1.2.</span> <span class="toc-text">2. LLM 负责判断，系统负责执行</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%A4%9A%E7%A7%9F%E6%88%B7%E8%BE%B9%E7%95%8C%E5%B0%B1%E6%98%AF%E7%B3%BB%E7%BB%9F%E8%BE%B9%E7%95%8C"><span class="toc-number">1.3.</span> <span class="toc-text">3. 多租户边界就是系统边界</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E9%AB%98%E9%A3%8E%E9%99%A9%E5%8A%A8%E4%BD%9C%E9%BB%98%E8%AE%A4-human-in-the-loop"><span class="toc-number">1.4.</span> <span class="toc-text">4. 高风险动作默认 human-in-the-loop</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-%E6%B2%A1%E6%9C%89-eval-%E5%92%8C-observability%EF%BC%8C%E5%B0%B1%E4%B8%8D%E8%A6%81%E8%B0%88%E7%94%9F%E4%BA%A7%E5%8C%96"><span class="toc-number">1.5.</span> <span class="toc-text">5. 没有 eval 和 observability，就不要谈生产化</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%88%AB%E4%BA%BA%E6%98%AF%E6%80%8E%E4%B9%88%E5%81%9A%E7%9A%84%EF%BC%9A%E4%B8%BB%E6%B5%81%E4%BA%A7%E5%93%81%E4%B8%8E%E6%A1%86%E6%9E%B6%E5%AE%9E%E8%B7%B5"><span class="toc-number">2.</span> <span class="toc-text">二、别人是怎么做的：主流产品与框架实践</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-OpenAI-x2F-Anthropic%EF%BC%9A%E6%A0%87%E5%87%86-agent-loop-%E4%B8%8E%E5%B7%A5%E5%85%B7%E8%B0%83%E7%94%A8"><span class="toc-number">2.1.</span> <span class="toc-text">1. OpenAI &#x2F; Anthropic：标准 agent loop 与工具调用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-LangGraph%EF%BC%9A%E6%8A%8A-Agent-%E5%BD%93%E6%88%90%E6%9C%89%E7%8A%B6%E6%80%81%E5%B7%A5%E4%BD%9C%E6%B5%81"><span class="toc-number">2.2.</span> <span class="toc-text">2. LangGraph：把 Agent 当成有状态工作流</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-Microsoft-Agent-Framework%EF%BC%9A2026-%E5%B9%B4%E7%9A%84-workflow-x2F-durable-agent-%E5%8F%96%E5%90%91"><span class="toc-number">2.3.</span> <span class="toc-text">3. Microsoft Agent Framework：2026 年的 workflow &#x2F; durable agent 取向</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-Intercom-Fin%EF%BC%9A%E5%AE%A2%E6%9C%8D-Agent-%E7%9A%84%E2%80%9C%E6%B5%81%E7%A8%8B-%E6%B5%8B%E8%AF%95-%E5%88%86%E6%9E%90%E2%80%9D%E9%97%AD%E7%8E%AF"><span class="toc-number">2.4.</span> <span class="toc-text">4. Intercom Fin：客服 Agent 的“流程 + 测试 + 分析”闭环</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-Salesforce-Agentforce%EF%BC%9A%E7%A1%AE%E5%AE%9A%E6%80%A7%E9%80%BB%E8%BE%91%E4%B8%8E-LLM-%E6%8E%A8%E7%90%86%E6%B7%B7%E5%90%88"><span class="toc-number">2.5.</span> <span class="toc-text">5. Salesforce Agentforce：确定性逻辑与 LLM 推理混合</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-Oracle-x2F-Google%EF%BC%9A%E4%BC%81%E4%B8%9A-Agent-%E5%B9%B3%E5%8F%B0%E4%B9%9F%E5%9C%A8%E8%B5%B0%E5%90%91-workflow%E3%80%81%E8%BA%AB%E4%BB%BD%E5%92%8C%E6%B2%BB%E7%90%86"><span class="toc-number">2.6.</span> <span class="toc-text">6. Oracle &#x2F; Google：企业 Agent 平台也在走向 workflow、身份和治理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-Zapier-Agents%EF%BC%9A%E6%A8%A1%E6%9D%BF%E3%80%81%E8%BF%9E%E6%8E%A5%E5%99%A8%E3%80%81%E6%B2%BB%E7%90%86%E8%BE%B9%E7%95%8C"><span class="toc-number">2.7.</span> <span class="toc-text">7. Zapier Agents：模板、连接器、治理边界</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-Relevance-AI-x2F-Lindy%EF%BC%9A%E5%9B%A2%E9%98%9F%E5%8C%96%E3%80%81%E6%B2%BB%E7%90%86%E5%8C%96%E3%80%81%E8%BF%90%E8%90%A5%E5%8C%96"><span class="toc-number">2.8.</span> <span class="toc-text">8. Relevance AI &#x2F; Lindy：团队化、治理化、运营化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-Dify-x2F-CrewAI-x2F-AutoGPT-x2F-OpenHands%EF%BC%9A%E5%BC%80%E6%BA%90%E5%AE%9E%E7%8E%B0%E7%9A%84%E5%B7%A5%E7%A8%8B%E5%90%AF%E5%8F%91"><span class="toc-number">2.9.</span> <span class="toc-text">9. Dify &#x2F; CrewAI &#x2F; AutoGPT &#x2F; OpenHands：开源实现的工程启发</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81SaaS-Agent-%E7%9A%84%E6%8E%A8%E8%8D%90%E4%BA%A7%E5%93%81%E5%88%86%E5%B1%82"><span class="toc-number">3.</span> <span class="toc-text">三、SaaS Agent 的推荐产品分层</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%80%BB%E4%BD%93%E6%9E%B6%E6%9E%84%EF%BC%9A%E4%B8%80%E4%B8%AA%E7%94%9F%E4%BA%A7%E7%BA%A7-SaaS-Agent-%E5%BA%94%E8%AF%A5%E6%9C%89%E5%93%AA%E4%BA%9B%E6%A8%A1%E5%9D%97"><span class="toc-number">4.</span> <span class="toc-text">四、总体架构：一个生产级 SaaS Agent 应该有哪些模块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E5%85%B3%E9%94%AE%E6%A8%A1%E5%9D%97%E8%AE%BE%E8%AE%A1"><span class="toc-number">5.</span> <span class="toc-text">五、关键模块设计</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-Tenant-%E4%B8%8E%E8%BA%AB%E4%BB%BD%E6%A8%A1%E5%9E%8B"><span class="toc-number">5.1.</span> <span class="toc-text">1. Tenant 与身份模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E5%B7%A5%E5%85%B7%E7%B3%BB%E7%BB%9F%EF%BC%9AAgent-%E8%BF%9E%E6%8E%A5%E7%9C%9F%E5%AE%9E%E4%B8%96%E7%95%8C%E7%9A%84%E8%BE%B9%E7%95%8C"><span class="toc-number">5.2.</span> <span class="toc-text">2. 工具系统：Agent 连接真实世界的边界</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-Memory-%E4%B8%8E-RAG%EF%BC%9A%E4%B8%8D%E8%A6%81%E6%8A%8A%E6%89%80%E6%9C%89%E4%B8%9C%E8%A5%BF%E9%83%BD%E5%A1%9E%E8%BF%9B%E2%80%9C%E8%AE%B0%E5%BF%86%E2%80%9D"><span class="toc-number">5.3.</span> <span class="toc-text">3. Memory 与 RAG：不要把所有东西都塞进“记忆”</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-Orchestrator%EF%BC%9A%E4%B8%8D%E8%A6%81%E6%8A%8A%E9%95%BF%E4%BB%BB%E5%8A%A1%E5%A1%9E%E8%BF%9B%E4%B8%80%E6%AC%A1-HTTP-%E8%AF%B7%E6%B1%82"><span class="toc-number">5.4.</span> <span class="toc-text">4. Orchestrator：不要把长任务塞进一次 HTTP 请求</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-Human-in-the-loop-%E5%AE%A1%E6%89%B9"><span class="toc-number">5.5.</span> <span class="toc-text">5. Human-in-the-loop 审批</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-Guardrails%EF%BC%9A%E4%B8%8D%E6%98%AF%E4%B8%80%E4%B8%AA%E6%8F%90%E7%A4%BA%E8%AF%8D%EF%BC%8C%E8%80%8C%E6%98%AF%E4%B8%80%E6%95%B4%E5%B1%82%E6%8E%A7%E5%88%B6%E7%B3%BB%E7%BB%9F"><span class="toc-number">5.6.</span> <span class="toc-text">6. Guardrails：不是一个提示词，而是一整层控制系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-Observability%EF%BC%9Atrace-%E8%A6%81%E8%83%BD%E8%BF%98%E5%8E%9F%E5%86%B3%E7%AD%96%E9%93%BE"><span class="toc-number">5.7.</span> <span class="toc-text">7. Observability：trace 要能还原决策链</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-Eval%EF%BC%9A%E6%8A%8A%E2%80%9C%E6%84%9F%E8%A7%89%E5%8F%98%E5%A5%BD%E4%BA%86%E2%80%9D%E5%8F%98%E6%88%90%E5%8F%AF%E6%B5%8B%E9%87%8F"><span class="toc-number">5.8.</span> <span class="toc-text">8. Eval：把“感觉变好了”变成可测量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-%E8%AE%A1%E8%B4%B9%E3%80%81%E9%85%8D%E9%A2%9D%E4%B8%8E%E6%88%90%E6%9C%AC%E6%8E%A7%E5%88%B6"><span class="toc-number">5.9.</span> <span class="toc-text">9. 计费、配额与成本控制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-Secrets-%E4%B8%8E%E7%AC%AC%E4%B8%89%E6%96%B9%E8%BF%9E%E6%8E%A5%E5%99%A8"><span class="toc-number">5.10.</span> <span class="toc-text">10. Secrets 与第三方连接器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-%E6%8E%88%E6%9D%83%E5%A7%94%E6%89%98%EF%BC%9AAgent-%E4%B8%8D%E8%83%BD%E8%B6%85%E8%BF%87%E6%8E%88%E6%9D%83%E8%80%85%E7%9A%84%E6%9C%89%E6%95%88%E6%9D%83%E9%99%90"><span class="toc-number">5.11.</span> <span class="toc-text">11. 授权委托：Agent 不能超过授权者的有效权限</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-%E6%95%B0%E6%8D%AE%E4%BF%9D%E7%95%99%E3%80%81%E5%88%A0%E9%99%A4%E4%B8%8E%E5%AF%BC%E5%87%BA%E7%AD%96%E7%95%A5"><span class="toc-number">5.12.</span> <span class="toc-text">12. 数据保留、删除与导出策略</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#13-Kill-switch-%E4%B8%8E%E7%8E%AF%E5%A2%83%E9%9A%94%E7%A6%BB"><span class="toc-number">5.13.</span> <span class="toc-text">13. Kill switch 与环境隔离</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E4%B8%80%E4%B8%AA%E6%8E%A8%E8%8D%90%E7%9A%84-MVP-%E8%8C%83%E5%9B%B4"><span class="toc-number">6.</span> <span class="toc-text">六、一个推荐的 MVP 范围</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#MVP-%E7%9B%AE%E6%A0%87"><span class="toc-number">6.1.</span> <span class="toc-text">MVP 目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MVP-%E4%B8%8D%E5%81%9A%E4%BB%80%E4%B9%88"><span class="toc-number">6.2.</span> <span class="toc-text">MVP 不做什么</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A8%E8%8D%90-MVP-%E6%A8%A1%E5%9D%97%E4%BC%98%E5%85%88%E7%BA%A7"><span class="toc-number">6.3.</span> <span class="toc-text">推荐 MVP 模块优先级</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%80%E5%B0%8F%E5%8F%AF%E8%A1%8C-eval-%E5%9F%BA%E7%BA%BF"><span class="toc-number">6.4.</span> <span class="toc-text">最小可行 eval 基线</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%85%B8%E5%9E%8B%E5%9C%BA%E6%99%AF%E8%AE%BE%E8%AE%A1%E7%A4%BA%E4%BE%8B%EF%BC%9A%E5%AE%A2%E6%9C%8D-SaaS-Agent"><span class="toc-number">7.</span> <span class="toc-text">七、典型场景设计示例：客服 SaaS Agent</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E7%94%A8%E6%88%B7%E8%B7%AF%E5%BE%84"><span class="toc-number">7.1.</span> <span class="toc-text">1. 用户路径</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%89%A7%E8%A1%8C%E8%B7%AF%E5%BE%84"><span class="toc-number">7.2.</span> <span class="toc-text">2. 执行路径</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%85%B3%E9%94%AE-guardrail"><span class="toc-number">7.3.</span> <span class="toc-text">3. 关键 guardrail</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E5%85%B8%E5%9E%8B%E5%9C%BA%E6%99%AF%E8%AE%BE%E8%AE%A1%E7%A4%BA%E4%BE%8B%EF%BC%9A%E9%94%80%E5%94%AE%E8%BF%90%E8%90%A5-Agent"><span class="toc-number">8.</span> <span class="toc-text">八、典型场景设计示例：销售运营 Agent</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A8%E8%8D%90%E8%BE%B9%E7%95%8C"><span class="toc-number">8.1.</span> <span class="toc-text">推荐边界</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88"><span class="toc-number">8.2.</span> <span class="toc-text">为什么</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E6%8A%80%E6%9C%AF%E9%80%89%E5%9E%8B%E5%BB%BA%E8%AE%AE"><span class="toc-number">9.</span> <span class="toc-text">九、技术选型建议</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E7%BC%96%E6%8E%92%E5%B1%82"><span class="toc-number">9.1.</span> <span class="toc-text">1. 编排层</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%A8%A1%E5%9E%8B%E5%B1%82"><span class="toc-number">9.2.</span> <span class="toc-text">2. 模型层</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%B7%A5%E5%85%B7%E5%8D%8F%E8%AE%AE"><span class="toc-number">9.3.</span> <span class="toc-text">3. 工具协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E6%95%B0%E6%8D%AE%E5%B1%82"><span class="toc-number">9.4.</span> <span class="toc-text">4. 数据层</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E6%95%B0%E6%8D%AE%E6%A8%A1%E5%9E%8B%E8%8D%89%E6%A1%88"><span class="toc-number">10.</span> <span class="toc-text">十、数据模型草案</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Agent"><span class="toc-number">10.1.</span> <span class="toc-text">Agent</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AgentRun"><span class="toc-number">10.2.</span> <span class="toc-text">AgentRun</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ToolCall"><span class="toc-number">10.3.</span> <span class="toc-text">ToolCall</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#AuditEvent"><span class="toc-number">10.4.</span> <span class="toc-text">AuditEvent</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E4%B8%8A%E7%BA%BF%E4%B8%8E%E5%8F%91%E5%B8%83%E6%B5%81%E7%A8%8B"><span class="toc-number">11.</span> <span class="toc-text">十一、上线与发布流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81%E9%A3%8E%E9%99%A9%E6%B8%85%E5%8D%95"><span class="toc-number">12.</span> <span class="toc-text">十二、风险清单</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%AE%89%E5%85%A8%E9%A3%8E%E9%99%A9"><span class="toc-number">12.1.</span> <span class="toc-text">1. 安全风险</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E4%BA%A7%E5%93%81%E9%A3%8E%E9%99%A9"><span class="toc-number">12.2.</span> <span class="toc-text">2. 产品风险</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%B7%A5%E7%A8%8B%E9%A3%8E%E9%99%A9"><span class="toc-number">12.3.</span> <span class="toc-text">3. 工程风险</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E5%90%88%E8%A7%84%E9%A3%8E%E9%99%A9"><span class="toc-number">12.4.</span> <span class="toc-text">4. 合规风险</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%89%E3%80%81%E8%90%BD%E5%9C%B0-checklist"><span class="toc-number">13.</span> <span class="toc-text">十三、落地 checklist</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%A7%E5%93%81%E4%BE%A7"><span class="toc-number">13.1.</span> <span class="toc-text">产品侧</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%A5%E7%A8%8B%E4%BE%A7"><span class="toc-number">13.2.</span> <span class="toc-text">工程侧</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E5%85%A8%E4%B8%8E%E5%90%88%E8%A7%84%E4%BE%A7"><span class="toc-number">13.3.</span> <span class="toc-text">安全与合规侧</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%84%E4%BC%B0%E4%BE%A7"><span class="toc-number">13.4.</span> <span class="toc-text">评估侧</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E5%9B%9B%E3%80%81%E6%8E%A8%E8%8D%90%E8%B7%AF%E7%BA%BF%E5%9B%BE"><span class="toc-number">14.</span> <span class="toc-text">十四、推荐路线图</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Phase-0%EF%BC%9A%E7%A0%94%E7%A9%B6%E4%B8%8E%E5%AE%9A%E4%B9%89"><span class="toc-number">14.1.</span> <span class="toc-text">Phase 0：研究与定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Phase-1%EF%BC%9ACopilot-MVP"><span class="toc-number">14.2.</span> <span class="toc-text">Phase 1：Copilot MVP</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Phase-2%EF%BC%9AWorkflow-Agent"><span class="toc-number">14.3.</span> <span class="toc-text">Phase 2：Workflow Agent</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Phase-3%EF%BC%9ATeam-SaaS"><span class="toc-number">14.4.</span> <span class="toc-text">Phase 3：Team SaaS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Phase-4%EF%BC%9AAgent-Platform"><span class="toc-number">14.5.</span> <span class="toc-text">Phase 4：Agent Platform</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%BA%94%E3%80%81%E6%9C%80%E5%90%8E%E7%9A%84%E8%AE%BE%E8%AE%A1%E5%88%A4%E6%96%AD"><span class="toc-number">15.</span> <span class="toc-text">十五、最后的设计判断</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-number">16.</span> <span class="toc-text">参考资料</span></a></li></ol>
             </div>
         <!-- sidebar -->
         <div class="sidebar sidebar-hide">
