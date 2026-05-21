@@ -431,6 +431,92 @@
                 <main class="main index-page">
             
         <article class="index-post">
+            <a class="abstract-title" href="/2021/12/16/software-design-doc/">
+                <span class="abstract-title-text">如何撰写技术设计文档</span>
+            </a>
+            <div class="abstract-content">
+                前言架构设计与编码，是为了解决问题，是一套解决方案。当我们在设计架构和代码开发的时候，有一份相对应的设计文档，可以有效且快速的让团队更好的理解在解决的问题，以及方案的设计思路。
+为什么要写设计文档
+要解决的问题是什么需要用文档先介绍清楚
+有些问题使用一份设计文档描述思路已经足够
+解决方案的选择（decision）是权衡的结果，我们不仅需要了解结果，也需要知道结果产生的原因，即权衡的过程。只有记录下权衡的过程，在后续偿还技术债的时候，才可以更方便的理解产生的原因或初衷，并有更充分的执行架构演进的依据
+让团队成员对问题和设计有一个共识
+
+设计文档核心内容基于以上原因，我们也可以推论出，设计文...
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2026/03/14">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/12/16</span>
+                </div>
+                <!-- tags -->
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+            
+        <article class="index-post">
+            <a class="abstract-title" href="/2021/11/21/breaking-creation-product/">
+                <span class="abstract-title-text">突破式创新的产品设计</span>
+            </a>
+            <div class="abstract-content">
+                10倍的产品改进《从0到1》介绍了一款产品的推出，如果只是2-3倍的改进，可能可以在一开始吸引用户去使用。如果产品所属的市场价值极大，2-3倍的改进会引来一大群竞争者轻易的介入，这将使得产品在后续的迭代中疲于与其他竞争者斡旋，而丢失了让产品变得更好的目标。如果产品的市场价值有限，那么产品能带来的收益也有限，投入的成本也将有限，并很难再继续做大。事实上，有相当一部分产品的推出，比原来的产品带来的改进少于其带来的麻烦。这样的产品，基本很难吸引到用户。俞军提出的产品价值公式可以很好诠释这一点，即新产品价值 &gt; 旧产品价值 + 迁移成本，这样的新产品才有可能成功。
+一款产品想要在推出的时候...
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2026/03/14">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/11/21</span>
+                </div>
+                <!-- tags -->
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+            
+        <article class="index-post">
+            <a class="abstract-title" href="/2021/07/15/parallel-and-asynchronous-python/">
+                <span class="abstract-title-text">DRF Exception Handle</span>
+            </a>
+            <div class="abstract-content">
+                持续更新关于python并行计算与异步计算的包，后续再根据篇章拆分。
+Python 并行并行库threadingmultiprocessing
+multiprocessing 中的一些问题问题
+开启子进程的方法与问题  spawn相比fork会更耗时，但是fork在处理一个多线程的进程时可能会陷入死锁等问题。这是由于fork本身的机制造成的。这也使得在使用包的过程中常常遇到一些问题。
+IO问题  fork本身会继承打开文件的描述符，所以对于多进程的处理，要留意IO处理带来的不良影响建议由于使用多进程更多是因为，CPython本身的GIL造成无法使用多个CPU核，而使用多进程的方式进行处理...
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2026/03/14">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/07/15</span>
+                </div>
+                <!-- tags -->
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+            
+        <article class="index-post">
+            <a class="abstract-title" href="/2021/06/17/DRF-Exception/">
+                <span class="abstract-title-text">DRF Exception Handle</span>
+            </a>
+            <div class="abstract-content">
+                框架报错源码解析
+exception 处理器
+1234567891011121314151617181920212223242526272829303132# rest_framework.views 71-101def exception_handler(exc, context):    &quot;&quot;&quot;    Returns the response that should be used for any given exception.    By default we handle the REST framework `APIException`, and...
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2026/03/14">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/06/17</span>
+                </div>
+                <!-- tags -->
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+            
+        <article class="index-post">
             <a class="abstract-title" href="/2021/06/15/Django-With-DDD/">
                 <span class="abstract-title-text">Django With DDD</span>
             </a>
@@ -563,28 +649,9 @@ API设计对于前后端分离架构，API成为了前后端间数据通信协�
             </div>
         </article>
         <div class="index-post-divider"></div>
-            
-        <article class="index-post">
-            <a class="abstract-title" href="/2020/11/08/Agile-Dev/">
-                <span class="abstract-title-text">敏捷开发辅助新项目验证与落地</span>
-            </a>
-            <div class="abstract-content">
-                精益创业中的反馈循环在《精益创业》这本书中提到的一个反馈循环为开发-测量-认知。即，使用最小的力量开发一个产品，将其投入到小范围的市场中进行假设验证，最后收集反馈进行认知更新，并迭代到开发中。在这个循环中，如果一切顺利的话，我们会将产品逐渐优化。如果测量验证出现非期望的结果，我们可以及时终止投入，减少沉没成本。
-何为MVPMVP，英文为：Minimum Viable Product。即最小有价值（可用）产品。许多人将关注点放在可用，却忽视了验证可用。部分产品经理在设计产品及进行排期的时候，是按产品的功能堆迭进行排期的。即一期包含了什么功能，二期包含了什么功能。却从来没有去想一期验证了用户...
-            </div>
-            <!-- read more -->
-            <div class="abstract-post-meta">
-                <!-- date -->
-                <div class="abstract-date" title="Last updated: 2026/03/14">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2020/11/08</span>
-                </div>
-                <!-- tags -->
-            </div>
-        </article>
-        <div class="index-post-divider"></div>
     <!-- paginator  -->
         <nav class="page-nav">
-            <a class="extend prev" rel="prev" href="/archives/page/3/">&lt; PREV</a><a class="page-number" href="/archives/">1</a><a class="page-number" href="/archives/page/2/">2</a><a class="page-number" href="/archives/page/3/">3</a><span class="page-number current">4</span>
+            <a class="extend prev" rel="prev" href="/archives/page/3/">&lt; PREV</a><a class="page-number" href="/archives/">1</a><a class="page-number" href="/archives/page/2/">2</a><a class="page-number" href="/archives/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/archives/page/5/">5</a><a class="extend next" rel="next" href="/archives/page/5/">NEXT &gt;</a>
         </nav>
 </main>
 
@@ -657,15 +724,35 @@ API设计对于前后端分离架构，API成为了前后端间数据通信协�
         
         
         
+        
+        
+        
+        
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 37
+        Total : 41
         </div>
         <!-- search  -->
     </div>
     <div class="post-archive">
             <div class="archive-year"> 2026 </div>
             <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span>
+            <a class="archive-post-title" href="/2026/05/21/agent-memory-frontier-survey/">Agent Memory 前沿调研：从长期记忆到经验系统</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/13</span>
+            <a class="archive-post-title" href="/2026/05/13/saas-agent-design-doc/">SaaS Agent 应该怎么设计：从竞品实践到生产级架构</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/12</span>
+            <a class="archive-post-title" href="/2026/05/12/saas-agent-sandbox-research/">SaaS Agent Sandbox 设计原则：不要把 Sandbox 当成容器</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span>
+            <a class="archive-post-title" href="/2026/05/08/agent-engineer-interview-2026/">2026 Agent 开发工程师面试指南：从架构、MCP 到生产化</a>
+        </li>
         <li class="archive-post-item">
             <span class="archive-post-date">04/19</span>
             <a class="archive-post-title" href="/2026/04/19/multi-agent-architecture-survey/">Multi-Agent LLM 系统架构全景调研（2023–2026）</a>
@@ -941,6 +1028,34 @@ API设计对于前后端分离架构，API成为了前后端间数据通信协�
             <span class="sidebar-tag-name" data-tags="Trading">
                 <span class="iconfont-archer">&#xe606;</span>
                 Trading
+            </span>
+            <span class="sidebar-tag-name" data-tags="面试">
+                <span class="iconfont-archer">&#xe606;</span>
+                面试
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent Memory">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent Memory
+            </span>
+            <span class="sidebar-tag-name" data-tags="Memory System">
+                <span class="iconfont-archer">&#xe606;</span>
+                Memory System
+            </span>
+            <span class="sidebar-tag-name" data-tags="SaaS">
+                <span class="iconfont-archer">&#xe606;</span>
+                SaaS
+            </span>
+            <span class="sidebar-tag-name" data-tags="系统设计">
+                <span class="iconfont-archer">&#xe606;</span>
+                系统设计
+            </span>
+            <span class="sidebar-tag-name" data-tags="产品设计">
+                <span class="iconfont-archer">&#xe606;</span>
+                产品设计
+            </span>
+            <span class="sidebar-tag-name" data-tags="Security">
+                <span class="iconfont-archer">&#xe606;</span>
+                Security
             </span>
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
