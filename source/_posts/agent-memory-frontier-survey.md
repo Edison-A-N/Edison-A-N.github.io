@@ -29,6 +29,7 @@ Agent Memory 正在从“给 LLM 接一个向量库”演进为一层独立的 *
 3. **Typed Memory 成为工程共识**：semantic、episodic、procedural、working memory 应该分开建模，而不是混在一个向量集合中 [[S1]](#s1)[[D2]](#d2)。
 4. **Graph Memory 正在升温，但不是默认答案**：Zep/Graphiti、Cognee、Neo4j Agent Memory 都强调图结构、时间关系和实体关系；但图的 schema、抽取和运维成本也更高 [[D5]](#d5)[[D6]](#d6)[[D7]](#d7)。
 5. **评测正在从 recall 走向 agentic memory**：LoCoMo、LongMemEval、MemoryAgentBench、AMA-Bench、LongMemEval-V2 等 benchmark 正在把多会话、时间推理、知识更新、选择性遗忘和 agent 轨迹纳入评测 [[B1]](#b1)[[B2]](#b2)[[B3]](#b3)[[B4]](#b4)[[B6]](#b6)。
+6. **代码 Agent 需要 context-memory runtime**：从 Magic Context 的设计看，代码 Agent 的 memory 不是单纯“记住事实”，而是对 transcript、压缩、缓存、项目知识、工具轨迹和后台子 agent 的持续调度；它的设计逻辑可与 MemGPT 式分页、Aider repo map、SWE-agent ACI、RepoCoder 等研究/工程线索放在一起理解 [[D8]](#d8)[[P1]](#p1)[[E9]](#e9)[[P4]](#p4)[[P5]](#p5)。
 
 ---
 
@@ -100,6 +101,7 @@ MemGPT 的原始论文标题就是 *Towards LLMs as Operating Systems*，其核�
 | 系统 | 记忆形态 | 关键能力 | 适合场景 | 局限/注意点 | 主要出处 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | Letta / MemGPT | Core memory + archival memory + self-editing runtime | Agent 自主管理记忆、分页、长期 stateful agent、MemFS | 长期 coding/research/support agent | 与运行时耦合较强，memory 质量依赖 agent 管理策略 | [[P1]](#p1)[[D1]](#d1) |
+| Magic Context / CortexKit | coding-agent context runtime | `§N§` tagging/drop、historian compartments、`<session-history>` 注入、SQLite 跨 harness 项目记忆、dreamer/sidekick、cache-aware threshold | 长时间运行的 coding agent、OpenCode/Pi 等开发代理 | 重点不是“记忆库”，而是把压缩、检索、缓存稳定性、项目知识和后台 agent 权限隔离放进同一运行时 | [[D8]](#d8)[[P1]](#p1)[[P4]](#p4)[[P5]](#p5)[[E9]](#e9) |
 | LangMem / LangGraph Store | semantic / episodic / procedural memory + LangGraph store | hot path memory tools、background manager、prompt optimization | 已使用 LangGraph 的工程团队 | 需要开发者设计 namespace、schema 和写入策略 | [[D2]](#d2) |
 | Mem0 | fact extraction + scalable long-term memory + optional graph memory | 用户/会话/agent 多级 memory、抽取/合并/检索、SDK/托管服务 | 快速给应用接入长期个性化记忆 | 托管能力强，但深度可控性取决于接口 | [[P2]](#p2)[[D3]](#d3) |
 | Zep / Graphiti | temporal knowledge graph + context assembly | 时间有效性、动态关系、历史查询、GraphRAG | CRM、金融、医疗、账号历史等变化事实场景 | 图抽取、schema、查询与平台依赖成本更高 | [[P3]](#p3)[[D4]](#d4)[[D5]](#d5) |
@@ -107,13 +109,28 @@ MemGPT 的原始论文标题就是 *Towards LLMs as Operating Systems*，其核�
 | Neo4j Agent Memory | graph-native memory / context graph | 会话、实体抽取、关系抽取、MCP、Neo4j 图查询 | 已有 Neo4j 或强实体关系需求的团队 | 图数据库运维与实体抽取质量是关键 | [[D7]](#d7) |
 | LlamaIndex / LangChain legacy memory | buffer、summary、message history、retriever memory | 简单聊天记忆、框架内低门槛 | 原型、单会话工具 | 多数默认 memory 是 session-local 或 transcript-level，不等于长期事实记忆 | [[E1]](#e1)[[E2]](#e2) |
 
-### 2. 三条工程路线
+### 2. 四条工程路线
 
 **路线 A：Memory-as-runtime。** Letta/MemGPT 把 agent runtime 和 memory 合在一起。优势是 agent 对 memory 的读写是原生动作；劣势是你接受的不只是一个 memory backend，而是一套运行时 [[P1]](#p1)[[D1]](#d1)。
 
 **路线 B：Memory-as-layer。** Mem0、Zep、Cognee、Neo4j Agent Memory 更像外接记忆层。应用在每轮对话前检索、每轮对话后写入，或者在后台做抽取、合并、时间标注 [[P2]](#p2)[[D5]](#d5)[[D6]](#d6)[[D7]](#d7)。
 
 **路线 C：Memory-as-framework primitive。** LangMem/LangGraph 让 memory 成为 agent graph 的 store/tool/prompt optimization 能力，更适合已经基于 LangGraph 编排的团队 [[D2]](#d2)。
+
+**路线 D：Context-memory hybrid for coding agents。** 以 Magic Context 为起点看，它的设计逻辑不是“再接一个 memory backend”，而是把 coding agent 的长程工作拆成一组可控问题：什么时候压缩、压缩什么、压缩结果如何注入、跨会话知识如何共享、项目结构如何常驻、后台 agent 能做什么不能做什么。README 明确写出三个目标：cache-aware infinite context、cross-session memory、background history compression；Pi 插件文档进一步列出 tagging + drops、historian、`<session-history>` injection、project memories、dreamer、`/ctx-aug`、auto-search hint、note nudges 与 cross-harness sharing [[D8]](#d8)。
+
+| Magic Context 设计点 | 它解决的真实问题 | 可追溯的设计脉络 |
+| :--- | :--- | :--- |
+| `§N§` tagging + `ctx_reduce` drops | 让 agent 可以精确删除旧消息/工具输出，而不是依赖模型自己记住“哪些内容已无用” | Transcript-level memory management；也对应 MemoryAgentBench 对“不是全量塞历史，而是选择性表示”的区分 [[B3]](#b3) |
+| 后台 historian + compartments + facts | 主 agent 不应停下来整理自己的上下文；历史要被压缩成可注入的 session-history，同时保留 raw log 以便重建 | MemGPT/Letta 的 memory-as-OS / paging 思想，但 Magic Context 把分页责任外置给后台子 agent [[P1]](#p1)[[D1]](#d1) |
+| cache-aware threshold / TTL / delayed publish | 压缩本身会改 system prompt，可能破坏 provider prompt cache；所以只在压力阈值、commit boundary 或 cache-busting pass 执行 | 这是更偏工程实践的来源：LLM provider prompt cache 与长会话成本控制，不是传统 memory 论文直接覆盖的问题 [[D8]](#d8) |
+| SQLite 跨 harness project memory + embeddings | OpenCode 与 Pi 可以共享同一个项目的 memories、embeddings、dreamer state、project knowledge，但 session tags/compartments 仍按 harness 隔离 | 典型 durable agent state 设计；与 Mem0/LangMem 的“长期记忆层”相邻，但 Magic Context 的 scope 更偏项目工作流 [[P2]](#p2)[[D2]](#d2)[[D8]](#d8) |
+| Dreamer / sidekick / hidden-agent 权限隔离 | 后台 agent 负责 consolidate、dedupe、verify、archive、augment，但不能继承主 agent 的完整工具权限，否则会把“整理上下文”变成另一个不可控 agent | Agent-computer interface 与工具面设计问题；SWE-agent 说明接口设计直接影响软件工程 agent 表现，Magic Context 进一步把后台 agent 的工具面最小化 [[P4]](#p4)[[D8]](#d8) |
+| key files / repo-level context | 代码任务经常反复读取架构、配置、类型等关键文件；应把高频结构性上下文固定进提示或项目知识，而不是每次重新搜索 | Aider repo map、RepoCoder 等 repository-level context selection / retrieval-generation 脉络 [[E9]](#e9)[[P5]](#p5) |
+
+因此，Magic Context 更像一个 **coding-agent context runtime**：它把“聊天历史压缩”“项目记忆”“仓库结构上下文”“缓存成本”“后台整理 agent”放在同一层调度。公开资料没有显示它直接复刻某一篇论文；更合理的判断是，它把 MemGPT 式分页、生产级长期记忆层、repo-level context selection、ACI 工具面设计和 prompt-cache 工程经验合成到一个开发代理插件里。
+
+<span style="color: #d93025; font-weight: 700;">这给 Agent Memory 的一个重要启发是：coding agent 的记忆不只是事实库，而是一套持续维护“工作现场”的机制，包括 raw log、压缩轨迹、项目事实、关键文件、工具反馈、失败经验和缓存边界。</span>
 
 ### 3. 生产级架构
 
@@ -277,6 +294,10 @@ quadrantChart
 
 <a id="p3"></a>**[P3]** *Zep: A Temporal Knowledge Graph Architecture for Agent Memory*, Zep / Graphiti paper referenced by Graphiti project. https://github.com/getzep/graphiti
 
+<a id="p4"></a>**[P4]** John Yang et al., *SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering*, arXiv:2405.15793 / NeurIPS 2024. https://arxiv.org/abs/2405.15793
+
+<a id="p5"></a>**[P5]** Fengji Zhang et al., *RepoCoder: Repository-Level Code Completion Through Iterative Retrieval and Generation*, arXiv:2303.12570, 2023. https://arxiv.org/abs/2303.12570
+
 ### Systems / 官方文档与项目源头
 
 <a id="d1"></a>**[D1]** Letta Docs, *Memory | Letta Code*. https://docs.letta.com/letta-code/memory/
@@ -292,6 +313,8 @@ quadrantChart
 <a id="d6"></a>**[D6]** Cognee GitHub, *Knowledge Engine for AI Agent Memory*. https://github.com/topoteretes/cognee
 
 <a id="d7"></a>**[D7]** Neo4j Labs, *Agent Memory*. https://github.com/neo4j-labs/agent-memory
+
+<a id="d8"></a>**[D8]** CortexKit, *Magic Context* repository, README, Pi extension README, configuration reference, and release notes: cache-aware infinite context, cross-session memory, background historian, dreamer, sidekick, SQLite cross-harness storage, hidden subagent isolation. https://github.com/cortexkit/magic-context
 
 ### Benchmarks / 评测基准
 
@@ -326,3 +349,5 @@ quadrantChart
 <a id="e7"></a>**[E7]** OpenAI Help Center, *Memory FAQ*. https://help.openai.com/en/articles/8590148-memory-faq
 
 <a id="e8"></a>**[E8]** Anthropic Support, *Memory in Claude*. https://support.anthropic.com/en/articles/10190118-memory-in-claude
+
+<a id="e9"></a>**[E9]** Aider, *Building a better repository map with tree-sitter*, 2023. https://aider.chat/2023/10/22/repomap.html
