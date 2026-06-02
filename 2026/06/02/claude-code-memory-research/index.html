@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+<!-- keywords -->
+<head>
+    <meta charset="utf-8">
+    <meta name="google-site-verification" content="JB-maqhhwUFVUFApXAdvEnVFMjbiaUSIwUQFvCk1VMQ" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Edison">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Edison">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,software architecture,domain-driven design,DDD,AI agents,MCP,Model Context Protocol,Python,Go,full-stack development,LLM,software engineering,hexo blog">
+    <meta name="description" content="基于 Anthropic 官方文档梳理 Claude Code 的两套记忆机制：CLAUDE.md 与 Auto Memory / MEMORY.md，解释四级记忆层级、加载顺序、@import、上下文成本，以及 Memory、Skills、Hooks、Subagents 的边界。">
+    <link rel="canonical" href="https://edison-a-n.github.io/2026/06/02/claude-code-memory-research/"/>
+    <meta name="description" content="基于 Anthropic 官方文档梳理 Claude Code 的两套记忆机制：CLAUDE.md 与 Auto Memory &#x2F; MEMORY.md，解释四级记忆层级、加载顺序、@import、上下文成本，以及 Memory、Skills、Hooks、Subagents 的边界。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Claude Code 内置 Memory 深度研究：CLAUDE.md、Auto Memory 与上下文工程">
+<meta property="og:url" content="https://edison-a-n.github.io/2026/06/02/claude-code-memory-research/">
+<meta property="og:site_name" content="Edison&#39;s Tech Blog">
+<meta property="og:description" content="基于 Anthropic 官方文档梳理 Claude Code 的两套记忆机制：CLAUDE.md 与 Auto Memory &#x2F; MEMORY.md，解释四级记忆层级、加载顺序、@import、上下文成本，以及 Memory、Skills、Hooks、Subagents 的边界。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-06-01T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-06-02T09:25:54.825Z">
+<meta property="article:author" content="Edison">
+<meta property="article:tag" content="AI Agent">
+<meta property="article:tag" content="Claude Code">
+<meta property="article:tag" content="Memory">
+<meta property="article:tag" content="Context Engineering">
+<meta property="article:tag" content="Hooks">
+<meta property="article:tag" content="Skills">
+<meta name="twitter:card" content="summary">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/avatar/avatar.jpg">
+    <title>Claude Code 内置 Memory 深度研究：CLAUDE.md、Auto Memory 与上下文工程 · Edison&#39;s Tech Blog | Software Architecture, AI &amp; DDD</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .footer-fixed-btn,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(
+            -45deg,
+            #444 0,
+            #444 80px,
+            #333 80px,
+            #333 160px
+        );
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link id="stylesheet-fancybox" rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link id="stylesheet-base" rel="preload" href="/css/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link id="stylesheet-mobile" rel="preload" href="/css/mobile.css" as="style" onload="this.onload=null;this.rel='stylesheet';this.media='screen and (max-width: 960px)'">
+    <link id="stylesheet-theme-dark" rel="preload" href="/css/dark.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    <!-- 百度统计  -->
+    <!-- 谷歌统计  -->
+        <script>
+            var cnzz_s_tag = document.createElement('script');
+            cnzz_s_tag.type = 'text/javascript';
+            cnzz_s_tag.async = true;
+            cnzz_s_tag.charset = 'utf-8';
+            cnzz_s_tag.src = 'https://w.cnzz.com/c.php?id=&async=1';
+            var root_s = document.getElementsByTagName('script')[0];
+            root_s.parentNode.insertBefore(cnzz_s_tag, root_s);
+        </script>
+    <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-188648772-3"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-188648772-3');
+        </script>
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Edison's Tech Blog" type="application/atom+xml">
+</head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+        <body class="post-body">
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        <div class="header-sidebar-menu">
+            <div style="padding-left: 1px;">&#xe775;</div>
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href="/">Edison's Studio.</a>
+        </span>
+    </div>
+    <!-- toggle banner -->
+    <div class="banner">
+        <div class="blog-title header-element">
+            <a href="/">Edison&#39;s Studio.</a>
+        </div>
+        <div class="post-title header-element">
+            <a href="#" class="post-name">Claude Code 内置 Memory 深度研究：CLAUDE.md、Auto Memory 与上下文工程</a>
+        </div>
+    </div>
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- donate button -->
+
+    <!-- back to top button -->
+    <div class="footer-fixed-btn footer-fixed-btn--hidden back-top">
+        <div>&#xe639;</div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="    height:50vh;
+">
+    <!-- 主页  -->
+    <!-- 404页  -->
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+                Claude Code 内置 Memory 深度研究：CLAUDE.md、Auto Memory 与上下文工程
+            <!-- 404 -->
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            <!-- 404 -->
+        </p>
+        <!-- 文章页 meta -->
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                    <div class="post-intro-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Claude Code">Claude Code</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Memory">Memory</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Context Engineering">Context Engineering</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Hooks">Hooks</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Skills">Skills</a>
+</div>
+
+                <!-- 文章字数统计 -->
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">3.9k</span>Reading time: <span class="post-count reading-time">16 min</span></span>
+                    </div>
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2026/06/02</span>
+                    <!-- busuanzi -->
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" alt="loading">
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <div style="color: #666; font-style: italic; font-size: 0.9em; margin-bottom: 1em;">
+本文是一份基于 Anthropic 官方一手文档、经对抗式核验整理的中文研究笔记。研究日期：2026-06-02；方法：5 路并行检索、15 篇来源、73 条断言抽取、25 条对抗式三票核验；来源性质：全部为 Anthropic 官方文档，置信度高。
+</div>
+
+<h2 id="一、核心结论（TL-DR）"><a href="#一、核心结论（TL-DR）" class="headerlink" title="一、核心结论（TL;DR）"></a>一、核心结论（TL;DR）</h2><ul>
+<li><strong>两套互补机制</strong>：Claude Code 的记忆 &#x3D; 你手写的 **<code>CLAUDE.md</code>**（持久化指令）+ Claude 自己累积的 <strong>auto memory &#x2F; <code>MEMORY.md</code><strong>（跨会话自动记录经验）。两者都在</strong>每次会话开始时载入</strong>。</li>
+<li><strong>当作”上下文”而非”强制配置”<strong>：模型会自行解读记忆内容，</strong>不保证严格遵守</strong>。需要确定性强制时，应改用 <code>PreToolUse</code> 钩子。</li>
+<li><strong>CLAUDE.md 有四个层级</strong>（不是常见误传的”三层”）：<code>managed policy</code>（企业级）→ <code>user</code>（用户级）→ <code>project</code>（项目级）→ <code>local</code>（本地级），按<strong>从宽到窄</strong>顺序加载并<strong>拼接</strong>进上下文。</li>
+<li><strong>全量载入、按行计费</strong>：CLAUDE.md 不论长短都被<strong>完整</strong>载入上下文窗口，其 token 在<strong>每一条消息</strong>上都被消耗——因此”保持精简”是第一性原则（建议 &lt; 200 行）。</li>
+<li><strong>省上下文的替代品是 Skills</strong>：Skills 的正文<strong>仅在被调用时</strong>才加载，适合存放长篇专门化材料。</li>
+</ul>
+<hr>
+<h2 id="二、整体架构：两套互补的记忆系统"><a href="#二、整体架构：两套互补的记忆系统" class="headerlink" title="二、整体架构：两套互补的记忆系统"></a>二、整体架构：两套互补的记忆系统</h2><p>官方原文：</p>
+<blockquote>
+<p><em>“Claude Code has two complementary memory systems. Both are loaded at the start of every conversation. Claude treats them as context, not enforced configuration.”</em></p>
+</blockquote>
+<pre class="mermaid">graph TD
+    subgraph MEM["Claude Code 记忆系统"]
+        direction LR
+        A["📝 CLAUDE.md<br/>（你来写）<br/>指令与规则"]
+        B["🤖 Auto Memory / MEMORY.md<br/>（Claude 来写）<br/>经验与模式"]
+    end
+
+    A -->|每次会话开始全量载入| CTX["🧠 上下文窗口<br/>Context Window"]
+    B -->|每次会话开始载入<br/>前 200 行 / 25KB| CTX
+
+    CTX --> NOTE["⚠️ 被视为『上下文』<br/>而非强制配置<br/>模型自行解读，不保证遵守"]
+
+    style A fill:#e3f2fd,stroke:#1565c0,color:#000
+    style B fill:#f3e5f5,stroke:#6a1b9a,color:#000
+    style CTX fill:#fff3e0,stroke:#e65100,color:#000
+    style NOTE fill:#ffebee,stroke:#c62828,color:#000</pre>
+
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th><code>CLAUDE.md</code></th>
+<th><code>Auto memory</code>（<code>MEMORY.md</code>）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>谁来写</strong></td>
+<td>你（人类）</td>
+<td>Claude（自动）</td>
+</tr>
+<tr>
+<td><strong>内容</strong></td>
+<td>指令、规则、约定</td>
+<td>学到的经验、模式</td>
+</tr>
+<tr>
+<td><strong>载入时机</strong></td>
+<td>每次会话开始</td>
+<td>每次会话开始</td>
+</tr>
+<tr>
+<td><strong>载入量</strong></td>
+<td>全量（不论长度）</td>
+<td>前 200 行 或 25KB（先到为准）</td>
+</tr>
+<tr>
+<td><strong>性质</strong></td>
+<td>上下文（非强制）</td>
+<td>上下文（非强制）</td>
+</tr>
+<tr>
+<td><strong>版本要求</strong></td>
+<td>一直支持</td>
+<td>需 Claude Code **v2.1.59+**，默认开启</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>📌 <strong>关键心智模型</strong>：记忆是”提醒 Claude 的便签”，不是”约束 Claude 的法律”。要法律级别的强制，请用 Hooks。</p>
+</blockquote>
+<hr>
+<h2 id="三、CLAUDE-md-的四级层级"><a href="#三、CLAUDE-md-的四级层级" class="headerlink" title="三、CLAUDE.md 的四级层级"></a>三、CLAUDE.md 的四级层级</h2><p>CLAUDE.md 存在于<strong>四个</strong>作用域，按”从最宽泛到最具体”（broadest → most specific）的顺序加载。<strong>所有层级被拼接（concatenate），而非互相覆盖。</strong></p>
+<pre class="mermaid">graph TD
+    P["🏢 Managed Policy（企业/组织级）<br/>由 IT/DevOps 管理<br/>Linux: /etc/claude-code/CLAUDE.md<br/>经 managed settings 的 claudeMd 配置"]
+    U["👤 User（用户级）<br/>~/.claude/CLAUDE.md<br/>你所有项目的个人偏好"]
+    PR["📦 Project（项目级）<br/>./CLAUDE.md 或 ./.claude/CLAUDE.md<br/>随仓库共享给团队"]
+    L["🔒 Local（本地级）<br/>./CLAUDE.local.md<br/>个人私有，建议加入 .gitignore"]
+
+    P -->|更宽泛| U -->|更具体| PR -->|最具体| L
+
+    style P fill:#ede7f6,stroke:#4527a0,color:#000
+    style U fill:#e3f2fd,stroke:#1565c0,color:#000
+    style PR fill:#e8f5e9,stroke:#2e7d32,color:#000
+    style L fill:#fff8e1,stroke:#f9a825,color:#000</pre>
+
+<table>
+<thead>
+<tr>
+<th>作用域</th>
+<th>路径</th>
+<th>用途</th>
+<th>共享性</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Managed policy</strong></td>
+<td>Linux <code>/etc/claude-code/CLAUDE.md</code>（经 managed settings <code>claudeMd</code>）</td>
+<td>组织级强制约定</td>
+<td>全组织</td>
+</tr>
+<tr>
+<td><strong>User</strong></td>
+<td><code>~/.claude/CLAUDE.md</code></td>
+<td>个人跨项目偏好</td>
+<td>仅自己（全项目）</td>
+</tr>
+<tr>
+<td><strong>Project</strong></td>
+<td><code>./CLAUDE.md</code> 或 <code>./.claude/CLAUDE.md</code></td>
+<td>团队共享的项目约定</td>
+<td>随仓库（团队）</td>
+</tr>
+<tr>
+<td><strong>Local</strong></td>
+<td><code>./CLAUDE.local.md</code></td>
+<td>个人项目级私有笔记</td>
+<td>仅自己（建议 <code>.gitignore</code>）</td>
+</tr>
+</tbody></table>
+<h3 id="企业级记忆的特殊配置"><a href="#企业级记忆的特殊配置" class="headerlink" title="企业级记忆的特殊配置"></a>企业级记忆的特殊配置</h3><p>企业&#x2F;组织级记忆通过 <strong>managed settings 中的 <code>claudeMd</code></strong> 配置：</p>
+<blockquote>
+<p><em>“(Managed settings only) CLAUDE.md-style instructions injected as organization-managed memory. Only honored when set in managed or policy settings and ignored in user, project, and local settings.”</em></p>
+</blockquote>
+<ul>
+<li>仅在 <code>managed</code> &#x2F; <code>policy</code> 设置中生效，在 <code>user</code> &#x2F; <code>project</code> &#x2F; <code>local</code> 设置中<strong>被忽略</strong>。</li>
+<li>配套的 <code>claudeMdExcludes</code> 可排除某些记忆文件，<strong>但仅作用于 user&#x2F;project&#x2F;local 记忆——managed policy 文件无法被排除</strong>。</li>
+</ul>
+<hr>
+<h2 id="四、工作机制：文件如何被发现与加载"><a href="#四、工作机制：文件如何被发现与加载" class="headerlink" title="四、工作机制：文件如何被发现与加载"></a>四、工作机制：文件如何被发现与加载</h2><p>Claude Code 通过<strong>沿目录树向上行走（walking up the directory tree）</strong>来发现 CLAUDE.md 文件：</p>
+<pre class="mermaid">flowchart TD
+    CWD["📍 当前工作目录<br/>~/projects/app/src/api"] 
+    CWD -->|向上| D1["~/projects/app/src/CLAUDE.md ?"]
+    D1 -->|向上| D2["~/projects/app/CLAUDE.md ✅"]
+    D2 -->|向上| D3["~/projects/CLAUDE.md ?"]
+    D3 -->|向上至根| ROOT["/ 文件系统根"]
+
+    SUB["📂 子目录<br/>~/projects/app/src/api/v2/CLAUDE.md"]
+    SUB -.->|不在启动时载入<br/>Claude 读取该目录文件时才按需载入| LAZY["⏳ 惰性加载"]
+
+    D2 --> CAT["🔗 拼接<br/>从文件系统根 → 工作目录排序"]
+    CAT --> CTX["🧠 进入上下文"]
+
+    style CWD fill:#fff3e0,stroke:#e65100,color:#000
+    style CAT fill:#e8f5e9,stroke:#2e7d32,color:#000
+    style LAZY fill:#f3e5f5,stroke:#6a1b9a,color:#000
+    style CTX fill:#e3f2fd,stroke:#1565c0,color:#000</pre>
+
+<p>官方原文：</p>
+<blockquote>
+<p><em>“Claude Code reads CLAUDE.md files by walking up the directory tree from your current working directory … All discovered files are concatenated into context rather than overriding each other. Across the directory tree, content is ordered from the filesystem root down to your working directory.”</em></p>
+</blockquote>
+<p><strong>两条关键规则：</strong></p>
+<ol>
+<li><strong>向上（parent）&#x3D; 急加载</strong>：从工作目录到根目录路径上的所有 CLAUDE.md &#x2F; CLAUDE.local.md 都在启动时被发现并拼接。Monorepo 中父级约定会被自动拉入。</li>
+<li><strong>向下（child）&#x3D; 惰性加载</strong>：子目录里的 CLAUDE.md <strong>不在启动时加载</strong>，只有当 Claude 实际读取该子目录中的文件时才按需载入。</li>
+</ol>
+<blockquote>
+<p>⏱️ <strong>载入时序</strong>：在 context-window 文档的启动时间线中，<code>~/.claude/CLAUDE.md</code> 与项目 <code>CLAUDE.md</code> 都排在 “Your prompt”（你的首条消息）<strong>之前</strong>。结论：*”CLAUDE.md, memory, skills, and MCP tools are all in context before your first prompt.”*（交付机制上，CLAUDE.md 作为系统提示之后的一条 user message 注入，而非系统提示本身的一部分——但不影响”首条 prompt 前已就绪”这一结论。）</p>
+</blockquote>
+<hr>
+<h2 id="五、-import-导入语法"><a href="#五、-import-导入语法" class="headerlink" title="五、@import 导入语法"></a>五、<code>@import</code> 导入语法</h2><p>CLAUDE.md 可用 <code>@path/to/import</code> 语法导入其它文件，把内容<strong>模块化</strong>：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="section"># 项目约定</span></span><br><span class="line"></span><br><span class="line">参见架构说明 @docs/architecture.md</span><br><span class="line">Git 工作流见 @docs/git-instructions.md</span><br><span class="line"></span><br><span class="line"><span class="section"># 个人覆盖（不入库）</span></span><br><span class="line">@~/.claude/my-project-instructions.md</span><br></pre></td></tr></table></figure>
+
+<pre class="mermaid">graph LR
+    A["CLAUDE.md"] -->|@docs/arch.md| B["docs/arch.md"]
+    A -->|@~/.claude/override.md| C["~/.claude/override.md"]
+    B -->|@deeper.md| D["第 2 跳"]
+    D --> E["第 3 跳"]
+    E --> F["第 4 跳"]
+    F -.->|❌ 超过 4 跳| G["不再展开"]
+
+    style A fill:#e3f2fd,stroke:#1565c0,color:#000
+    style G fill:#ffebee,stroke:#c62828,color:#000</pre>
+
+<p><strong>规则要点：</strong></p>
+<table>
+<thead>
+<tr>
+<th>规则</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>路径类型</td>
+<td>相对路径与绝对路径<strong>均可</strong></td>
+</tr>
+<tr>
+<td>递归</td>
+<td>被导入文件可<strong>再导入</strong>其它文件</td>
+</tr>
+<tr>
+<td>最大深度</td>
+<td><strong>4 跳（hops）</strong></td>
+</tr>
+<tr>
+<td>载入时机</td>
+<td>在<strong>启动时</strong>与引用它的 CLAUDE.md 一起展开载入上下文</td>
+</tr>
+<tr>
+<td>常见用法</td>
+<td><code>@README.md</code>、<code>@package.json</code>、<code>@docs/git-instructions.md</code>、<code>@~/.claude/my-project-instructions.md</code></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>💡 <code>@import</code> 让你把”个人私有覆盖”放在 home 目录、把”团队共享部分”放在仓库里，既复用又互不污染。</p>
+</blockquote>
+<hr>
+<h2 id="六、Auto-Memory（MEMORY-md）自动记忆"><a href="#六、Auto-Memory（MEMORY-md）自动记忆" class="headerlink" title="六、Auto Memory（MEMORY.md）自动记忆"></a>六、Auto Memory（MEMORY.md）自动记忆</h2><p>这是 Claude <strong>自己写</strong>的记忆——跨会话自动累积”学到的东西”。</p>
+<ul>
+<li><strong>默认开启</strong>，需 Claude Code **v2.1.59+**。</li>
+<li>启动时自动载入，但<strong>只载入前 200 行或前 25KB（先到为准）</strong>；<strong>超出阈值的内容在会话开始时不加载</strong>。</li>
+</ul>
+<pre class="mermaid">graph TD
+    M["MEMORY.md（Claude 自动累积）"]
+    M --> T{"前 200 行<br/>或 25KB？"}
+    T -->|阈值内| IN["✅ 会话开始载入上下文"]
+    T -->|阈值外| OUT["⛔ 启动时不载入"]
+
+    style IN fill:#e8f5e9,stroke:#2e7d32,color:#000
+    style OUT fill:#ffebee,stroke:#c62828,color:#000</pre>
+
+<blockquote>
+<p>📝 这个 200 行 &#x2F; 25KB 阈值的设计意图，与 CLAUDE.md 的”保持精简”如出一辙：<strong>避免记忆无限膨胀挤占上下文</strong>。</p>
+</blockquote>
+<hr>
+<h2 id="七、与上下文管理的关系"><a href="#七、与上下文管理的关系" class="headerlink" title="七、与上下文管理的关系"></a>七、与上下文管理的关系</h2><p>这是理解记忆系统<strong>成本</strong>的关键一节。</p>
+<blockquote>
+<p><em>“Your CLAUDE.md file is loaded into context at session start. If it contains detailed instructions for specific workflows … those tokens are present even when you’re doing unrelated work.”</em> — costs 文档</p>
+<p><em>“CLAUDE.md files are loaded into the context window at the start of every session, consuming tokens … loaded in full regardless of length.”</em> — memory 文档</p>
+</blockquote>
+<pre class="mermaid">graph LR
+    subgraph 会话["每条消息的上下文"]
+        CM["CLAUDE.md 全量<br/>（始终在场）"]
+        MEM["MEMORY.md 摘要"]
+        SK["Skills 仅描述"]
+        TASK["当前任务相关内容"]
+    end
+
+    CM -.->|即使在做无关工作<br/>也占用 token| COST["💰 持续 token 成本"]
+    SK -.->|正文按需加载<br/>不调用≈零成本| SAVE["🟢 省上下文"]
+
+    style CM fill:#ffe0b2,stroke:#e65100,color:#000
+    style SK fill:#c8e6c9,stroke:#2e7d32,color:#000
+    style COST fill:#ffebee,stroke:#c62828,color:#000
+    style SAVE fill:#e8f5e9,stroke:#2e7d32,color:#000</pre>
+
+<p><strong>两个推论：</strong></p>
+<ol>
+<li><p><strong>Prompt caching 能降低重复 token 的费用，但不会把 CLAUDE.md 移出上下文</strong>——它仍占用窗口空间。</p>
+</li>
+<li><p><strong>可自定义压缩（compaction）行为</strong>：在 CLAUDE.md 中加一个 <code>Compact instructions</code> 小节，告诉 Claude 总结历史时优先保留什么：</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="section"># Compact instructions</span></span><br><span class="line">When you are using compact, please focus on test output and code changes</span><br></pre></td></tr></table></figure></li>
+</ol>
+<hr>
+<h2 id="八、最佳实践"><a href="#八、最佳实践" class="headerlink" title="八、最佳实践"></a>八、最佳实践</h2><blockquote>
+<p><em>“CLAUDE.md is loaded every session, so only include things that apply broadly … Keep it concise … Bloated CLAUDE.md files cause Claude to ignore your actual instructions!”</em></p>
+</blockquote>
+<pre class="mermaid">flowchart TD
+    ROOT[CLAUDE.md 最佳实践]
+    ROOT --> CONCISE[精简]
+    ROOT --> LAYER[分层]
+    ROOT --> MODULE[模块化]
+    ROOT --> ENFORCE[强制性]
+
+    CONCISE --> C1[建议少于 200 行]
+    CONCISE --> C2[只放广泛适用要点]
+    CONCISE --> C3[避免臃肿稀释注意力]
+
+    LAYER --> L1[团队约定放 project]
+    LAYER --> L2[个人偏好放 user 或 local]
+    LAYER --> L3[私有内容加入 gitignore]
+
+    MODULE --> M1[用 @import 拆分]
+    MODULE --> M2[长材料移入 Skills]
+
+    ENFORCE --> E1[确定性要求用 Hooks]
+    ENFORCE --> E2[静态约定用 CLAUDE.md]
+
+    style ROOT fill:#e3f2fd,stroke:#1565c0,color:#000
+    style CONCISE fill:#e8f5e9,stroke:#2e7d32,color:#000
+    style LAYER fill:#fff3e0,stroke:#e65100,color:#000
+    style MODULE fill:#f3e5f5,stroke:#6a1b9a,color:#000
+    style ENFORCE fill:#ffebee,stroke:#c62828,color:#000</pre>
+
+<table>
+<thead>
+<tr>
+<th>做法</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>保持 &lt; 200 行</strong></td>
+<td>每会话全量载入，臃肿会稀释注意力、推高成本</td>
+</tr>
+<tr>
+<td><strong>只放”广泛适用”的内容</strong></td>
+<td>专门化指令应按需加载，而非常驻</td>
+</tr>
+<tr>
+<td><strong>把长篇专门材料移入 Skills</strong></td>
+<td>Skills 正文按需加载，”不用时几乎零成本”</td>
+</tr>
+<tr>
+<td><strong>用 <code>@import</code> 模块化</strong></td>
+<td>复用 + 关注点分离</td>
+</tr>
+<tr>
+<td><strong>个人内容放 <code>CLAUDE.local.md</code> 并 gitignore</strong></td>
+<td>避免污染团队仓库</td>
+</tr>
+<tr>
+<td><strong>需要”必定执行”时改用 Hooks</strong></td>
+<td>记忆是上下文、不保证遵守；Hooks 才是确定性的</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="九、横向对比：Memory-vs-Skills-vs-Hooks-vs-Subagents"><a href="#九、横向对比：Memory-vs-Skills-vs-Hooks-vs-Subagents" class="headerlink" title="九、横向对比：Memory vs Skills vs Hooks vs Subagents"></a>九、横向对比：Memory vs Skills vs Hooks vs Subagents</h2><pre class="mermaid">graph TD
+    Q{"我需要什么？"}
+    Q -->|静态、每次都要的项目约定| CM["📝 CLAUDE.md / Memory<br/>始终在上下文<br/>模型自行解读"]
+    Q -->|长篇、按需的专门能力| SK["🧩 Skills<br/>仅描述常驻<br/>正文调用时才载入"]
+    Q -->|必须确定性发生的动作| HK["🪝 Hooks<br/>确定性控制<br/>不依赖 LLM 选择"]
+    Q -->|隔离的子任务上下文| SA["🤖 Subagents<br/>替换系统提示<br/>记忆仍走正常消息流"]
+
+    style CM fill:#e3f2fd,stroke:#1565c0,color:#000
+    style SK fill:#e8f5e9,stroke:#2e7d32,color:#000
+    style HK fill:#fff3e0,stroke:#e65100,color:#000
+    style SA fill:#f3e5f5,stroke:#6a1b9a,color:#000</pre>
+
+<table>
+<thead>
+<tr>
+<th>机制</th>
+<th>加载行为</th>
+<th>确定性</th>
+<th>典型用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>CLAUDE.md &#x2F; Memory</strong></td>
+<td>全量常驻上下文</td>
+<td>否（模型自行解读）</td>
+<td>静态、不变的项目约定</td>
+</tr>
+<tr>
+<td><strong>Skills</strong></td>
+<td>仅描述常驻；正文<strong>调用时</strong>才载入</td>
+<td>否</td>
+<td>长篇参考、专门化工作流</td>
+</tr>
+<tr>
+<td><strong>Hooks</strong></td>
+<td>脚本在特定事件触发</td>
+<td><strong>是</strong>（确保动作发生）</td>
+<td>必须强制的检查&#x2F;格式化&#x2F;拦截</td>
+</tr>
+<tr>
+<td><strong>Subagents</strong></td>
+<td>自定义 system prompt <strong>完全替换</strong>默认提示</td>
+<td>—</td>
+<td>隔离的子任务</td>
+</tr>
+</tbody></table>
+<p><strong>官方给出的清晰分工：</strong></p>
+<ul>
+<li><strong>Skills vs Memory</strong>：*”Unlike CLAUDE.md content, a skill’s body loads only when it’s used, so long reference material costs almost nothing until you need it.”* 常规会话中只载入 skill 的<strong>描述</strong>让 Claude 知道有哪些可用，完整正文仅在被调用时加载。</li>
+<li><strong>Hooks vs Memory</strong>：*”They provide deterministic control over Claude Code’s behavior, ensuring certain actions always happen rather than relying on the LLM to choose to run them.”* 反过来，*”For instructions that never change, prefer CLAUDE.md. It loads without running a script.”* 而 <em>“To block an action regardless of what Claude decides, use a PreToolUse hook instead.”</em></li>
+<li><strong>Subagents vs Memory</strong>：子代理的 system prompt <strong>完全替换</strong>默认 Claude Code 系统提示，<strong>但 CLAUDE.md 与项目记忆仍通过正常消息流加载</strong>——二者相互独立。注意：内置的 <strong>Explore 与 Plan 代理会跳过 CLAUDE.md &#x2F; 记忆</strong>。</li>
+</ul>
+<blockquote>
+<p>⚠️ <strong>关于 MCP memory 与 Agent SDK memory 的对比</strong>：本次研究的 24 条已核验断言中<strong>未覆盖</strong>这两项的对照证据（检索阶段受组织策略限制无法取得反证）。相关来源（如 platform 文档的 <a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/memory-tool">Memory tool</a>、<a target="_blank" rel="noopener" href="https://github.com/modelcontextprotocol/servers/tree/main/src/memory">MCP memory server</a>）已列入来源清单，但其具体差异留作<a href="#%E5%8D%81%E4%BA%8C%E6%9C%AA%E5%86%B3%E9%97%AE%E9%A2%98">未决问题</a>，不在本报告下结论，以保证严谨。</p>
+</blockquote>
+<hr>
+<h2 id="十、可观测性：InstructionsLoaded-钩子"><a href="#十、可观测性：InstructionsLoaded-钩子" class="headerlink" title="十、可观测性：InstructionsLoaded 钩子"></a>十、可观测性：InstructionsLoaded 钩子</h2><p>Claude Code 在 CLAUDE.md 或 <code>.claude/rules/*.md</code> 文件被载入上下文时，会触发 <strong><code>InstructionsLoaded</code></strong> 钩子事件——这给了你”观察&#x2F;干预记忆加载”的抓手。</p>
+<blockquote>
+<p><em>“Fires when a CLAUDE.md or .claude&#x2F;rules&#x2F;</em>.md file is loaded into context. This event fires at session start for eagerly-loaded files and again later when files are lazily loaded …”*</p>
+</blockquote>
+<pre class="mermaid">sequenceDiagram
+    participant S as 会话启动
+    participant H as InstructionsLoaded Hook
+    participant C as 上下文
+
+    S->>H: 急加载文件（session_start）
+    H->>C: 注入 CLAUDE.md（memory_type: User/Project/Local/Managed）
+    Note over S,C: 会话进行中……
+    S->>H: 访问含嵌套 CLAUDE.md 的子目录（nested_traversal）
+    H->>C: 惰性载入子目录记忆
+    S->>H: paths: frontmatter 规则匹配（path_glob_match）
+    H->>C: 惰性载入条件规则</pre>
+
+<ul>
+<li>**触发字段 <code>load_reason</code>**：<code>session_start</code> &#x2F; <code>nested_traversal</code> &#x2F; <code>path_glob_match</code> &#x2F; <code>include</code> &#x2F; <code>compact</code></li>
+<li>**触发字段 <code>memory_type</code>**：<code>User</code> &#x2F; <code>Project</code> &#x2F; <code>Local</code> &#x2F; <code>Managed</code>（对应四个层级）</li>
+</ul>
+<hr>
+<h2 id="十一、重要更正与注意事项"><a href="#十一、重要更正与注意事项" class="headerlink" title="十一、重要更正与注意事项"></a>十一、重要更正与注意事项</h2><blockquote>
+<p>🔴 <strong>被证伪的常见说法</strong>：网上常说 CLAUDE.md “只有三个层级（user &#x2F; project &#x2F; local）”。本次研究以 <strong>1–2 票否决</strong>该说法——<strong>实际是四层</strong>，遗漏了最顶层的 <strong><code>managed policy</code>（企业级）</strong>。</p>
+</blockquote>
+<p><strong>其它注意事项（来自研究 caveats）：</strong></p>
+<ol>
+<li><strong>来源单一性</strong>：全部为 Anthropic 官方一手文档，无独立第三方交叉验证（检索阶段 WebSearch 因组织 Vertex AI 策略被阻断，无法检索反证）。对于”厂商描述自身产品行为”，官方文档已是权威来源。</li>
+<li><strong>强时效性</strong>：auto memory 等特性需 v2.1.59+，文档为 2026 年版本，特性可能随版本快速演变。</li>
+<li><code>llms.txt</code> 的精确 URL 一度返回 404，但其内容已被现行 memory 文档独立佐证。</li>
+<li>本报告由经核验的研究综合撰写；事实底座共 <strong>14 条</strong>核心发现（24 条确认断言合并去重而来）。</li>
+</ol>
+<hr>
+<h2 id="十二、未决问题"><a href="#十二、未决问题" class="headerlink" title="十二、未决问题"></a>十二、未决问题</h2><p>这些问题本次研究<strong>未能取得已核验证据</strong>，建议作为后续深入方向：</p>
+<ol>
+<li><strong>MCP memory vs 内置记忆</strong>：MCP memory 服务器（如官方 memory MCP &#x2F; 知识图谱记忆）与 CLAUDE.md &#x2F; auto memory 在持久化、跨会话&#x2F;跨项目共享、检索机制上的具体差异？</li>
+<li><strong>Agent SDK memory vs Claude Code 记忆</strong>：在 API &#x2F; 编程模型层面如何对应或区别？</li>
+<li><strong>超阈值 auto memory 的检索</strong>：MEMORY.md 前 200 行 &#x2F; 25KB 之外、以及独立的 topic 文件，如何被按需检索调用？触发条件是什么？</li>
+<li>**<code>.claude/rules/</code>**：含 <code>paths:</code> frontmatter 的条件规则与 CLAUDE.md 在加载优先级、合并&#x2F;覆盖语义上的精确关系？它是否应被视为”第三种”记忆机制？</li>
+</ol>
+<hr>
+<h2 id="十三、来源清单"><a href="#十三、来源清单" class="headerlink" title="十三、来源清单"></a>十三、来源清单</h2><p>全部为 Anthropic 官方一手文档（primary）：</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>来源</th>
+<th>角度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><a target="_blank" rel="noopener" href="https://code.claude.com/docs/en/memory">Memory — code.claude.com&#x2F;docs&#x2F;en&#x2F;memory</a></td>
+<td>核心机制</td>
+</tr>
+<tr>
+<td>2</td>
+<td><a target="_blank" rel="noopener" href="https://code.claude.com/docs/en/context-window">Context window — &#x2F;docs&#x2F;en&#x2F;context-window</a></td>
+<td>载入时序&#x2F;阈值</td>
+</tr>
+<tr>
+<td>3</td>
+<td><a target="_blank" rel="noopener" href="https://code.claude.com/docs/en/best-practices">Best practices — &#x2F;docs&#x2F;en&#x2F;best-practices</a></td>
+<td>实践&#x2F;层级</td>
+</tr>
+<tr>
+<td>4</td>
+<td><a target="_blank" rel="noopener" href="https://code.claude.com/docs/en/settings">Settings — &#x2F;docs&#x2F;en&#x2F;settings</a></td>
+<td>企业级配置</td>
+</tr>
+<tr>
+<td>5</td>
+<td><a target="_blank" rel="noopener" href="https://code.claude.com/docs/en/costs">Costs — &#x2F;docs&#x2F;en&#x2F;costs</a></td>
+<td>上下文成本&#x2F;压缩</td>
+</tr>
+<tr>
+<td>6</td>
+<td><a target="_blank" rel="noopener" href="https://code.claude.com/docs/en/hooks">Hooks — &#x2F;docs&#x2F;en&#x2F;hooks</a></td>
+<td>InstructionsLoaded</td>
+</tr>
+<tr>
+<td>7</td>
+<td><a target="_blank" rel="noopener" href="https://code.claude.com/docs/en/hooks-guide">Hooks guide — &#x2F;docs&#x2F;en&#x2F;hooks-guide</a></td>
+<td>确定性对比</td>
+</tr>
+<tr>
+<td>8</td>
+<td><a target="_blank" rel="noopener" href="https://code.claude.com/docs/en/skills">Skills — &#x2F;docs&#x2F;en&#x2F;skills</a></td>
+<td>Skills 对比</td>
+</tr>
+<tr>
+<td>9</td>
+<td><a target="_blank" rel="noopener" href="https://code.claude.com/docs/en/sub-agents">Sub-agents — &#x2F;docs&#x2F;en&#x2F;sub-agents</a></td>
+<td>子代理对比</td>
+</tr>
+<tr>
+<td>10</td>
+<td><a target="_blank" rel="noopener" href="https://code.claude.com/docs/en/common-workflows">Common workflows — &#x2F;docs&#x2F;en&#x2F;common-workflows</a></td>
+<td>管理操作</td>
+</tr>
+<tr>
+<td>11</td>
+<td><a target="_blank" rel="noopener" href="https://code.claude.com/docs/en/llms.txt">llms.txt — &#x2F;docs&#x2F;en&#x2F;llms.txt</a></td>
+<td>概览</td>
+</tr>
+<tr>
+<td>12</td>
+<td><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/agents-and-tools/tool-use/memory-tool">Memory tool — platform.claude.com</a></td>
+<td>对比（未核验）</td>
+</tr>
+<tr>
+<td>13</td>
+<td><a target="_blank" rel="noopener" href="https://github.com/modelcontextprotocol/servers/tree/main/src/memory">MCP memory server — github</a></td>
+<td>对比（未核验）</td>
+</tr>
+<tr>
+<td>14</td>
+<td><a target="_blank" rel="noopener" href="https://platform.claude.com/docs/en/build-with-claude/context-editing">Context editing — platform.claude.com</a></td>
+<td>对比（未核验）</td>
+</tr>
+<tr>
+<td>15</td>
+<td><a target="_blank" rel="noopener" href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">Effective context engineering — anthropic.com</a></td>
+<td>背景</td>
+</tr>
+</tbody></table>
+<hr>
+<p><sub>📊 研究统计：5 个检索角度 ｜ 15 篇来源 ｜ 73 条断言抽取 ｜ 25 条三票对抗核验 ｜ 24 确认 &#x2F; 1 证伪 ｜ 14 条综合发现 ｜ 97 个 agent 调用</sub></p>
+
+    </article>
+    <!-- license -->
+        <div class="license-wrapper">
+            <p>Author：<a href="https://edison-a-n.github.io">Edison</a>
+            <p>Link：<a href="https://edison-a-n.github.io/2026/06/02/claude-code-memory-research/">https://edison-a-n.github.io/2026/06/02/claude-code-memory-research/</a>
+            <p>Publish date：<a href="https://edison-a-n.github.io/2026/06/02/claude-code-memory-research/">June 2nd 2026, 12:00:00 am</a>
+            <p>Update date：<a href="https://edison-a-n.github.io/2026/06/02/claude-code-memory-research/">June 2nd 2026, 5:25:54 pm</a>
+            <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+        </li>
+        <li class="previous">
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2026/05/28/ai-agent-architectures-2026/" title="2026 AI Agent 架构演进：从单机助手到分布式执行系统">
+                    <div class="prevTitle">2026 AI Agent 架构演进：从单机助手到分布式执行系统</div>
+                </a>
+        </li>
+    </ul>
+    <!-- comment -->
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+            
+            
+            
+            <!-- utteranc评论 -->
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+            
+            
+            
+        </div>
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    <!-- Mathjax -->
+</main>
+
+                <!-- profile -->
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+        <div class="social">
+                            <a href="mailto:zhangn661@gmail.com" class="iconfont-archer email" title="email" ></a>
+                <a href="//github.com/Edison-A-N" class="iconfont-archer github" target="_blank" title="github"></a>
+
+        </div>
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    <!-- 不蒜子  -->
+        <div class="busuanzi-container">
+                <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+        </div>
+</footer>
+
+        </div>
+        <!-- toc -->
+            <div class="toc-wrapper toc-wrapper-loding" style=    top:50vh;
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%A0%B8%E5%BF%83%E7%BB%93%E8%AE%BA%EF%BC%88TL-DR%EF%BC%89"><span class="toc-number">1.</span> <span class="toc-text">一、核心结论（TL;DR）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%EF%BC%9A%E4%B8%A4%E5%A5%97%E4%BA%92%E8%A1%A5%E7%9A%84%E8%AE%B0%E5%BF%86%E7%B3%BB%E7%BB%9F"><span class="toc-number">2.</span> <span class="toc-text">二、整体架构：两套互补的记忆系统</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81CLAUDE-md-%E7%9A%84%E5%9B%9B%E7%BA%A7%E5%B1%82%E7%BA%A7"><span class="toc-number">3.</span> <span class="toc-text">三、CLAUDE.md 的四级层级</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%81%E4%B8%9A%E7%BA%A7%E8%AE%B0%E5%BF%86%E7%9A%84%E7%89%B9%E6%AE%8A%E9%85%8D%E7%BD%AE"><span class="toc-number">3.1.</span> <span class="toc-text">企业级记忆的特殊配置</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%B7%A5%E4%BD%9C%E6%9C%BA%E5%88%B6%EF%BC%9A%E6%96%87%E4%BB%B6%E5%A6%82%E4%BD%95%E8%A2%AB%E5%8F%91%E7%8E%B0%E4%B8%8E%E5%8A%A0%E8%BD%BD"><span class="toc-number">4.</span> <span class="toc-text">四、工作机制：文件如何被发现与加载</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81-import-%E5%AF%BC%E5%85%A5%E8%AF%AD%E6%B3%95"><span class="toc-number">5.</span> <span class="toc-text">五、@import 导入语法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81Auto-Memory%EF%BC%88MEMORY-md%EF%BC%89%E8%87%AA%E5%8A%A8%E8%AE%B0%E5%BF%86"><span class="toc-number">6.</span> <span class="toc-text">六、Auto Memory（MEMORY.md）自动记忆</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E4%B8%8E%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AE%A1%E7%90%86%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">7.</span> <span class="toc-text">七、与上下文管理的关系</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5"><span class="toc-number">8.</span> <span class="toc-text">八、最佳实践</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E6%A8%AA%E5%90%91%E5%AF%B9%E6%AF%94%EF%BC%9AMemory-vs-Skills-vs-Hooks-vs-Subagents"><span class="toc-number">9.</span> <span class="toc-text">九、横向对比：Memory vs Skills vs Hooks vs Subagents</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7%EF%BC%9AInstructionsLoaded-%E9%92%A9%E5%AD%90"><span class="toc-number">10.</span> <span class="toc-text">十、可观测性：InstructionsLoaded 钩子</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E9%87%8D%E8%A6%81%E6%9B%B4%E6%AD%A3%E4%B8%8E%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-number">11.</span> <span class="toc-text">十一、重要更正与注意事项</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81%E6%9C%AA%E5%86%B3%E9%97%AE%E9%A2%98"><span class="toc-number">12.</span> <span class="toc-text">十二、未决问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%89%E3%80%81%E6%9D%A5%E6%BA%90%E6%B8%85%E5%8D%95"><span class="toc-number">13.</span> <span class="toc-text">十三、来源清单</span></a></li></ol>
+            </div>
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 44
+        </div>
+        <!-- search  -->
+    </div>
+    <div class="post-archive">
+            <div class="archive-year"> 2026 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/02</span>
+            <a class="archive-post-title" href="/2026/06/02/claude-code-memory-research/">Claude Code 内置 Memory 深度研究：CLAUDE.md、Auto Memory 与上下文工程</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/28</span>
+            <a class="archive-post-title" href="/2026/05/28/ai-agent-architectures-2026/">2026 AI Agent 架构演进：从单机助手到分布式执行系统</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/26</span>
+            <a class="archive-post-title" href="/2026/05/26/multi-agent-debate-technical-implementation/">Multi-Agent Debate 技术实现：从多 Agent 投票到可验证协作</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span>
+            <a class="archive-post-title" href="/2026/05/21/agent-memory-frontier-survey/">Agent Memory 前沿调研：从长期记忆到经验系统</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/13</span>
+            <a class="archive-post-title" href="/2026/05/13/saas-agent-design-doc/">SaaS Agent 应该怎么设计：从竞品实践到生产级架构</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/12</span>
+            <a class="archive-post-title" href="/2026/05/12/saas-agent-sandbox-research/">SaaS Agent Sandbox 设计原则：不要把 Sandbox 当成容器</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span>
+            <a class="archive-post-title" href="/2026/05/08/agent-engineer-interview-2026/">2026 Agent 开发工程师面试指南：从架构、MCP 到生产化</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/19</span>
+            <a class="archive-post-title" href="/2026/04/19/multi-agent-architecture-survey/">Multi-Agent LLM 系统架构全景调研（2023–2026）</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/14</span>
+            <a class="archive-post-title" href="/2026/04/14/llm-tool-calling-decision-bias/">LLM Agent 中 Skill/Tool 调用决策偏差：技术调研报告</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span>
+            <a class="archive-post-title" href="/2026/04/12/harness-engineering/">Harness Engineering：当 AI 的缰绳比 AI 本身更重要</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span>
+            <a class="archive-post-title" href="/2026/03/30/coding-agent-evolution/">从代码到行动：Coding Agent 如何演变为通用数字助手</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2026/03/21/multi-agent-investment-research/">用 OpenAgents Workspace 协调多 Agent 投研</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/16</span>
+            <a class="archive-post-title" href="/2026/03/16/agent-loop-study/">Agent Loop 技术调研报告</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/14</span>
+            <a class="archive-post-title" href="/2026/03/14/harness-engineering-practical-guide/">Harness Engineering 实践指南：来自 OpenAI、Stripe、Anthropic 等团队的一线经验</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/17</span>
+            <a class="archive-post-title" href="/2026/01/17/trading-drawdown-control-guide/">交易回撤控制指南：认知、守心与仓位管理</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2025 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/28</span>
+            <a class="archive-post-title" href="/2025/12/28/code-execution-sandbox-mcp/">LLM-Driven Agent Architecture with Sandbox and MCP Integration</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2025/11/10/mcp-recent-sharing/">MCP 近期内容分享：从 Resources、Tools 到 Prompts 的实践探索</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span>
+            <a class="archive-post-title" href="/2025/10/28/args_doc_format_comparison/">Tool Args Documentation Format Comparison Analysis</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span>
+            <a class="archive-post-title" href="/2025/10/27/asgi_lifespan_complete_guide/">ASGI Lifespan 完整指南</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/mcp-output-schema/">MCP Output Schema：数据验证与结构化输出的技术实现</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/stop-converting-rest-api-to-mcp/">停止转换REST API到MCP：设计AI原生接口的正确方式</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span>
+            <a class="archive-post-title" href="/2025/09/20/llm-consistency-challenges-large-data-processing/">大型语言模型在处理大批量数据时的一致性挑战与解决方案</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/01</span>
+            <a class="archive-post-title" href="/2024/02/01/nextjs-pagination/">nextjs-pagination</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span>
+            <a class="archive-post-title" href="/2023/09/20/smart-contract-demo/">smart-contract-demo</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/30</span>
+            <a class="archive-post-title" href="/2023/08/30/multi-tenant/">多租户应用与架构设计关注点</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2022 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span>
+            <a class="archive-post-title" href="/2022/12/13/go-ddd/">go-ddd</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/07</span>
+            <a class="archive-post-title" href="/2022/12/07/git-rebase/">使用 `git pull --rebase`</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span>
+            <a class="archive-post-title" href="/2022/12/03/opentelemetry-jaeger/">opnetelemetry-jaeger</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/09</span>
+            <a class="archive-post-title" href="/2022/06/09/ddd-thinking/">ddd-thinking</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/23</span>
+            <a class="archive-post-title" href="/2022/05/23/mvc-and-ddd/">mvc-and-ddd</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span>
+            <a class="archive-post-title" href="/2022/02/13/commit-format-and-auto-changelog/">Git commit 规范</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/tight-lipped/">思考与交流</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/30</span>
+            <a class="archive-post-title" href="/2022/01/30/knowledge-breath-and-depth/">知识掌握的广度与深度</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2021 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/16</span>
+            <a class="archive-post-title" href="/2021/12/16/software-design-doc/">如何撰写技术设计文档</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/21</span>
+            <a class="archive-post-title" href="/2021/11/21/breaking-creation-product/">突破式创新的产品设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span>
+            <a class="archive-post-title" href="/2021/07/15/parallel-and-asynchronous-python/">DRF Exception Handle</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/17</span>
+            <a class="archive-post-title" href="/2021/06/17/DRF-Exception/">DRF Exception Handle</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span>
+            <a class="archive-post-title" href="/2021/06/15/Django-With-DDD/">Django With DDD</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/09</span>
+            <a class="archive-post-title" href="/2021/05/09/Agile-Design/">敏捷软件开发：设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span>
+            <a class="archive-post-title" href="/2021/03/30/DRF-Bussiness-Logic/">Django Restful Framework Business Logic</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2021/03/21/graphql-and-restful/">Graphql and Restful API</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/08</span>
+            <a class="archive-post-title" href="/2021/03/08/grpc-hello-world/">grpc hello world</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/03</span>
+            <a class="archive-post-title" href="/2021/01/03/New-Coding-Language/">我如何学一门新的编程语言</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2020 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/08</span>
+            <a class="archive-post-title" href="/2020/11/08/Agile-Dev/">敏捷开发辅助新项目验证与落地</a>
+        </li>
+            </ul>
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+            <span class="sidebar-tag-name" data-tags="agile">
+                <span class="iconfont-archer">&#xe606;</span>
+                agile
+            </span>
+            <span class="sidebar-tag-name" data-tags="LLM">
+                <span class="iconfont-archer">&#xe606;</span>
+                LLM
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent Loop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent Loop
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Format">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Format
+            </span>
+            <span class="sidebar-tag-name" data-tags="ASGI, Python, FastAPI">
+                <span class="iconfont-archer">&#xe606;</span>
+                ASGI, Python, FastAPI
+            </span>
+            <span class="sidebar-tag-name" data-tags="Architecture">
+                <span class="iconfont-archer">&#xe606;</span>
+                Architecture
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="Sandbox">
+                <span class="iconfont-archer">&#xe606;</span>
+                Sandbox
+            </span>
+            <span class="sidebar-tag-name" data-tags="MCP">
+                <span class="iconfont-archer">&#xe606;</span>
+                MCP
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI
+            </span>
+            <span class="sidebar-tag-name" data-tags="Claude Code">
+                <span class="iconfont-archer">&#xe606;</span>
+                Claude Code
+            </span>
+            <span class="sidebar-tag-name" data-tags="Harness Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Harness Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="thinking">
+                <span class="iconfont-archer">&#xe606;</span>
+                thinking
+            </span>
+            <span class="sidebar-tag-name" data-tags="DDD">
+                <span class="iconfont-archer">&#xe606;</span>
+                DDD
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Calling">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Calling
+            </span>
+            <span class="sidebar-tag-name" data-tags="Prompt Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Prompt Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="OpenAgents">
+                <span class="iconfont-archer">&#xe606;</span>
+                OpenAgents
+            </span>
+            <span class="sidebar-tag-name" data-tags="投研">
+                <span class="iconfont-archer">&#xe606;</span>
+                投研
+            </span>
+            <span class="sidebar-tag-name" data-tags="Multi-Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                Multi-Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI Architecture">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI Architecture
+            </span>
+            <span class="sidebar-tag-name" data-tags="multi-tenant">
+                <span class="iconfont-archer">&#xe606;</span>
+                multi-tenant
+            </span>
+            <span class="sidebar-tag-name" data-tags="可观测性">
+                <span class="iconfont-archer">&#xe606;</span>
+                可观测性
+            </span>
+            <span class="sidebar-tag-name" data-tags="opentelemetry">
+                <span class="iconfont-archer">&#xe606;</span>
+                opentelemetry
+            </span>
+            <span class="sidebar-tag-name" data-tags="API Design">
+                <span class="iconfont-archer">&#xe606;</span>
+                API Design
+            </span>
+            <span class="sidebar-tag-name" data-tags="Trading">
+                <span class="iconfont-archer">&#xe606;</span>
+                Trading
+            </span>
+            <span class="sidebar-tag-name" data-tags="面试">
+                <span class="iconfont-archer">&#xe606;</span>
+                面试
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent Memory">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent Memory
+            </span>
+            <span class="sidebar-tag-name" data-tags="Memory System">
+                <span class="iconfont-archer">&#xe606;</span>
+                Memory System
+            </span>
+            <span class="sidebar-tag-name" data-tags="SaaS">
+                <span class="iconfont-archer">&#xe606;</span>
+                SaaS
+            </span>
+            <span class="sidebar-tag-name" data-tags="系统设计">
+                <span class="iconfont-archer">&#xe606;</span>
+                系统设计
+            </span>
+            <span class="sidebar-tag-name" data-tags="产品设计">
+                <span class="iconfont-archer">&#xe606;</span>
+                产品设计
+            </span>
+            <span class="sidebar-tag-name" data-tags="Security">
+                <span class="iconfont-archer">&#xe606;</span>
+                Security
+            </span>
+            <span class="sidebar-tag-name" data-tags="SeekTool">
+                <span class="iconfont-archer">&#xe606;</span>
+                SeekTool
+            </span>
+            <span class="sidebar-tag-name" data-tags="OpenAI Symphony">
+                <span class="iconfont-archer">&#xe606;</span>
+                OpenAI Symphony
+            </span>
+            <span class="sidebar-tag-name" data-tags="Google Agent Executor">
+                <span class="iconfont-archer">&#xe606;</span>
+                Google Agent Executor
+            </span>
+            <span class="sidebar-tag-name" data-tags="GitHub Copilot">
+                <span class="iconfont-archer">&#xe606;</span>
+                GitHub Copilot
+            </span>
+            <span class="sidebar-tag-name" data-tags="企业级架构">
+                <span class="iconfont-archer">&#xe606;</span>
+                企业级架构
+            </span>
+            <span class="sidebar-tag-name" data-tags="Memory">
+                <span class="iconfont-archer">&#xe606;</span>
+                Memory
+            </span>
+            <span class="sidebar-tag-name" data-tags="Context Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Context Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="Hooks">
+                <span class="iconfont-archer">&#xe606;</span>
+                Hooks
+            </span>
+            <span class="sidebar-tag-name" data-tags="Skills">
+                <span class="iconfont-archer">&#xe606;</span>
+                Skills
+            </span>
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+        <span class="sidebar-category-name" data-categories="AI Agent">
+            <span class="iconfont-archer">&#xe60a;</span>
+            AI Agent
+        </span>
+        <span class="sidebar-category-name" data-categories="交易策略">
+            <span class="iconfont-archer">&#xe60a;</span>
+            交易策略
+        </span>
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "https://edison-a-n.github.io",
+        root: siteMetaRoot,
+        author: "Edison"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+        <!-- main func -->
+        <script src="/scripts/main.js"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.umd.js" onload="window.Fancybox.bind('[data-fancybox]')" defer></script>
+        <!-- algolia -->
+        <!-- busuanzi -->
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        <!-- async load share.js -->
+            <script src="/scripts/share.js" async></script>
+        <!-- mermaid -->
+            <script src='https://cdn.jsdelivr.net/npm/mermaid@8.11.0/dist/mermaid.min.js' onload="window.mermaid.initialize({theme: 'dark'})" async></script>
+    </body>
+</html>

@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+<!-- keywords -->
+<head>
+    <meta charset="utf-8">
+    <meta name="google-site-verification" content="JB-maqhhwUFVUFApXAdvEnVFMjbiaUSIwUQFvCk1VMQ" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Edison">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Edison">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,software architecture,domain-driven design,DDD,AI agents,MCP,Model Context Protocol,Python,Go,full-stack development,LLM,software engineering,hexo blog">
+    <meta name="description" content="2026 年 AI Agent 的核心已从提示词工程转向控制平面与分布式运行时。本文解析 OpenAI Symphony、Google Agent Executor 及 GKE Agent Substrate 等最新架构，探讨企业级 Agent 的治理与执行标准。">
+    <link rel="canonical" href="https://edison-a-n.github.io/2026/05/28/ai-agent-architectures-2026/"/>
+    <meta name="description" content="2026 年 AI Agent 的核心已从提示词工程转向控制平面与分布式运行时。本文解析 OpenAI Symphony、Google Agent Executor 及 GKE Agent Substrate 等最新架构，探讨企业级 Agent 的治理与执行标准。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="2026 AI Agent 架构演进：从单机助手到分布式执行系统">
+<meta property="og:url" content="https://edison-a-n.github.io/2026/05/28/ai-agent-architectures-2026/">
+<meta property="og:site_name" content="Edison&#39;s Tech Blog">
+<meta property="og:description" content="2026 年 AI Agent 的核心已从提示词工程转向控制平面与分布式运行时。本文解析 OpenAI Symphony、Google Agent Executor 及 GKE Agent Substrate 等最新架构，探讨企业级 Agent 的治理与执行标准。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-05-27T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-05-28T09:04:00.786Z">
+<meta property="article:author" content="Edison">
+<meta property="article:tag" content="AI Agent">
+<meta property="article:tag" content="SeekTool">
+<meta property="article:tag" content="OpenAI Symphony">
+<meta property="article:tag" content="Google Agent Executor">
+<meta property="article:tag" content="GitHub Copilot">
+<meta property="article:tag" content="企业级架构">
+<meta name="twitter:card" content="summary">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/avatar/avatar.jpg">
+    <title>2026 AI Agent 架构演进：从单机助手到分布式执行系统 · Edison&#39;s Tech Blog | Software Architecture, AI &amp; DDD</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .footer-fixed-btn,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(
+            -45deg,
+            #444 0,
+            #444 80px,
+            #333 80px,
+            #333 160px
+        );
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link id="stylesheet-fancybox" rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link id="stylesheet-base" rel="preload" href="/css/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link id="stylesheet-mobile" rel="preload" href="/css/mobile.css" as="style" onload="this.onload=null;this.rel='stylesheet';this.media='screen and (max-width: 960px)'">
+    <link id="stylesheet-theme-dark" rel="preload" href="/css/dark.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    <!-- 百度统计  -->
+    <!-- 谷歌统计  -->
+        <script>
+            var cnzz_s_tag = document.createElement('script');
+            cnzz_s_tag.type = 'text/javascript';
+            cnzz_s_tag.async = true;
+            cnzz_s_tag.charset = 'utf-8';
+            cnzz_s_tag.src = 'https://w.cnzz.com/c.php?id=&async=1';
+            var root_s = document.getElementsByTagName('script')[0];
+            root_s.parentNode.insertBefore(cnzz_s_tag, root_s);
+        </script>
+    <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-188648772-3"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-188648772-3');
+        </script>
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Edison's Tech Blog" type="application/atom+xml">
+</head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+        <body class="post-body">
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        <div class="header-sidebar-menu">
+            <div style="padding-left: 1px;">&#xe775;</div>
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href="/">Edison's Studio.</a>
+        </span>
+    </div>
+    <!-- toggle banner -->
+    <div class="banner">
+        <div class="blog-title header-element">
+            <a href="/">Edison&#39;s Studio.</a>
+        </div>
+        <div class="post-title header-element">
+            <a href="#" class="post-name">2026 AI Agent 架构演进：从单机助手到分布式执行系统</a>
+        </div>
+    </div>
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- donate button -->
+
+    <!-- back to top button -->
+    <div class="footer-fixed-btn footer-fixed-btn--hidden back-top">
+        <div>&#xe639;</div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="    height:50vh;
+">
+    <!-- 主页  -->
+    <!-- 404页  -->
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+                2026 AI Agent 架构演进：从单机助手到分布式执行系统
+            <!-- 404 -->
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            <!-- 404 -->
+        </p>
+        <!-- 文章页 meta -->
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                    <div class="post-intro-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="SeekTool">SeekTool</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="OpenAI Symphony">OpenAI Symphony</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Google Agent Executor">Google Agent Executor</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="GitHub Copilot">GitHub Copilot</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="企业级架构">企业级架构</a>
+</div>
+
+                <!-- 文章字数统计 -->
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">2k</span>Reading time: <span class="post-count reading-time">7 min</span></span>
+                    </div>
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2026/05/28</span>
+                    <!-- busuanzi -->
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" alt="loading">
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <div style="color: #666; font-style: italic; font-size: 0.9em; margin-bottom: 1em;">
+本文内容基于 2026 年 OpenAI、Google Cloud、GitHub、Microsoft 及 Anthropic 发布的官方架构文档，并结合 SeekTool.ai 市场数据整理而成。
+</div>
+
+<h2 id="核心论点：Agent-重心转向分布式执行与控制平面"><a href="#核心论点：Agent-重心转向分布式执行与控制平面" class="headerlink" title="核心论点：Agent 重心转向分布式执行与控制平面"></a>核心论点：Agent 重心转向分布式执行与控制平面</h2><p>站在 2026 年 5 月的节点，AI Agent 的技术重心发生了根本性移位。早期的“提示词循环”或单机版的“计算机使用（Computer Use）”已降级为底层原子能力，<strong>Agent 的架构之争已演变为分布式运行时（Runtime）、控制平面（Control Plane）以及大规模沙箱基础设施的博弈</strong>。</p>
+<h3 id="TL-DR：2026-架构新重心"><a href="#TL-DR：2026-架构新重心" class="headerlink" title="TL;DR：2026 架构新重心"></a>TL;DR：2026 架构新重心</h3><ol>
+<li><strong>控制平面与任务板编排</strong>：由单一对话转为异步任务流。OpenAI Symphony 把 Linear 这类项目管理看板变成 coding agents 的控制平面，每个开放任务都可以映射到独立 agent workspace，由人类评审结果 <a href="#n1">[N1]</a>。</li>
+<li><strong>分布式运行时与可恢复执行</strong>：Google Agent Executor 把执行、恢复、分布式部署、事件日志和快照变成 agent runtime 的一等能力 <a href="#n2">[N2]</a>。</li>
+<li><strong>沙箱与基座基础设施</strong>：GKE Agent Sandbox 已 GA，Agent Substrate 则瞄准大规模、低延迟、可挂起&#x2F;恢复的 agentic workloads <a href="#n3">[N3]</a>。</li>
+<li><strong>企业级平台与安全测试</strong>：Gemini Enterprise Agent Platform 强调 Agent Runtime、Memory Bank 与治理；Microsoft 则把 computer-using agents、agent workflow、RAMPART&#x2F;Clarity 安全测试推进到企业开发流程 <a href="#n4">[N4]</a><a href="#m1">[M1]</a><a href="#m2">[M2]</a>。</li>
+<li><strong>云端编码 Agent 的深度集成</strong>：GitHub Copilot cloud agent 已从 PR-only 工作流扩展到 research、plan、branch work，再由人决定何时创建 PR <a href="#n5">[N5]</a>。</li>
+</ol>
+<hr>
+<h2 id="架构新范式-1：Agent-控制平面与任务编排"><a href="#架构新范式-1：Agent-控制平面与任务编排" class="headerlink" title="架构新范式 1：Agent 控制平面与任务编排"></a>架构新范式 1：Agent 控制平面与任务编排</h2><p>传统的 Request-Response 模式难以承载持续展开的工程任务。<strong>OpenAI Symphony</strong> 提出的架构将项目管理看板变成 coding agents 的控制平面：开放任务被分配给 agent workspace，agents 持续运行，人类评审结果 <a href="#n1">[N1]</a>。</p>
+<h3 id="关键特征"><a href="#关键特征" class="headerlink" title="关键特征"></a>关键特征</h3><ul>
+<li><strong>看板即控制平面</strong>：Linear&#x2F;Notion 这类任务系统不再只是记录需求，而是驱动 agent 分工、排队、重启和追踪的入口。</li>
+<li><strong>任务树与依赖</strong>：复杂任务先被拆成阶段、依赖和子任务，再让多个 agents 并行推进。</li>
+<li><strong>人机共治（HITL）</strong>：人类不再逐步提示 agent，而是在计划、代码变更、风险动作等节点评审和纠偏。</li>
+</ul>
+<pre class="mermaid">flowchart TD
+    User[用户指令 / Issue] --> CP[Symphony 控制平面]
+    CP --> Scheduler[任务调度器]
+    Scheduler --> Agent1[调研 Agent]
+    Scheduler --> Agent2[执行 Agent]
+    Agent1 --> SharedState[(共享状态机)]
+    Agent2 --> SharedState
+    SharedState --> Review[人类评审节点]
+    Review -- 批准 --> CP
+    Review -- 驳回 --> Scheduler</pre>
+
+<p><strong>架构摘要</strong>：Symphony 的价值不在“又一个 coding agent”，而在把任务系统变成 agent work 的监督层。它更像是把 issue tracker、agent workspace、人类评审和持续重试组合成一个工程控制面。</p>
+<hr>
+<h2 id="架构新范式-2：可恢复的分布式运行时"><a href="#架构新范式-2：可恢复的分布式运行时" class="headerlink" title="架构新范式 2：可恢复的分布式运行时"></a>架构新范式 2：可恢复的分布式运行时</h2><p>长周期任务面临的最大挑战是环境失效或模型中断。<strong>Google Agent Executor</strong> 引入了事件日志（Event Log）与快照（Snapshotting）技术，支持 Agent 的“执行恢复” <a href="#n2">[N2]</a>。</p>
+<h3 id="技术突破"><a href="#技术突破" class="headerlink" title="技术突破"></a>技术突破</h3><ul>
+<li><strong>可恢复执行</strong>：通过事件日志与快照，让长运行任务在中断、部署或 HITL 等待后可以继续推进。</li>
+<li><strong>多部署模型</strong>：企业可以在自管计算、托管 agents、自定义沙箱之间组合部署，保留数据面和合规边界。</li>
+<li><strong>可审计执行流</strong>：运行时需要记录关键工具调用、状态变化和人工审批，以支持复盘与合规审计。</li>
+</ul>
+<hr>
+<h2 id="基础设施层：Agent-Sandbox-与-Substrate"><a href="#基础设施层：Agent-Sandbox-与-Substrate" class="headerlink" title="基础设施层：Agent Sandbox 与 Substrate"></a>基础设施层：Agent Sandbox 与 Substrate</h2><p>为了支撑大量 agentic workloads，基础设施层必须同时处理“安全隔离”“启动延迟”“挂起&#x2F;恢复”和“资源密度”。<strong>GKE Agent Sandbox (GA)</strong> 与 <strong>Agent Substrate</strong> 是 Google 给出的 agent-first 基础设施方向 <a href="#n3">[N3]</a>。</p>
+<h3 id="基础设施标准"><a href="#基础设施标准" class="headerlink" title="基础设施标准"></a>基础设施标准</h3><ul>
+<li><strong>GKE Agent Sandbox</strong>：面向不可信代码、工具调用和 agent 执行环境，强调隔离、生命周期管理和低延迟启动。</li>
+<li><strong>Agent Substrate</strong>：面向大规模、经常等待外部输入的 agentic workloads，尝试在 Kubernetes 之上提供更高密度的调度与 suspend&#x2F;resume 能力。</li>
+</ul>
+<blockquote>
+<p><span style="color:#1565c0;font-weight:bold">核心价值</span></p>
+<p>这类基础设施的重点不是“让每个业务都立刻拥有一个 Agent”，而是让企业能安全运行不可信动作、保留状态、降低启动延迟，并在大量 agent 等待人工或事件触发时控制资源成本。</p>
+</blockquote>
+<hr>
+<h2 id="企业级治理：平台化与安全防御"><a href="#企业级治理：平台化与安全防御" class="headerlink" title="企业级治理：平台化与安全防御"></a>企业级治理：平台化与安全防御</h2><p><strong>Gemini Enterprise Agent Platform</strong> 与 <strong>Microsoft Copilot Studio</strong> 的最新更新显示，企业 Agent 的竞争正在转向平台治理、工作流编排和安全测试 <a href="#n4">[N4]</a><a href="#m1">[M1]</a><a href="#m2">[M2]</a>。</p>
+<h3 id="治理核心组件"><a href="#治理核心组件" class="headerlink" title="治理核心组件"></a>治理核心组件</h3><ul>
+<li><strong>Agent Runtime + Memory Bank</strong>：Gemini Enterprise Agent Platform 把构建、部署、运行时、长期上下文和治理放到同一平台视角下 <a href="#n4">[N4]</a>。</li>
+<li><strong>Workflow + agent nodes</strong>：Copilot Studio 把 computer-using agents、API actions、审批、业务逻辑和 agent 节点放进同一套工作流体验 <a href="#m1">[M1]</a>。</li>
+<li><strong>RAMPART &amp; Clarity</strong>：微软把 agent 安全测试推进到开发流程，用可重复测试承接红队发现和事故回归 <a href="#m2">[M2]</a>。</li>
+</ul>
+<hr>
+<h2 id="云端编码-Agent：工作委派的终极形态"><a href="#云端编码-Agent：工作委派的终极形态" class="headerlink" title="云端编码 Agent：工作委派的终极形态"></a>云端编码 Agent：工作委派的终极形态</h2><p>以 <strong>GitHub Copilot cloud agent</strong> 为代表的系统，将 Agent 深度嵌入到研发流水线中 <a href="#n5">[N5]</a>。</p>
+<ul>
+<li><strong>调研与规划</strong>：Copilot cloud agent 可以先进行 repository-grounded research，也可以先生成 implementation plan，待用户确认后再写代码 <a href="#n5">[N5]</a>。</li>
+<li><strong>分支作业</strong>：它不再局限于直接开 PR，而是可以先在分支上工作，用户查看 diff 后再决定是否创建 PR <a href="#n5">[N5]</a>。</li>
+<li><strong>Claude Code &#x2F; Cowork</strong>：Anthropic 的官方产品叙述也在从“代码补全”转向“目标委派”：读取代码库、跨文件修改、运行测试，或在桌面、本地文件与应用间完成知识工作 <a href="#a1">[A1]</a><a href="#a2">[A2]</a>。</li>
+</ul>
+<hr>
+<h2 id="旧关键词怎么处理：从产品名降级为底层原子能力"><a href="#旧关键词怎么处理：从产品名降级为底层原子能力" class="headerlink" title="旧关键词怎么处理：从产品名降级为底层原子能力"></a>旧关键词怎么处理：从产品名降级为底层原子能力</h2><p>在 2026 年的语境下，一些曾经的“顶流”术语已完成了使命，降级为系统内部的 Primitive（原子能力）：</p>
+<table>
+<thead>
+<tr>
+<th align="left">旧关键词</th>
+<th align="left">2026 年的地位</th>
+<th align="left">现状描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Operator</strong></td>
+<td align="left"><strong>并入平台</strong></td>
+<td align="left">不应再作为独立主线讨论；其 Web 操作能力更适合作为 ChatGPT agent 这类平台能力的一部分。</td>
+</tr>
+<tr>
+<td align="left"><strong>Computer Use</strong></td>
+<td align="left"><strong>UI 动作 primitive</strong></td>
+<td align="left">仍重要，但不是完整架构；它需要运行时、审计、HITL、沙箱和策略层才能进入生产。</td>
+</tr>
+<tr>
+<td align="left"><strong>Deep Research</strong></td>
+<td align="left"><strong>长任务模式</strong></td>
+<td align="left">仍是典型任务形态，但已经被吸收到更广泛的 research-plan-act 工作流。</td>
+</tr>
+<tr>
+<td align="left"><strong>MCP</strong></td>
+<td align="left"><strong>连接层协议</strong></td>
+<td align="left">仍是关键协议，但只是 tool&#x2F;data connector 层，不是 2026 Agent 架构的全部。</td>
+</tr>
+<tr>
+<td align="left"><strong>Agents SDK</strong></td>
+<td align="left"><strong>开发工具层</strong></td>
+<td align="left">可以加速开发，但架构焦点已经上移到控制面、运行时、沙箱、治理与观测。</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="SeekTool-市场洞察：2026-产业分发图景"><a href="#SeekTool-市场洞察：2026-产业分发图景" class="headerlink" title="SeekTool 市场洞察：2026 产业分发图景"></a>SeekTool 市场洞察：2026 产业分发图景</h2><p>根据 <strong>SeekTool.ai</strong> 2026 年 5 月的最新监测数据，Agent 产业的增长点已明确向“执行与治理”倾斜。</p>
+<h3 id="市场核心数据看板"><a href="#市场核心数据看板" class="headerlink" title="市场核心数据看板"></a>市场核心数据看板</h3><ul>
+<li><strong>工具生态爆发</strong>：SeekTool 已收录超过 <strong>6000+</strong> 生产力工具，涵盖 <strong>400+</strong> 垂直细分领域。</li>
+<li><strong>分类信号</strong>：SeekTool 的 AI Agents 排名和代码助手、工作流、企业平台等相邻分类说明，市场正在从“聊天助手”向执行、编排、治理和开发流水线扩散。</li>
+<li><strong>平台化趋势</strong>：Amazon Bedrock 的访问量维持在 <strong>62.3M</strong> 的高位，显示企业依然倾向于在云原生平台上构建 Agent 集群。</li>
+<li><strong>高增长样本</strong>：MindStudio 在 AI Agents 排名中显示 <strong>324.6%</strong> 增长，说明低代码 Agent 构建和编排仍有明显需求。</li>
+</ul>
+<hr>
+<h2 id="来源索引"><a href="#来源索引" class="headerlink" title="来源索引"></a>来源索引</h2><ul>
+<li><a id="n1"></a><code>[N1]</code> OpenAI Symphony 官方公告：<a target="_blank" rel="noopener" href="https://openai.com/index/open-source-codex-orchestration-symphony/">Open Source Codex Orchestration Symphony</a></li>
+<li><a id="n2"></a><code>[N2]</code> Google Agent Executor 博客：<a target="_blank" rel="noopener" href="https://cloud.google.com/blog/products/ai-machine-learning/agent-executor-googles-distributed-agent-runtime">Google’s Distributed Agent Runtime</a></li>
+<li><a id="n3"></a><code>[N3]</code> GKE Agent Sandbox &amp; Substrate：<a target="_blank" rel="noopener" href="https://cloud.google.com/blog/products/containers-kubernetes/bringing-you-agent-sandbox-on-gke-and-agent-substrate">Bringing You Agent Sandbox on GKE and Agent Substrate</a></li>
+<li><a id="n4"></a><code>[N4]</code> Gemini Enterprise Agent Platform：<a target="_blank" rel="noopener" href="https://cloud.google.com/blog/products/ai-machine-learning/introducing-gemini-enterprise-agent-platform">Introducing Gemini Enterprise Agent Platform</a></li>
+<li><a id="n5"></a><code>[N5]</code> GitHub Copilot cloud agent 更新日志：<a target="_blank" rel="noopener" href="https://github.blog/changelog/2026-04-01-research-plan-and-code-with-copilot-cloud-agent/">Research, Plan, and Code with Copilot Cloud Agent</a></li>
+<li><a id="m1"></a><code>[M1]</code> Microsoft Copilot Studio (May 2026): <a target="_blank" rel="noopener" href="https://www.microsoft.com/en-us/microsoft-copilot/blog/copilot-studio/new-and-improved-computer-using-agents-a-new-workflows-experience-and-real-time-voice-experiences/">New and Improved Computer-Using Agents</a></li>
+<li><a id="m2"></a><code>[M2]</code> Microsoft RAMPART &amp; Clarity: <a target="_blank" rel="noopener" href="https://www.microsoft.com/en-us/security/blog/2026/05/20/introducing-rampart-and-clarity-open-source-tools-to-bring-safety-into-agent-development-workflow/">Introducing RAMPART and Clarity</a></li>
+<li><a id="a1"></a><code>[A1]</code> Anthropic Claude Code: <a target="_blank" rel="noopener" href="https://www.anthropic.com/product/claude-code">Claude Code Product Page</a></li>
+<li><a id="a2"></a><code>[A2]</code> Anthropic Claude Cowork: <a target="_blank" rel="noopener" href="https://www.anthropic.com/product/claude-cowork">Claude Cowork Product Page</a></li>
+<li><a id="s1"></a><code>[S1]</code> SeekTool 市场监测：<a target="_blank" rel="noopener" href="https://seektool.ai/">SeekTool.ai 2026 市场报告</a></li>
+</ul>
+
+    </article>
+    <!-- license -->
+        <div class="license-wrapper">
+            <p>Author：<a href="https://edison-a-n.github.io">Edison</a>
+            <p>Link：<a href="https://edison-a-n.github.io/2026/05/28/ai-agent-architectures-2026/">https://edison-a-n.github.io/2026/05/28/ai-agent-architectures-2026/</a>
+            <p>Publish date：<a href="https://edison-a-n.github.io/2026/05/28/ai-agent-architectures-2026/">May 28th 2026, 12:00:00 am</a>
+            <p>Update date：<a href="https://edison-a-n.github.io/2026/05/28/ai-agent-architectures-2026/">May 28th 2026, 5:04:00 pm</a>
+            <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2026/06/02/claude-code-memory-research/" title="Claude Code 内置 Memory 深度研究：CLAUDE.md、Auto Memory 与上下文工程">
+                    <div class="nextTitle">Claude Code 内置 Memory 深度研究：CLAUDE.md、Auto Memory 与上下文工程</div>
+                </a>
+        </li>
+        <li class="previous">
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2026/05/26/multi-agent-debate-technical-implementation/" title="Multi-Agent Debate 技术实现：从多 Agent 投票到可验证协作">
+                    <div class="prevTitle">Multi-Agent Debate 技术实现：从多 Agent 投票到可验证协作</div>
+                </a>
+        </li>
+    </ul>
+    <!-- comment -->
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+            
+            
+            
+            <!-- utteranc评论 -->
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+            
+            
+            
+        </div>
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    <!-- Mathjax -->
+</main>
+
+                <!-- profile -->
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+        <div class="social">
+                            <a href="mailto:zhangn661@gmail.com" class="iconfont-archer email" title="email" ></a>
+                <a href="//github.com/Edison-A-N" class="iconfont-archer github" target="_blank" title="github"></a>
+
+        </div>
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    <!-- 不蒜子  -->
+        <div class="busuanzi-container">
+                <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+        </div>
+</footer>
+
+        </div>
+        <!-- toc -->
+            <div class="toc-wrapper toc-wrapper-loding" style=    top:50vh;
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%B8%E5%BF%83%E8%AE%BA%E7%82%B9%EF%BC%9AAgent-%E9%87%8D%E5%BF%83%E8%BD%AC%E5%90%91%E5%88%86%E5%B8%83%E5%BC%8F%E6%89%A7%E8%A1%8C%E4%B8%8E%E6%8E%A7%E5%88%B6%E5%B9%B3%E9%9D%A2"><span class="toc-number">1.</span> <span class="toc-text">核心论点：Agent 重心转向分布式执行与控制平面</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#TL-DR%EF%BC%9A2026-%E6%9E%B6%E6%9E%84%E6%96%B0%E9%87%8D%E5%BF%83"><span class="toc-number">1.1.</span> <span class="toc-text">TL;DR：2026 架构新重心</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84%E6%96%B0%E8%8C%83%E5%BC%8F-1%EF%BC%9AAgent-%E6%8E%A7%E5%88%B6%E5%B9%B3%E9%9D%A2%E4%B8%8E%E4%BB%BB%E5%8A%A1%E7%BC%96%E6%8E%92"><span class="toc-number">2.</span> <span class="toc-text">架构新范式 1：Agent 控制平面与任务编排</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B3%E9%94%AE%E7%89%B9%E5%BE%81"><span class="toc-number">2.1.</span> <span class="toc-text">关键特征</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84%E6%96%B0%E8%8C%83%E5%BC%8F-2%EF%BC%9A%E5%8F%AF%E6%81%A2%E5%A4%8D%E7%9A%84%E5%88%86%E5%B8%83%E5%BC%8F%E8%BF%90%E8%A1%8C%E6%97%B6"><span class="toc-number">3.</span> <span class="toc-text">架构新范式 2：可恢复的分布式运行时</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8A%80%E6%9C%AF%E7%AA%81%E7%A0%B4"><span class="toc-number">3.1.</span> <span class="toc-text">技术突破</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E7%A1%80%E8%AE%BE%E6%96%BD%E5%B1%82%EF%BC%9AAgent-Sandbox-%E4%B8%8E-Substrate"><span class="toc-number">4.</span> <span class="toc-text">基础设施层：Agent Sandbox 与 Substrate</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E7%A1%80%E8%AE%BE%E6%96%BD%E6%A0%87%E5%87%86"><span class="toc-number">4.1.</span> <span class="toc-text">基础设施标准</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%81%E4%B8%9A%E7%BA%A7%E6%B2%BB%E7%90%86%EF%BC%9A%E5%B9%B3%E5%8F%B0%E5%8C%96%E4%B8%8E%E5%AE%89%E5%85%A8%E9%98%B2%E5%BE%A1"><span class="toc-number">5.</span> <span class="toc-text">企业级治理：平台化与安全防御</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B2%BB%E7%90%86%E6%A0%B8%E5%BF%83%E7%BB%84%E4%BB%B6"><span class="toc-number">5.1.</span> <span class="toc-text">治理核心组件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%91%E7%AB%AF%E7%BC%96%E7%A0%81-Agent%EF%BC%9A%E5%B7%A5%E4%BD%9C%E5%A7%94%E6%B4%BE%E7%9A%84%E7%BB%88%E6%9E%81%E5%BD%A2%E6%80%81"><span class="toc-number">6.</span> <span class="toc-text">云端编码 Agent：工作委派的终极形态</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%A7%E5%85%B3%E9%94%AE%E8%AF%8D%E6%80%8E%E4%B9%88%E5%A4%84%E7%90%86%EF%BC%9A%E4%BB%8E%E4%BA%A7%E5%93%81%E5%90%8D%E9%99%8D%E7%BA%A7%E4%B8%BA%E5%BA%95%E5%B1%82%E5%8E%9F%E5%AD%90%E8%83%BD%E5%8A%9B"><span class="toc-number">7.</span> <span class="toc-text">旧关键词怎么处理：从产品名降级为底层原子能力</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SeekTool-%E5%B8%82%E5%9C%BA%E6%B4%9E%E5%AF%9F%EF%BC%9A2026-%E4%BA%A7%E4%B8%9A%E5%88%86%E5%8F%91%E5%9B%BE%E6%99%AF"><span class="toc-number">8.</span> <span class="toc-text">SeekTool 市场洞察：2026 产业分发图景</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%82%E5%9C%BA%E6%A0%B8%E5%BF%83%E6%95%B0%E6%8D%AE%E7%9C%8B%E6%9D%BF"><span class="toc-number">8.1.</span> <span class="toc-text">市场核心数据看板</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%A5%E6%BA%90%E7%B4%A2%E5%BC%95"><span class="toc-number">9.</span> <span class="toc-text">来源索引</span></a></li></ol>
+            </div>
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 44
+        </div>
+        <!-- search  -->
+    </div>
+    <div class="post-archive">
+            <div class="archive-year"> 2026 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/02</span>
+            <a class="archive-post-title" href="/2026/06/02/claude-code-memory-research/">Claude Code 内置 Memory 深度研究：CLAUDE.md、Auto Memory 与上下文工程</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/28</span>
+            <a class="archive-post-title" href="/2026/05/28/ai-agent-architectures-2026/">2026 AI Agent 架构演进：从单机助手到分布式执行系统</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/26</span>
+            <a class="archive-post-title" href="/2026/05/26/multi-agent-debate-technical-implementation/">Multi-Agent Debate 技术实现：从多 Agent 投票到可验证协作</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span>
+            <a class="archive-post-title" href="/2026/05/21/agent-memory-frontier-survey/">Agent Memory 前沿调研：从长期记忆到经验系统</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/13</span>
+            <a class="archive-post-title" href="/2026/05/13/saas-agent-design-doc/">SaaS Agent 应该怎么设计：从竞品实践到生产级架构</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/12</span>
+            <a class="archive-post-title" href="/2026/05/12/saas-agent-sandbox-research/">SaaS Agent Sandbox 设计原则：不要把 Sandbox 当成容器</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span>
+            <a class="archive-post-title" href="/2026/05/08/agent-engineer-interview-2026/">2026 Agent 开发工程师面试指南：从架构、MCP 到生产化</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/19</span>
+            <a class="archive-post-title" href="/2026/04/19/multi-agent-architecture-survey/">Multi-Agent LLM 系统架构全景调研（2023–2026）</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/14</span>
+            <a class="archive-post-title" href="/2026/04/14/llm-tool-calling-decision-bias/">LLM Agent 中 Skill/Tool 调用决策偏差：技术调研报告</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span>
+            <a class="archive-post-title" href="/2026/04/12/harness-engineering/">Harness Engineering：当 AI 的缰绳比 AI 本身更重要</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span>
+            <a class="archive-post-title" href="/2026/03/30/coding-agent-evolution/">从代码到行动：Coding Agent 如何演变为通用数字助手</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2026/03/21/multi-agent-investment-research/">用 OpenAgents Workspace 协调多 Agent 投研</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/16</span>
+            <a class="archive-post-title" href="/2026/03/16/agent-loop-study/">Agent Loop 技术调研报告</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/14</span>
+            <a class="archive-post-title" href="/2026/03/14/harness-engineering-practical-guide/">Harness Engineering 实践指南：来自 OpenAI、Stripe、Anthropic 等团队的一线经验</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/17</span>
+            <a class="archive-post-title" href="/2026/01/17/trading-drawdown-control-guide/">交易回撤控制指南：认知、守心与仓位管理</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2025 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/28</span>
+            <a class="archive-post-title" href="/2025/12/28/code-execution-sandbox-mcp/">LLM-Driven Agent Architecture with Sandbox and MCP Integration</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2025/11/10/mcp-recent-sharing/">MCP 近期内容分享：从 Resources、Tools 到 Prompts 的实践探索</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span>
+            <a class="archive-post-title" href="/2025/10/28/args_doc_format_comparison/">Tool Args Documentation Format Comparison Analysis</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span>
+            <a class="archive-post-title" href="/2025/10/27/asgi_lifespan_complete_guide/">ASGI Lifespan 完整指南</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/mcp-output-schema/">MCP Output Schema：数据验证与结构化输出的技术实现</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/stop-converting-rest-api-to-mcp/">停止转换REST API到MCP：设计AI原生接口的正确方式</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span>
+            <a class="archive-post-title" href="/2025/09/20/llm-consistency-challenges-large-data-processing/">大型语言模型在处理大批量数据时的一致性挑战与解决方案</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/01</span>
+            <a class="archive-post-title" href="/2024/02/01/nextjs-pagination/">nextjs-pagination</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span>
+            <a class="archive-post-title" href="/2023/09/20/smart-contract-demo/">smart-contract-demo</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/30</span>
+            <a class="archive-post-title" href="/2023/08/30/multi-tenant/">多租户应用与架构设计关注点</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2022 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span>
+            <a class="archive-post-title" href="/2022/12/13/go-ddd/">go-ddd</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/07</span>
+            <a class="archive-post-title" href="/2022/12/07/git-rebase/">使用 `git pull --rebase`</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span>
+            <a class="archive-post-title" href="/2022/12/03/opentelemetry-jaeger/">opnetelemetry-jaeger</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/09</span>
+            <a class="archive-post-title" href="/2022/06/09/ddd-thinking/">ddd-thinking</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/23</span>
+            <a class="archive-post-title" href="/2022/05/23/mvc-and-ddd/">mvc-and-ddd</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span>
+            <a class="archive-post-title" href="/2022/02/13/commit-format-and-auto-changelog/">Git commit 规范</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/tight-lipped/">思考与交流</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/30</span>
+            <a class="archive-post-title" href="/2022/01/30/knowledge-breath-and-depth/">知识掌握的广度与深度</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2021 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/16</span>
+            <a class="archive-post-title" href="/2021/12/16/software-design-doc/">如何撰写技术设计文档</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/21</span>
+            <a class="archive-post-title" href="/2021/11/21/breaking-creation-product/">突破式创新的产品设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span>
+            <a class="archive-post-title" href="/2021/07/15/parallel-and-asynchronous-python/">DRF Exception Handle</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/17</span>
+            <a class="archive-post-title" href="/2021/06/17/DRF-Exception/">DRF Exception Handle</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span>
+            <a class="archive-post-title" href="/2021/06/15/Django-With-DDD/">Django With DDD</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/09</span>
+            <a class="archive-post-title" href="/2021/05/09/Agile-Design/">敏捷软件开发：设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span>
+            <a class="archive-post-title" href="/2021/03/30/DRF-Bussiness-Logic/">Django Restful Framework Business Logic</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2021/03/21/graphql-and-restful/">Graphql and Restful API</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/08</span>
+            <a class="archive-post-title" href="/2021/03/08/grpc-hello-world/">grpc hello world</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/03</span>
+            <a class="archive-post-title" href="/2021/01/03/New-Coding-Language/">我如何学一门新的编程语言</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2020 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/08</span>
+            <a class="archive-post-title" href="/2020/11/08/Agile-Dev/">敏捷开发辅助新项目验证与落地</a>
+        </li>
+            </ul>
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+            <span class="sidebar-tag-name" data-tags="agile">
+                <span class="iconfont-archer">&#xe606;</span>
+                agile
+            </span>
+            <span class="sidebar-tag-name" data-tags="LLM">
+                <span class="iconfont-archer">&#xe606;</span>
+                LLM
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent Loop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent Loop
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Format">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Format
+            </span>
+            <span class="sidebar-tag-name" data-tags="ASGI, Python, FastAPI">
+                <span class="iconfont-archer">&#xe606;</span>
+                ASGI, Python, FastAPI
+            </span>
+            <span class="sidebar-tag-name" data-tags="Architecture">
+                <span class="iconfont-archer">&#xe606;</span>
+                Architecture
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="Sandbox">
+                <span class="iconfont-archer">&#xe606;</span>
+                Sandbox
+            </span>
+            <span class="sidebar-tag-name" data-tags="MCP">
+                <span class="iconfont-archer">&#xe606;</span>
+                MCP
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI
+            </span>
+            <span class="sidebar-tag-name" data-tags="Claude Code">
+                <span class="iconfont-archer">&#xe606;</span>
+                Claude Code
+            </span>
+            <span class="sidebar-tag-name" data-tags="Harness Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Harness Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="thinking">
+                <span class="iconfont-archer">&#xe606;</span>
+                thinking
+            </span>
+            <span class="sidebar-tag-name" data-tags="DDD">
+                <span class="iconfont-archer">&#xe606;</span>
+                DDD
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Calling">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Calling
+            </span>
+            <span class="sidebar-tag-name" data-tags="Prompt Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Prompt Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="OpenAgents">
+                <span class="iconfont-archer">&#xe606;</span>
+                OpenAgents
+            </span>
+            <span class="sidebar-tag-name" data-tags="投研">
+                <span class="iconfont-archer">&#xe606;</span>
+                投研
+            </span>
+            <span class="sidebar-tag-name" data-tags="Multi-Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                Multi-Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI Architecture">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI Architecture
+            </span>
+            <span class="sidebar-tag-name" data-tags="multi-tenant">
+                <span class="iconfont-archer">&#xe606;</span>
+                multi-tenant
+            </span>
+            <span class="sidebar-tag-name" data-tags="可观测性">
+                <span class="iconfont-archer">&#xe606;</span>
+                可观测性
+            </span>
+            <span class="sidebar-tag-name" data-tags="opentelemetry">
+                <span class="iconfont-archer">&#xe606;</span>
+                opentelemetry
+            </span>
+            <span class="sidebar-tag-name" data-tags="API Design">
+                <span class="iconfont-archer">&#xe606;</span>
+                API Design
+            </span>
+            <span class="sidebar-tag-name" data-tags="Trading">
+                <span class="iconfont-archer">&#xe606;</span>
+                Trading
+            </span>
+            <span class="sidebar-tag-name" data-tags="面试">
+                <span class="iconfont-archer">&#xe606;</span>
+                面试
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent Memory">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent Memory
+            </span>
+            <span class="sidebar-tag-name" data-tags="Memory System">
+                <span class="iconfont-archer">&#xe606;</span>
+                Memory System
+            </span>
+            <span class="sidebar-tag-name" data-tags="SaaS">
+                <span class="iconfont-archer">&#xe606;</span>
+                SaaS
+            </span>
+            <span class="sidebar-tag-name" data-tags="系统设计">
+                <span class="iconfont-archer">&#xe606;</span>
+                系统设计
+            </span>
+            <span class="sidebar-tag-name" data-tags="产品设计">
+                <span class="iconfont-archer">&#xe606;</span>
+                产品设计
+            </span>
+            <span class="sidebar-tag-name" data-tags="Security">
+                <span class="iconfont-archer">&#xe606;</span>
+                Security
+            </span>
+            <span class="sidebar-tag-name" data-tags="SeekTool">
+                <span class="iconfont-archer">&#xe606;</span>
+                SeekTool
+            </span>
+            <span class="sidebar-tag-name" data-tags="OpenAI Symphony">
+                <span class="iconfont-archer">&#xe606;</span>
+                OpenAI Symphony
+            </span>
+            <span class="sidebar-tag-name" data-tags="Google Agent Executor">
+                <span class="iconfont-archer">&#xe606;</span>
+                Google Agent Executor
+            </span>
+            <span class="sidebar-tag-name" data-tags="GitHub Copilot">
+                <span class="iconfont-archer">&#xe606;</span>
+                GitHub Copilot
+            </span>
+            <span class="sidebar-tag-name" data-tags="企业级架构">
+                <span class="iconfont-archer">&#xe606;</span>
+                企业级架构
+            </span>
+            <span class="sidebar-tag-name" data-tags="Memory">
+                <span class="iconfont-archer">&#xe606;</span>
+                Memory
+            </span>
+            <span class="sidebar-tag-name" data-tags="Context Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Context Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="Hooks">
+                <span class="iconfont-archer">&#xe606;</span>
+                Hooks
+            </span>
+            <span class="sidebar-tag-name" data-tags="Skills">
+                <span class="iconfont-archer">&#xe606;</span>
+                Skills
+            </span>
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+        <span class="sidebar-category-name" data-categories="AI Agent">
+            <span class="iconfont-archer">&#xe60a;</span>
+            AI Agent
+        </span>
+        <span class="sidebar-category-name" data-categories="交易策略">
+            <span class="iconfont-archer">&#xe60a;</span>
+            交易策略
+        </span>
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "https://edison-a-n.github.io",
+        root: siteMetaRoot,
+        author: "Edison"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+        <!-- main func -->
+        <script src="/scripts/main.js"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.umd.js" onload="window.Fancybox.bind('[data-fancybox]')" defer></script>
+        <!-- algolia -->
+        <!-- busuanzi -->
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        <!-- async load share.js -->
+            <script src="/scripts/share.js" async></script>
+        <!-- mermaid -->
+            <script src='https://cdn.jsdelivr.net/npm/mermaid@8.11.0/dist/mermaid.min.js' onload="window.mermaid.initialize({theme: 'dark'})" async></script>
+    </body>
+</html>

@@ -431,6 +431,86 @@
                 <main class="main index-page">
             
         <article class="index-post">
+            <a class="abstract-title" href="/2022/02/13/commit-format-and-auto-changelog/">
+                <span class="abstract-title-text">Git commit 规范</span>
+            </a>
+            <div class="abstract-content">
+                commit message format提交格式12345&lt;type&gt;(&lt;scope&gt;): &lt;subject&gt;&lt;BLANK LINE&gt;&lt;body&gt;&lt;BLANK LINE&gt;&lt;footer&gt;
+
+type
+build：对构建系统或者外部依赖项进行了修改
+ci：对CI配置文件或脚本进行了修改
+feature：增加新的特征，一般指的是大的变更
+func： 增加新的功能，一般指小的功能
+fix：修复bug
+impr: improvement，小的代码设计改进
+conf: 仅配置变化，Spring配置、propert...
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2026/03/14">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2022/02/13</span>
+                </div>
+                <!-- tags -->
+                    <div class="abstract-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="thinking">thinking</a>
+</div>
+
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+            
+        <article class="index-post">
+            <a class="abstract-title" href="/2022/02/03/tight-lipped/">
+                <span class="abstract-title-text">思考与交流</span>
+            </a>
+            <div class="abstract-content">
+                题记想写这篇文章，是因为在某平台看某用户的一篇文章，想了解一下作者的背景，进而看到其在一些回答中与评论者争吵的情况。其实技术水平高低本身是受很多情况影响的，评价一个人也不是一维的。事实上，没有任何标准可以真正的评价一个人。技术讨论和技术辩论是受欢迎的，因为大家技术水平不在一个等级而无法正常的讨论进而主动拒绝讨论本身也是可以接受的。黑一门技术，则显得狭隘了。
+为了调解自己的思想，再一次阅读了《黑客与画家》“守口如瓶”这一章，并分享一些感悟。
+自由的思考自由的思考，强调的是，不要轻易的被各种论断影响。我们需要去思考一个论点的论证逻辑，了解其论据是否足够充分。信息时代，我们每天都会从各种渠道接...
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2026/03/14">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2022/02/03</span>
+                </div>
+                <!-- tags -->
+                    <div class="abstract-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="thinking">thinking</a>
+</div>
+
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+            
+        <article class="index-post">
+            <a class="abstract-title" href="/2022/01/30/knowledge-breath-and-depth/">
+                <span class="abstract-title-text">知识掌握的广度与深度</span>
+            </a>
+            <div class="abstract-content">
+                什么是广度与深度想要想做一名架构师的同学，大都会听到一句话：“一名架构师要有技术的广度与深度”。很多同学在跟hr交流的时候，或者跟领导、行业大佬交流的时候，也经常会听到这样的建议：“要做一名T&#x2F;π型人才”。
+那么，广度要怎么理解，深度又要怎么理解呢。我们掌握了一些知识或者信息，需要达到一个什么程度，算是覆盖了广度，或是达到了深度。
+我个人的感受是，当我们对知识、信息达到了，
+
+能够理解其中的原理与逻辑，同时能够自己进行复述，则算是达到了广度的覆盖
+能够机遇已有的信息，思考其深层次的逻辑，举一反三的实践或思考总结，并能达到一定效果，则算是深度的掌握。
+
+我们每天会浏览五花八门的信...
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2026/03/14">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2022/01/30</span>
+                </div>
+                <!-- tags -->
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+            
+        <article class="index-post">
             <a class="abstract-title" href="/2021/12/16/software-design-doc/">
                 <span class="abstract-title-text">如何撰写技术设计文档</span>
             </a>
@@ -583,72 +663,6 @@ SerializerSerializer 提供了数据序列化反序列的操作，并承担了va
             </div>
         </article>
         <div class="index-post-divider"></div>
-            
-        <article class="index-post">
-            <a class="abstract-title" href="/2021/03/21/graphql-and-restful/">
-                <span class="abstract-title-text">Graphql and Restful API</span>
-            </a>
-            <div class="abstract-content">
-                GraphQL 与 RESTfulGraphQL
-数据一次获取数据返回被封装在一个入口，一次请求
-所见及所得想要获取什么数据，就定义相应的查询字段。
-
-RESTful
-明确资源间的关系
-HTTP verb定义对资源的行为
-
-API设计对于前后端分离架构，API成为了前后端间数据通信协议。当一个产品经理列出需求之后之后，前后端工程师设计领域模型，抽象需求与原型成为代码可以描述的对象。在实践中发现，大多数前端工程师会对页面进行建模，而后端工程师则对资源进行建模。于是会发现，前后端工程师对模型的定义会有些差别，即使我们在设计阶段有领域模型设计，我们也无法保障前端工程师能按照领域模型设计组件，这...
-            </div>
-            <!-- read more -->
-            <div class="abstract-post-meta">
-                <!-- date -->
-                <div class="abstract-date" title="Last updated: 2026/03/14">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/03/21</span>
-                </div>
-                <!-- tags -->
-            </div>
-        </article>
-        <div class="index-post-divider"></div>
-            
-        <article class="index-post">
-            <a class="abstract-title" href="/2021/03/08/grpc-hello-world/">
-                <span class="abstract-title-text">grpc hello world</span>
-            </a>
-            <div class="abstract-content">
-                获取源码1https://github.com/grpc/grpc-go.git
-源码在 grpc-go/examples/helloworld文件夹
-源码解析proto文件
-声明使用proto3。这是最新版的格式，具体可以了解proto3与proto2的区别。一般直接使用proto3即可。1syntax = &quot;proto3&quot;;
-声明包路径，指向了使用proto文件生成的包名。默认与被应用的go包一致，也可以使用该声明自主定义。1option go_package = &quot;google.golang.org/grpc/examples/helloworld/h...
-            </div>
-            <!-- read more -->
-            <div class="abstract-post-meta">
-                <!-- date -->
-                <div class="abstract-date" title="Last updated: 2026/03/14">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/03/08</span>
-                </div>
-                <!-- tags -->
-            </div>
-        </article>
-        <div class="index-post-divider"></div>
-            
-        <article class="index-post">
-            <a class="abstract-title" href="/2021/01/03/New-Coding-Language/">
-                <span class="abstract-title-text">我如何学一门新的编程语言</span>
-            </a>
-            <div class="abstract-content">
-                先写一个demo学编程语言需要先用，先尝试使用他发挥作用。想想我们学习自己的母语，不是从认识拼音开始的，也不是从认字开始的，而是先模仿，喊出一些基本的称呼等等，逐步知道每个发音代表的一些特殊含义。我们不一定理解那些含义，但是我们已经尝试着让他发挥作用。我学习编程语言也是如此，写一个简单的小游戏或者小工具，也许是一个简单的猜字游戏，也许是一个定时闹钟，也许是一个仿grep功能的工具。不管是什么工具，我基本可以快速理清设计方案，然后花一个小时，基于google，找到各种代码编写的方案，完成小工具的实现。在实现的过程中，我会比想象中投入，因为我的目标已经变成了工具实现，而不是语言学习。犹如用新...
-            </div>
-            <!-- read more -->
-            <div class="abstract-post-meta">
-                <!-- date -->
-                <div class="abstract-date" title="Last updated: 2026/03/14">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/01/03</span>
-                </div>
-                <!-- tags -->
-            </div>
-        </article>
-        <div class="index-post-divider"></div>
     <!-- paginator  -->
         <nav class="page-nav">
             <a class="extend prev" rel="prev" href="/archives/page/3/">&lt; PREV</a><a class="page-number" href="/archives/">1</a><a class="page-number" href="/archives/page/2/">2</a><a class="page-number" href="/archives/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/archives/page/5/">5</a><a class="extend next" rel="next" href="/archives/page/5/">NEXT &gt;</a>
@@ -728,15 +742,30 @@ API设计对于前后端分离架构，API成为了前后端间数据通信协�
         
         
         
+        
+        
+        
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 41
+        Total : 44
         </div>
         <!-- search  -->
     </div>
     <div class="post-archive">
             <div class="archive-year"> 2026 </div>
             <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/02</span>
+            <a class="archive-post-title" href="/2026/06/02/claude-code-memory-research/">Claude Code 内置 Memory 深度研究：CLAUDE.md、Auto Memory 与上下文工程</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/28</span>
+            <a class="archive-post-title" href="/2026/05/28/ai-agent-architectures-2026/">2026 AI Agent 架构演进：从单机助手到分布式执行系统</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/26</span>
+            <a class="archive-post-title" href="/2026/05/26/multi-agent-debate-technical-implementation/">Multi-Agent Debate 技术实现：从多 Agent 投票到可验证协作</a>
+        </li>
         <li class="archive-post-item">
             <span class="archive-post-date">05/21</span>
             <a class="archive-post-title" href="/2026/05/21/agent-memory-frontier-survey/">Agent Memory 前沿调研：从长期记忆到经验系统</a>
@@ -1056,6 +1085,42 @@ API设计对于前后端分离架构，API成为了前后端间数据通信协�
             <span class="sidebar-tag-name" data-tags="Security">
                 <span class="iconfont-archer">&#xe606;</span>
                 Security
+            </span>
+            <span class="sidebar-tag-name" data-tags="SeekTool">
+                <span class="iconfont-archer">&#xe606;</span>
+                SeekTool
+            </span>
+            <span class="sidebar-tag-name" data-tags="OpenAI Symphony">
+                <span class="iconfont-archer">&#xe606;</span>
+                OpenAI Symphony
+            </span>
+            <span class="sidebar-tag-name" data-tags="Google Agent Executor">
+                <span class="iconfont-archer">&#xe606;</span>
+                Google Agent Executor
+            </span>
+            <span class="sidebar-tag-name" data-tags="GitHub Copilot">
+                <span class="iconfont-archer">&#xe606;</span>
+                GitHub Copilot
+            </span>
+            <span class="sidebar-tag-name" data-tags="企业级架构">
+                <span class="iconfont-archer">&#xe606;</span>
+                企业级架构
+            </span>
+            <span class="sidebar-tag-name" data-tags="Memory">
+                <span class="iconfont-archer">&#xe606;</span>
+                Memory
+            </span>
+            <span class="sidebar-tag-name" data-tags="Context Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Context Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="Hooks">
+                <span class="iconfont-archer">&#xe606;</span>
+                Hooks
+            </span>
+            <span class="sidebar-tag-name" data-tags="Skills">
+                <span class="iconfont-archer">&#xe606;</span>
+                Skills
             </span>
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
