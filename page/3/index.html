@@ -437,6 +437,29 @@
             <div class="container container-unloaded">
                 <main class="main index-page">
         <article class="index-post">
+            <a class="abstract-title" href="/2025/09/29/mcp-output-schema/">
+                <span class="abstract-title-text">MCP Output Schema：数据验证与结构化输出的技术实现</span>
+            </a>
+            <div class="abstract-content">
+                本文深入探讨了MCP Output Schema在数据验证、安全保障和结构化输出方面的核心价值，分析了LLM处理结构化数据的局限性，并提出了基于单一职责原则的Schema设计最佳实践，为构建可靠的AI代理系统提供技术指导。
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2026/03/14">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2025/09/29</span>
+                </div>
+                <!-- tags -->
+                    <div class="abstract-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="LLM">LLM</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="MCP">MCP</a>
+</div>
+
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+        <article class="index-post">
             <a class="abstract-title" href="/2025/09/29/stop-converting-rest-api-to-mcp/">
                 <span class="abstract-title-text">停止转换REST API到MCP：设计AI原生接口的正确方式</span>
             </a>
@@ -451,8 +474,8 @@
                 </div>
                 <!-- tags -->
                     <div class="abstract-tags" >
-        <a class="post-tag" href="javascript:void(0);" data-tags="LLM">LLM</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="LLM">LLM</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="MCP">MCP</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="API Design">API Design</a>
 </div>
@@ -475,8 +498,8 @@
                 </div>
                 <!-- tags -->
                     <div class="abstract-tags" >
-        <a class="post-tag" href="javascript:void(0);" data-tags="LLM">LLM</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="LLM">LLM</a>
 </div>
 
             </div>
@@ -668,30 +691,6 @@ Service对于一些无法由一个model完成执行的...
             </div>
         </article>
         <div class="index-post-divider"></div>
-            
-        <article class="index-post">
-            <a class="abstract-title" href="/2022/05/23/mvc-and-ddd/">
-                <span class="abstract-title-text">mvc-and-ddd</span>
-            </a>
-            <div class="abstract-content">
-                MVC与DDD比较(2022.05.23)MVC与DDD其实并不是对立的。在MVC中，我们会在controller中执行一些校验逻辑，包含可能的鉴权、参数校验等。我们也会在view里面实现service，包含各种validator与serializer以及data transfer。
-DDD拆解并丰富了MVC中的M，将一些在V中执行的逻辑迁移到M中，由domain model执行model内的业务处理，同时将DTO从M中剥离出来放到infrastructure中，借由其他的设计模式如repository或者CQRS等进行处理。
-同时，DDD中依然会有一些业务操作无法在model中完成，这...
-            </div>
-            <!-- read more -->
-            <div class="abstract-post-meta">
-                <!-- date -->
-                <div class="abstract-date" title="Last updated: 2026/03/14">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2022/05/23</span>
-                </div>
-                <!-- tags -->
-                    <div class="abstract-tags" >
-        <a class="post-tag" href="javascript:void(0);" data-tags="DDD">DDD</a>
-</div>
-
-            </div>
-        </article>
-        <div class="index-post-divider"></div>
     <!-- paginator  -->
         <nav class="page-nav">
             <a class="extend prev" rel="prev" href="/page/2/">&lt; PREV</a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="page-number" href="/page/5/">5</a><a class="extend next" rel="next" href="/page/4/">NEXT &gt;</a>
@@ -797,15 +796,20 @@ DDD拆解并丰富了MVC中的M，将一些在V中执行的逻辑迁移到M中�
         
         
         
+        
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 44
+        Total : 45
         </div>
         <!-- search  -->
     </div>
     <div class="post-archive">
             <div class="archive-year"> 2026 </div>
             <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/24</span>
+            <a class="archive-post-title" href="/2026/09/24/agent-sandbox-network-access-control/">Agent 沙箱网络访问控制：从凭证暴露面到凭证代理</a>
+        </li>
         <li class="archive-post-item">
             <span class="archive-post-date">06/02</span>
             <a class="archive-post-title" href="/2026/06/02/claude-code-memory-research/">Claude Code 内置 Memory 深度研究：CLAUDE.md、Auto Memory 与上下文工程</a>
@@ -1010,17 +1014,65 @@ DDD拆解并丰富了MVC中的M，将一些在V中执行的逻辑迁移到M中�
                 <span class="iconfont-archer">&#xe606;</span>
                 agile
             </span>
-            <span class="sidebar-tag-name" data-tags="LLM">
-                <span class="iconfont-archer">&#xe606;</span>
-                LLM
-            </span>
             <span class="sidebar-tag-name" data-tags="AI Agent">
                 <span class="iconfont-archer">&#xe606;</span>
                 AI Agent
             </span>
+            <span class="sidebar-tag-name" data-tags="LLM">
+                <span class="iconfont-archer">&#xe606;</span>
+                LLM
+            </span>
+            <span class="sidebar-tag-name" data-tags="MCP">
+                <span class="iconfont-archer">&#xe606;</span>
+                MCP
+            </span>
+            <span class="sidebar-tag-name" data-tags="面试">
+                <span class="iconfont-archer">&#xe606;</span>
+                面试
+            </span>
             <span class="sidebar-tag-name" data-tags="Agent Loop">
                 <span class="iconfont-archer">&#xe606;</span>
                 Agent Loop
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent Memory">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent Memory
+            </span>
+            <span class="sidebar-tag-name" data-tags="Memory System">
+                <span class="iconfont-archer">&#xe606;</span>
+                Memory System
+            </span>
+            <span class="sidebar-tag-name" data-tags="Security">
+                <span class="iconfont-archer">&#xe606;</span>
+                Security
+            </span>
+            <span class="sidebar-tag-name" data-tags="Credential Brokering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Credential Brokering
+            </span>
+            <span class="sidebar-tag-name" data-tags="Sandbox">
+                <span class="iconfont-archer">&#xe606;</span>
+                Sandbox
+            </span>
+            <span class="sidebar-tag-name" data-tags="OpenAI Symphony">
+                <span class="iconfont-archer">&#xe606;</span>
+                OpenAI Symphony
+            </span>
+            <span class="sidebar-tag-name" data-tags="Google Agent Executor">
+                <span class="iconfont-archer">&#xe606;</span>
+                Google Agent Executor
+            </span>
+            <span class="sidebar-tag-name" data-tags="GitHub Copilot">
+                <span class="iconfont-archer">&#xe606;</span>
+                GitHub Copilot
+            </span>
+            <span class="sidebar-tag-name" data-tags="SeekTool">
+                <span class="iconfont-archer">&#xe606;</span>
+                SeekTool
+            </span>
+            <span class="sidebar-tag-name" data-tags="企业级架构">
+                <span class="iconfont-archer">&#xe606;</span>
+                企业级架构
             </span>
             <span class="sidebar-tag-name" data-tags="Tool Format">
                 <span class="iconfont-archer">&#xe606;</span>
@@ -1030,6 +1082,26 @@ DDD拆解并丰富了MVC中的M，将一些在V中执行的逻辑迁移到M中�
                 <span class="iconfont-archer">&#xe606;</span>
                 ASGI, Python, FastAPI
             </span>
+            <span class="sidebar-tag-name" data-tags="Claude Code">
+                <span class="iconfont-archer">&#xe606;</span>
+                Claude Code
+            </span>
+            <span class="sidebar-tag-name" data-tags="Memory">
+                <span class="iconfont-archer">&#xe606;</span>
+                Memory
+            </span>
+            <span class="sidebar-tag-name" data-tags="Context Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Context Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="Hooks">
+                <span class="iconfont-archer">&#xe606;</span>
+                Hooks
+            </span>
+            <span class="sidebar-tag-name" data-tags="Skills">
+                <span class="iconfont-archer">&#xe606;</span>
+                Skills
+            </span>
             <span class="sidebar-tag-name" data-tags="Architecture">
                 <span class="iconfont-archer">&#xe606;</span>
                 Architecture
@@ -1038,21 +1110,9 @@ DDD拆解并丰富了MVC中的M，将一些在V中执行的逻辑迁移到M中�
                 <span class="iconfont-archer">&#xe606;</span>
                 Agent
             </span>
-            <span class="sidebar-tag-name" data-tags="Sandbox">
-                <span class="iconfont-archer">&#xe606;</span>
-                Sandbox
-            </span>
-            <span class="sidebar-tag-name" data-tags="MCP">
-                <span class="iconfont-archer">&#xe606;</span>
-                MCP
-            </span>
             <span class="sidebar-tag-name" data-tags="AI">
                 <span class="iconfont-archer">&#xe606;</span>
                 AI
-            </span>
-            <span class="sidebar-tag-name" data-tags="Claude Code">
-                <span class="iconfont-archer">&#xe606;</span>
-                Claude Code
             </span>
             <span class="sidebar-tag-name" data-tags="Harness Engineering">
                 <span class="iconfont-archer">&#xe606;</span>
@@ -1074,14 +1134,6 @@ DDD拆解并丰富了MVC中的M，将一些在V中执行的逻辑迁移到M中�
                 <span class="iconfont-archer">&#xe606;</span>
                 Prompt Engineering
             </span>
-            <span class="sidebar-tag-name" data-tags="OpenAgents">
-                <span class="iconfont-archer">&#xe606;</span>
-                OpenAgents
-            </span>
-            <span class="sidebar-tag-name" data-tags="投研">
-                <span class="iconfont-archer">&#xe606;</span>
-                投研
-            </span>
             <span class="sidebar-tag-name" data-tags="Multi-Agent">
                 <span class="iconfont-archer">&#xe606;</span>
                 Multi-Agent
@@ -1089,6 +1141,14 @@ DDD拆解并丰富了MVC中的M，将一些在V中执行的逻辑迁移到M中�
             <span class="sidebar-tag-name" data-tags="AI Architecture">
                 <span class="iconfont-archer">&#xe606;</span>
                 AI Architecture
+            </span>
+            <span class="sidebar-tag-name" data-tags="OpenAgents">
+                <span class="iconfont-archer">&#xe606;</span>
+                OpenAgents
+            </span>
+            <span class="sidebar-tag-name" data-tags="投研">
+                <span class="iconfont-archer">&#xe606;</span>
+                投研
             </span>
             <span class="sidebar-tag-name" data-tags="multi-tenant">
                 <span class="iconfont-archer">&#xe606;</span>
@@ -1102,26 +1162,6 @@ DDD拆解并丰富了MVC中的M，将一些在V中执行的逻辑迁移到M中�
                 <span class="iconfont-archer">&#xe606;</span>
                 opentelemetry
             </span>
-            <span class="sidebar-tag-name" data-tags="API Design">
-                <span class="iconfont-archer">&#xe606;</span>
-                API Design
-            </span>
-            <span class="sidebar-tag-name" data-tags="Trading">
-                <span class="iconfont-archer">&#xe606;</span>
-                Trading
-            </span>
-            <span class="sidebar-tag-name" data-tags="面试">
-                <span class="iconfont-archer">&#xe606;</span>
-                面试
-            </span>
-            <span class="sidebar-tag-name" data-tags="Agent Memory">
-                <span class="iconfont-archer">&#xe606;</span>
-                Agent Memory
-            </span>
-            <span class="sidebar-tag-name" data-tags="Memory System">
-                <span class="iconfont-archer">&#xe606;</span>
-                Memory System
-            </span>
             <span class="sidebar-tag-name" data-tags="SaaS">
                 <span class="iconfont-archer">&#xe606;</span>
                 SaaS
@@ -1134,45 +1174,13 @@ DDD拆解并丰富了MVC中的M，将一些在V中执行的逻辑迁移到M中�
                 <span class="iconfont-archer">&#xe606;</span>
                 产品设计
             </span>
-            <span class="sidebar-tag-name" data-tags="Security">
+            <span class="sidebar-tag-name" data-tags="API Design">
                 <span class="iconfont-archer">&#xe606;</span>
-                Security
+                API Design
             </span>
-            <span class="sidebar-tag-name" data-tags="SeekTool">
+            <span class="sidebar-tag-name" data-tags="Trading">
                 <span class="iconfont-archer">&#xe606;</span>
-                SeekTool
-            </span>
-            <span class="sidebar-tag-name" data-tags="OpenAI Symphony">
-                <span class="iconfont-archer">&#xe606;</span>
-                OpenAI Symphony
-            </span>
-            <span class="sidebar-tag-name" data-tags="Google Agent Executor">
-                <span class="iconfont-archer">&#xe606;</span>
-                Google Agent Executor
-            </span>
-            <span class="sidebar-tag-name" data-tags="GitHub Copilot">
-                <span class="iconfont-archer">&#xe606;</span>
-                GitHub Copilot
-            </span>
-            <span class="sidebar-tag-name" data-tags="企业级架构">
-                <span class="iconfont-archer">&#xe606;</span>
-                企业级架构
-            </span>
-            <span class="sidebar-tag-name" data-tags="Memory">
-                <span class="iconfont-archer">&#xe606;</span>
-                Memory
-            </span>
-            <span class="sidebar-tag-name" data-tags="Context Engineering">
-                <span class="iconfont-archer">&#xe606;</span>
-                Context Engineering
-            </span>
-            <span class="sidebar-tag-name" data-tags="Hooks">
-                <span class="iconfont-archer">&#xe606;</span>
-                Hooks
-            </span>
-            <span class="sidebar-tag-name" data-tags="Skills">
-                <span class="iconfont-archer">&#xe606;</span>
-                Skills
+                Trading
             </span>
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>

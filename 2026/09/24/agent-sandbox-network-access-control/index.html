@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+<!-- keywords -->
+<head>
+    <meta charset="utf-8">
+    <meta name="google-site-verification" content="JB-maqhhwUFVUFApXAdvEnVFMjbiaUSIwUQFvCk1VMQ" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Edison">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Edison">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,software architecture,domain-driven design,DDD,AI agents,MCP,Model Context Protocol,Python,Go,full-stack development,LLM,software engineering,hexo blog">
+    <meta name="description" content="能跑代码的 agent 手里往往握着真正的 API key。本文从一次真实的三厂商凭证劫持事件讲起，拆解 agent 沙箱的出站暴露面，梳理凭证代理（credential brokering）的设计空间与代表方案，再细看开源实现 Infisical Agent Vault，看它怎么在出口注入凭证、防不住什么、怎么在自己的项目里落地。">
+    <link rel="canonical" href="https://edison-a-n.github.io/2026/09/24/agent-sandbox-network-access-control/"/>
+    <meta name="description" content="能跑代码的 agent 手里往往握着真正的 API key。本文从一次真实的三厂商凭证劫持事件讲起，拆解 agent 沙箱的出站暴露面，梳理凭证代理（credential brokering）的设计空间与代表方案，再细看开源实现 Infisical Agent Vault，看它怎么在出口注入凭证、防不住什么、怎么在自己的项目里落地。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Agent 沙箱网络访问控制：从凭证暴露面到凭证代理">
+<meta property="og:url" content="https://edison-a-n.github.io/2026/09/24/agent-sandbox-network-access-control/">
+<meta property="og:site_name" content="Edison&#39;s Tech Blog">
+<meta property="og:description" content="能跑代码的 agent 手里往往握着真正的 API key。本文从一次真实的三厂商凭证劫持事件讲起，拆解 agent 沙箱的出站暴露面，梳理凭证代理（credential brokering）的设计空间与代表方案，再细看开源实现 Infisical Agent Vault，看它怎么在出口注入凭证、防不住什么、怎么在自己的项目里落地。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-09-23T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-09-24T09:39:27.214Z">
+<meta property="article:author" content="Edison">
+<meta property="article:tag" content="AI Agent">
+<meta property="article:tag" content="Security">
+<meta property="article:tag" content="Credential Brokering">
+<meta property="article:tag" content="Sandbox">
+<meta name="twitter:card" content="summary">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/avatar/avatar.jpg">
+    <title>Agent 沙箱网络访问控制：从凭证暴露面到凭证代理 · Edison&#39;s Tech Blog | Software Architecture, AI &amp; DDD</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .footer-fixed-btn,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(
+            -45deg,
+            #444 0,
+            #444 80px,
+            #333 80px,
+            #333 160px
+        );
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link id="stylesheet-fancybox" rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link id="stylesheet-base" rel="preload" href="/css/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link id="stylesheet-mobile" rel="preload" href="/css/mobile.css" as="style" onload="this.onload=null;this.rel='stylesheet';this.media='screen and (max-width: 960px)'">
+    <link id="stylesheet-theme-dark" rel="preload" href="/css/dark.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    <!-- 百度统计  -->
+    <!-- 谷歌统计  -->
+        <script>
+            var cnzz_s_tag = document.createElement('script');
+            cnzz_s_tag.type = 'text/javascript';
+            cnzz_s_tag.async = true;
+            cnzz_s_tag.charset = 'utf-8';
+            cnzz_s_tag.src = 'https://w.cnzz.com/c.php?id=&async=1';
+            var root_s = document.getElementsByTagName('script')[0];
+            root_s.parentNode.insertBefore(cnzz_s_tag, root_s);
+        </script>
+    <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-188648772-3"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-188648772-3');
+        </script>
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Edison's Tech Blog" type="application/atom+xml">
+</head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+        <body class="post-body">
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        <div class="header-sidebar-menu">
+            <div style="padding-left: 1px;">&#xe775;</div>
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href="/">Edison's Studio.</a>
+        </span>
+    </div>
+    <!-- toggle banner -->
+    <div class="banner">
+        <div class="blog-title header-element">
+            <a href="/">Edison&#39;s Studio.</a>
+        </div>
+        <div class="post-title header-element">
+            <a href="#" class="post-name">Agent 沙箱网络访问控制：从凭证暴露面到凭证代理</a>
+        </div>
+    </div>
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- donate button -->
+
+    <!-- back to top button -->
+    <div class="footer-fixed-btn footer-fixed-btn--hidden back-top">
+        <div>&#xe639;</div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="    height:50vh;
+">
+    <!-- 主页  -->
+    <!-- 404页  -->
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+                Agent 沙箱网络访问控制：从凭证暴露面到凭证代理
+            <!-- 404 -->
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            <!-- 404 -->
+        </p>
+        <!-- 文章页 meta -->
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                    <div class="post-intro-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Security">Security</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Credential Brokering">Credential Brokering</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Sandbox">Sandbox</a>
+</div>
+
+                <!-- 文章字数统计 -->
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">7.8k</span>Reading time: <span class="post-count reading-time">30 min</span></span>
+                    </div>
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2026/09/24</span>
+                    <!-- busuanzi -->
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" alt="loading">
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <p>给 agent 配上工具和 API key 之后，安全问题多了一层，它会不会把 key 泄露出去。能读环境变量、能读文件、能发 HTTP 请求的进程，一旦处理的内容不可信，这三样能力就拼成一条完整的泄露链路。这不是思想实验。2026 年 4 月，三家大厂出品的编码 agent 在同一类攻击下，把宿主仓库的 API key 贴进了公开的 PR 评论。</p>
+<p>这篇文章把这件事讲完整。暴露面在哪，业界收敛出的解法是什么，代表方案各自怎么做，开源的那个怎么工作，防不住什么，以及怎么在自己的项目里落地。</p>
+<hr>
+<h2 id="§1-背景，Agent-为什么不能持有凭证"><a href="#§1-背景，Agent-为什么不能持有凭证" class="headerlink" title="§1 背景，Agent 为什么不能持有凭证"></a>§1 背景，Agent 为什么不能持有凭证</h2><p>先看一件真事。2026 年 4 月 15 日，Johns Hopkins 大学的研究员 Aonan Guan 披露了一类攻击，命名为 Comment and Control<a href="#n2">[N2]</a>。攻击者向公开仓库提交 PR，在标题里藏一段注入指令。仓库里跑的 Claude Code Security Review（Anthropic 官方的 PR 安全审查 agent）读到标题，把它当成任务上下文，执行了里面的命令。<code>ps auxeww</code> 抓取全部进程的环境变量，<code>ANTHROPIC_API_KEY</code> 和 <code>GITHUB_TOKEN</code> 作为「安全发现」贴进了公开的 PR 评论。</p>
+<p>同一个模式在另外两家复现。Google Gemini CLI Action 被一段伪造的「Trusted Content Section」压过安全指令，<code>GEMINI_API_KEY</code> 贴进公开 issue。GitHub Copilot Agent 的案例最曲折。指令藏在 HTML 注释里，渲染后的页面上完全不可见，只有 agent 会解析；受害者把 issue 指派给 Copilot 时看不到任何异常。Copilot 的三层运行时防御被逐一绕过。环境变量过滤只作用于 bash 子进程，父进程和 MCP server 持有全量环境，用 <code>/proc</code> 就能读到；base64 编码骗过 <code>ghs_</code> 特征的 secret scanning；<code>github.com</code> 本在网络防火墙白名单里，凭证编码后作为一次正常的 commit 提交出去。</p>
+<p>三家厂商都付了赏金，没有一个发布 CVE 或安全公告；Anthropic 后来把严重级别从 Critical 降为 None，理由是「设计上并未针对 prompt injection 做加固」（原话：”The action is not designed to be hardened against prompt injection”）<a href="#n2">[N2]</a>。SecurityWeek 和 VentureBeat 都做了报道<a href="#n3">[N3]</a>。</p>
+<p>研究者对根因的概括，比多数威胁模型文章都准确：</p>
+<blockquote>
+<p>The agent has access to production secrets because it needs them to do its job. The agent processes untrusted input because that <em>is</em> its job. These two requirements are in direct conflict.<a href="#n2">[N2]</a></p>
+</blockquote>
+<p>agent 需要凭证才能干活，本职却是处理不可信输入。两个需求直接冲突，这就是 agent 时代的凭证问题。</p>
+<p>它和传统应用差在哪。传统 secrets manager（Infisical、HashiCorp Vault 这类）的模型是「把凭证还给应用」，应用启动时从 vault 拉取密钥放进环境变量，之后正常调用。这个模型对 agent 失效，因为 agent 不是一段确定性代码，它会读文档、抓网页、收 issue，再把这一切拼进自己的上下文。Infisical 在 agent-vault 的发布文里把攻击链说得很直白，RAG 管线里的毒文档、或一次工具调用拉进来的恶意网页，都可以指示 agent 把 secrets 转发到攻击者控制的端点。官方同时承认，guardrails 再强也无法保证 agent 不被操纵外泄<a href="#n1">[N1]</a>。Anthropic 的工程博客对此有一句第一方自述，讲的就是旧架构，不可信代码和凭证跑在同一个容器里，「prompt injection 只需要说服 Claude 去读它自己的环境」<a href="#n6">[N6]</a>。</p>
+<p>为什么短时效、轮换、动态秘密不够。这些手段都在压缩凭证被盗后的窗口期，没有改变一个事实，凭证还在 agent 的可读空间里，agent 还是被骗的持有者，还能把密钥发出去<a href="#n1">[N1]</a>。窗口短了，泄露照样发生。</p>
+<p>IETF 今年 3 月底出现一份个人草案 CB4A（Credential Broker for Agents）<a href="#n4">[N4]</a>，把这类架构形式化。草案列出 agent 区别于传统服务的四点。</p>
+<ul>
+<li>agent 半自主决策，自己决定调用哪个 API</li>
+<li>攻陷向量是新的，注入、上下文外泄、工具调用操纵</li>
+<li>scope 不可预判，这个任务要 Slack 写权限，下一个可能要 GitHub admin</li>
+<li>agent 隐式代理用户行动，用户并不在场</li>
+</ul>
+<p>于是结论落在防线的性质上。<code>.gitignore</code>、文件权限、「不要在日志里打印 token」，全是约定式防线（convention-only），依赖每个参与者自觉。agent 处理的内容本身不可信，约定拦不住一段伪装成数据的指令。需要的是确定性防线（deterministic guardrail），即使 agent 被完全操纵，结构上也拿不到凭证、发不出去。</p>
+<hr>
+<h2 id="§2-问题拆解，Agent-沙箱的出站暴露面"><a href="#§2-问题拆解，Agent-沙箱的出站暴露面" class="headerlink" title="§2 问题拆解，Agent 沙箱的出站暴露面"></a>§2 问题拆解，Agent 沙箱的出站暴露面</h2><p>先盘点可偷什么。跑在沙箱里的 agent 能接触到的凭证通常有三类。环境变量里的 API key；文件系统里的凭证文件（<code>.env</code>、ssh-key、kubeconfig）；内存里的 token。Comment and Control 偷的是第一类，手段是通用的。</p>
+<p>再看通道。沙箱的出站流量按「凭证是否进入 HTTP 请求」分成两类，这个分法决定了后文所有方案的边界。</p>
+<p><strong>走 HTTPS 的出站</strong>。LLM API、代码托管、云服务 API，绝大多数 agent 工作负载都在这条通道上。收口点是现成的，HTTP 栈里有标准的代理出口配置，凭证在这里统一注入。</p>
+<p><strong>不走代理的出站</strong>。git over SSH、rsync、任意 TCP。SSH 的凭证不进 HTTP 请求，没有注入点；这一类流量在 §6 回到边界讨论。</p>
+<p>举一个最常见的部署形态。orchestrator 起一个临时沙箱，为了让 agent 能干活，把 LLM key、代码平台 token、对象存储凭证配进沙箱的环境变量，或写进随镜像打包的 <code>.env</code>。沙箱和内网之间是隔开的，但这几样真凭证就存在沙箱里，agent 一行代码就能读到。§1 的 Comment and Control 三个案例就发生在同样形态的 runner 里，攻击全程没有碰沙箱隔离，注入指令让 agent 自己把环境变量里的凭证发了出去。</p>
+<p>加密存储管的是静态安全，这类部署真正的关口在最后一步，真凭证进了 agent 可读空间。这一步成立，前面做的加密、权限、约定都拦不住它。</p>
+<hr>
+<h2 id="§3-设计空间，凭证代理（credential-brokering）"><a href="#§3-设计空间，凭证代理（credential-brokering）" class="headerlink" title="§3 设计空间，凭证代理（credential brokering）"></a>§3 设计空间，凭证代理（credential brokering）</h2><p>行业在这个问题上收敛得很快，最后都落在了同一个模式上。Infisical 在发布文里直接引用了这个共识：</p>
+<blockquote>
+<p>This is becoming the primary approach that we, as an industry, are currently converging towards: credential brokering.<a href="#n1">[N1]</a></p>
+</blockquote>
+<p>凭证代理（credential brokering）指的是，凭证不进 agent 可读空间，agent 的出站请求经由一个代理，凭证在代理侧注入。Anthropic 把旧架构称为 coupled design，结构性修复则是「确保 token 从 Claude 代码所在的沙箱里永远不可达」<a href="#n6">[N6]</a>。两家表述不同，结构判断是同一个，凭证出沙箱，注入发生在代理侧。</p>
+<p>标准化也在跟进。IETF 2026 年 3 月 29 日挂出个人草案 CB4A（Credential Broker for Agents）<a href="#n4">[N4]</a>，把凭证代理架构形式化。决策点与发放点分离（PDP 不碰凭证，CDP 不做策略），DPoP 发送方约束令牌，三级审批，不可变审计链。状态要说清楚，它是个人提案（individual submission），未被 IETF 采纳，按 Internet-Draft 六个月规则 2026 年 9 月 30 日到期，截至本文写作只有 -00 一版。收敛发生在模式层，标准化还在路上，后文的方案对比都以这个判断为前提。</p>
+<p>这个设计空间看两个问题就够了。</p>
+<p><strong>第一个问题，中介器放在哪一层</strong>。同一套「代理注入」逻辑挂在不同的层上，开放性和适用面完全不同。</p>
+<pre class="mermaid">%%{init: {'flowchart': {'htmlLabels': true, 'nodeSpacing': 40, 'rankSpacing': 55}}}%%
+flowchart LR
+    Broker["凭证代理<br/>credential brokering"]:::component
+    L1["工具／SDK 级专用代理"]:::component
+    L2["平台内嵌出口"]:::component
+    L3["通用 HTTPS 层"]:::component
+    P1["Anthropic Managed Agents<br/>MCP 代理 + clone 注入"]:::neutral
+    P2["Vercel Sandbox<br/>Cloudflare Outbound Workers<br/>Browser Use 控制面"]:::neutral
+    P3["Infisical agent-vault<br/>独立部署 + 开源 + 接口无关"]:::critical
+    Broker --> L1
+    Broker --> L2
+    Broker --> L3
+    L1 --> P1
+    L2 --> P2
+    L3 --> P3
+    classDef component fill:#e3f2fd,stroke:#1565c0,color:#0d47a1,stroke-width:2px
+    classDef neutral fill:#f5f5f5,stroke:#9e9e9e,color:#424242,stroke-width:1px
+    classDef critical fill:#ffebee,stroke:#c62828,color:#b71c1c,stroke-width:3px,font-weight:bold</pre>
+
+<p>这三层对应三种开放性。工具级和平台内嵌方案都长在自家生态里，通用 HTTPS 层则对任何 agent、任何平台开放。本文重点讲的 agent-vault 是后者的唯一开源实现。</p>
+<p><strong>第二个问题，凭证怎么交给 agent</strong>。CB4A 定义了三种模型<a href="#n4">[N4]</a>，差别在 agent 到底接不接触凭证。</p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>agent 持真凭证？</th>
+<th>延迟</th>
+<th>爆炸半径</th>
+<th>CB4A 态度</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A 代理网关（proxy gateway）</td>
+<td>永不</td>
+<td>高（双跳）</td>
+<td>最小</td>
+<td>DPoP 兜底场景</td>
+</tr>
+<tr>
+<td>B 短时效铸造（token minting）</td>
+<td>临时（内存）</td>
+<td>低（一次性铸造）</td>
+<td>TTL 界定</td>
+<td>推荐主模型</td>
+</tr>
+<tr>
+<td>C 包裹加吊销（wrap + revoke）</td>
+<td>是（到吊销为止）</td>
+<td>无</td>
+<td>吊销前全额</td>
+<td>不建议，仅留旧系统</td>
+</tr>
+</tbody></table>
+<p>这两个问题相互独立。今天主流的代理注入类实现（agent-vault、Anthropic、Vercel、Cloudflare）都在 Model A 一侧；Model B 的现实对应物是云厂商原生短时效凭证（AWS STS、GitHub App installation token 这类）和 1Password 的运行时交付。这个对应是我们做的分析，草案没有点名任何产品。</p>
+<p><strong>为什么不发明新接口</strong>。agent 的调用入口看起来很多，API、CLI、SDK、MCP，各有生态。但接口在顶层发散、在底部收敛，所有调用最后都落到同一套 HTTP 栈，而 HTTP 栈里本来就有一个标准化的出口配置点，<code>HTTPS_PROXY</code>。curl 认它，Python、Node、Go 的主流客户端都认它。这个方案聪明的地方就一句话，不发明新接口，把控制点挂到现成的位置。接入要做的事只剩配一个环境变量，允许列表、限流、审计、按 agent 划分的凭证作用域，全部在这一层统一生效。Infisical 的原话：integration surface collapses down to almost nothing, while policy becomes consistent everywhere<a href="#n1">[N1]</a>。</p>
+<p><strong>但引导不等于强制</strong>。<code>HTTPS_PROXY</code> 是客户端自愿遵守的配置，agent 可以 unset 它，不合规的客户端可以直连。Infisical 在文档里把话说死，单靠这个环境变量无法保证流量走代理，完整部署必须在网络层封锁，让出站流量只能到代理<a href="#n1">[N1]</a>。CB4A 从 CASB（Cloud Access Security Broker）二十年部署史里学到的第二条教训是同一句话，网络层强制优于 agent 合作<a href="#n4">[N4]</a>。§6 的边界表和 §7 的落地步骤还会回到这一点。</p>
+<hr>
+<h2 id="§4-代表方案"><a href="#§4-代表方案" class="headerlink" title="§4 代表方案"></a>§4 代表方案</h2><p>先看时间线。2 月 23 日 Vercel 给沙箱上线出站 header 注入<a href="#n10">[N10]</a>；两天后 Browser Use 发出控制面架构长文<a href="#n12">[N12]</a>；3 月 29 日 CB4A 草案提交<a href="#n4">[N4]</a>；4 月 8 日 Anthropic 发表 Managed Agents 架构博客<a href="#n6">[N6]</a>；4 月 22 日 Infisical 开源 agent-vault<a href="#n1">[N1]</a>；4 月 27 日 Pluto Security 发布对 Managed Agents 的第三方逆向<a href="#n15">[N15]</a>；6 月 15 日 1Password Credential Broker 开启私有 beta<a href="#n13">[N13]</a>。半年之内，平台实践、标准化草案、龙头厂商的动作、开源实现、密码管理商全部到齐，这个速度说明需求真实存在。</p>
+<p><strong>Vercel Sandbox</strong>。沙箱网络策略里配置 <code>transform</code> 规则，出站 HTTPS 命中指定域名时，防火墙层替换指定 header，而且是全量替换，沙箱代码自带同名 header 也会被覆盖，想混入自己的凭证也没有机会。官方给这个功能的定位就是 prompt injection 防御：「即使 agent 被攻陷，也没有东西可偷，凭证只存在于 VM 之外的层」<a href="#n10">[N10]</a>。还有一个两阶段用法很实用，仓库拉取阶段注入 GitHub token，跑不可信代码之前用一条 <code>deny-all</code> 把策略整个收掉。</p>
+<p><strong>Cloudflare Outbound Workers</strong>。平台侧的出站 <code>fetch()</code> 钩子，用户 Worker 的每个子请求都过一道 Outbound Worker，可以记录、放行、封禁，也可以「在后台配好认证，终端开发者不需要碰凭证」<a href="#n11">[N11]</a>。启用之后平台的 <code>connect()</code> TCP 直连被封死，出站强制走钩子，网络层强制内建在平台里。顺带一提它自己的缺口，Durable Objects 里的 fetch 不被拦截。</p>
+<p><strong>Browser Use</strong>。他们把沙箱方案总结成两种模式，隔离工具（危险操作进沙箱，agent 在后端）和隔离 agent（整个 agent 进沙箱，经控制面出站），并从前者迁到了后者<a href="#n12">[N12]</a>。现在的形态，沙箱只收三个环境变量（<code>SESSION_TOKEN</code>、<code>CONTROL_PLANE_URL</code>、<code>SESSION_ID</code>），读完就从 <code>os.environ</code> 删掉；LLM 调用、S3 预签名 URL（presigned URL）、计费全部经控制面代理。他们文末的一句话差不多就是这类方案的总结，your agent should have nothing worth stealing and nothing worth preserving。</p>
+<p><strong>Anthropic Managed Agents</strong>。闭源自用，机制两条腿，MCP 工具走专用代理，agent 调工具时代理持凭证完成外部调用，「harness 全程不接触任何凭证」；git 另走一条路，克隆时把 token 注入本地 remote，push&#x2F;pull 可用而 agent 全程不碰 token<a href="#n6">[N6]</a>。</p>
+<p><strong>1Password Credential Broker</strong>。密码管理商向运行时中介的延伸。私有 beta 先覆盖 CI 场景，GitHub Actions 用 Workload Identity Federation 证明身份（repo、branch、workflow 级别的签名 token），1Password 验证后按策略交付凭证，不发放任何常驻 vault 访问权，每次取用全归因审计<a href="#n13">[N13]</a>。agent 场景官方承诺年内扩展，短时效、按任务限 scope、没有 refresh token，agent 想自续期也没有途径，日志同时记录 agent 身份和授权人。也有一句难得的诚实，被取出的凭证在上游系统里活多久，仍取决于上游自己的策略，自动轮换不在这个版本里。</p>
+<p><strong>Brex CrabTrap</strong>。名单里唯一不做凭证中介的，开源的出站请求判决代理。同样挂 <code>HTTP(S)_PROXY</code>、同样做 TLS 拦截，管的却是另一件事，出站请求的放行判决。静态规则优先，deny 优先级最高，微秒级生效；长尾请求交给 LLM-as-a-judge 按自然语言策略判 ALLOW 或 DENY，生产环境 judge 只触发不到 3% 的请求<a href="#n14">[N14]</a>。judge 自身的防注入加固做得很细，请求以结构化 JSON 递交（用户可控内容全部转义）、header 封顶 4KB 防 context 膨胀、body 截断 16KB。它和凭证代理可以叠加，一个管请求该不该出去，一个管凭证怎么出去。</p>
+<p><strong>Infisical agent-vault</strong>。名单里唯一同时满足独立部署、开源、接口无关的凭证代理。前面的先行者把 credential brokering 做成自家平台的封闭组件，Infisical 把同一个模式翻成了人人可用的基础设施。下一节单独讲它。</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>中介器所在层</th>
+<th>对应 CB4A 模型</th>
+<th>开放性</th>
+<th>一句话机制</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Vercel Sandbox</td>
+<td>沙箱网络策略层</td>
+<td>Model A</td>
+<td>闭源 SaaS</td>
+<td>防火墙替换凭证 header</td>
+</tr>
+<tr>
+<td>Cloudflare Outbound Workers</td>
+<td>平台 fetch 出口</td>
+<td>Model A</td>
+<td>闭源平台能力</td>
+<td>出站钩子代填认证</td>
+</tr>
+<tr>
+<td>Browser Use</td>
+<td>控制面协议</td>
+<td>Model A 变体</td>
+<td>框架开源，云闭源</td>
+<td>沙箱零凭证，控制面代理一切</td>
+</tr>
+<tr>
+<td>Anthropic Managed Agents</td>
+<td>MCP 工具级</td>
+<td>Model A</td>
+<td>闭源</td>
+<td>专用代理 + clone 注入</td>
+</tr>
+<tr>
+<td>1Password Credential Broker</td>
+<td>运行时交付</td>
+<td>Model B 倾向</td>
+<td>闭源 SaaS</td>
+<td>验身份、发短时效 token、全归因</td>
+</tr>
+<tr>
+<td>Brex CrabTrap</td>
+<td>出站判决（正交）</td>
+<td>不适用</td>
+<td>开源</td>
+<td>静态规则 + LLM judge</td>
+</tr>
+<tr>
+<td>Infisical agent-vault</td>
+<td>通用 HTTPS 层</td>
+<td>Model A</td>
+<td>开源自托管</td>
+<td>MITM 出口注入凭证</td>
+</tr>
+</tbody></table>
+<p>这个判断也有第三方背书，Pluto Security 对 Managed Agents 的逆向分析称 vault 体系是「针对 prompt injection 凭证窃取的真正结构性防御」<a href="#n15">[N15]</a>。</p>
+<hr>
+<h2 id="§5-Infisical-Agent-Vault-是怎么工作的"><a href="#§5-Infisical-Agent-Vault-是怎么工作的" class="headerlink" title="§5 Infisical Agent Vault 是怎么工作的"></a>§5 Infisical Agent Vault 是怎么工作的</h2><p>agent-vault 值得单独讲，因为它是唯一开源、可自托管、接口无关的实现，读者可以自己拉起来验证。</p>
+<p>定义一句话就能说完。agent 不持有真凭证，出站 HTTP(S) 全部经它中转，凭证在代理侧注入。agent 的环境里只放占位值（dummy value），比如 <code>ANTHROPIC_API_KEY=__anthropic_api_key__</code>，真值永远不进 agent 可读空间<a href="#n7">[N7]</a>。</p>
+<p>这个架构只有两个端口。14321 是管理面（UI 和 API），14322 是中间人（MITM）代理。agent 侧设 <code>HTTPS_PROXY=agent-vault:14322</code>，出站请求全部进来。</p>
+<pre class="mermaid">%%{init: {'flowchart': {'htmlLabels': true, 'nodeSpacing': 45, 'rankSpacing': 55}}}%%
+flowchart TB
+    subgraph Internet["公网"]
+        U1["api.anthropic.com"]
+        U2["api.github.com"]
+        U3["api.e2b.dev"]
+    end
+    subgraph Private["私有网络"]
+        Agent["AI Agent<br/>环境变量里只有占位值"]:::input
+        Vault["Agent Vault 独立主机<br/>:14321 管理面（UI／API）<br/>:14322 MITM 代理"]:::component
+        Store[("凭证存储<br/>AES-256-GCM 加密")]:::artifact
+    end
+    Agent -->|"HTTPS_PROXY 指向 :14322<br/>CONNECT + 会话 token"| Vault
+    Vault -->|"剥离占位值<br/>注入真凭证"| U1
+    Vault --> U2
+    Vault --> U3
+    Vault --- Store
+    classDef input fill:#f5f5f5,stroke:#757575,color:#212121
+    classDef component fill:#e3f2fd,stroke:#1565c0,color:#0d47a1,stroke-width:2px
+    classDef artifact fill:#fff8e1,stroke:#f9a825,color:#4e342e,stroke-width:2px
+    linkStyle 1 stroke:#c62828,stroke-width:3px</pre>
+
+<p>真凭证只在 vault 与出站请求头之间存在；agent 可读空间里只有占位值。管理面与代理口分离，代理口只对 agent 网络开放<a href="#n7">[N7]</a>。</p>
+<p>它有四个核心概念<a href="#n7">[N7]</a>。</p>
+<ul>
+<li>Vault，凭证和 service rules 的容器</li>
+<li>Agent，长驻身份</li>
+<li>Token，agent 或操作员持有的访问令牌，有效期有长有短</li>
+<li>Service rules，host 加 endpoint 级的放行清单，<code>unmatched_host_policy=deny</code> 时未匹配的请求直接 403</li>
+</ul>
+<p>先看一次请求的完整路径。</p>
+<pre class="mermaid">sequenceDiagram
+    autonumber
+    participant A as AI Agent
+    participant V as Agent Vault（MITM 代理）
+    participant U as api.anthropic.com
+    A->>V: CONNECT api.anthropic.com:443<br/>（Proxy-Authorization 携带会话 token）
+    V-->>A: 200，隧道建立（wire 上与真隧道无法区分）
+    A->>V: TLS ClientHello（agent 以为对端是上游）
+    V-->>A: 本地受信 CA 签发的证书
+    Note over A,V: TLS 在代理处终止，gateway 语义从这里开始
+    V->>U: 剥离占位值，注入真凭证，重建 TLS 并验证上游身份
+    U-->>V: 响应
+    V-->>A: 响应
+    Note over V: 日志只记方法、主机、路径、命中规则、状态码<br/>header 值、body、query 永不落库</pre>
+
+<p>CONNECT 请求带着会话 token 进来，本地受信 CA 终止 TLS，代理在 wire 上伪装成上游；剥离 agent 自带的凭证 header，按 <code>vault + host + port + path</code> 匹配 service rule，注入 vault 里的真凭证；对真实上游重建标准 TLS 并完成验证。上游目标在连接时固定，防止请求中途重定向；CA 私钥的静态加密级别与凭证相同<a href="#n1">[N1]</a><a href="#n8">[N8]</a>。</p>
+<p><strong>协议语义，装作隧道的网关</strong>。这一段回答两个常见疑问。为什么客户端要装 CA 证书？这算不算一个合法的代理？CONNECT 握手它照走全流程，wire 上和真隧道无法区分；但 200 返回之后，「不透明中继」这个隧道契约被它自己吃掉，剩下的是两段独立会话加一次中间翻译。RFC 9110 把 HTTP 中间设备分成三种角色<a href="#n5">[N5]</a>，agent-vault 每个座位都占了。proxy 是入场身份，客户端用 <code>HTTPS_PROXY</code> 选中它。gateway 管 200 之后的事，在面向客户端的连接上扮演源站、翻译请求后向内转发，MITM CA 就是「扮演源站」的实现。tunnel 的本义是盲转发、不改消息，这恰是它没遵守的一条契约。CONNECT 握手时用 token 认证，对应 RFC 9110 §9.3.6 的原文：Proxy authentication might be used to establish the authority to create a tunnel。它以 proxy 身份入场，握手时长得像 tunnel，实际执行的是 gateway 的职能。</p>
+<p><strong>机制关键点</strong><a href="#n7">[N7]</a><a href="#n8">[N8]</a>。两种 broker 方式，占位值替换和 header 整体替换；请求日志即 agent 行为审计面，且 secret-free by construction，header 值、body、query string 永不落库；可插拔的凭证后端（pluggable credential store），vault 后端可以挂到 Infisical 平台换取动态秘密和轮换；TS SDK 的 <code>buildProxyEnv</code> 专为 orchestrator 给沙箱发短时效 token 设计，一次算出全套环境变量（<code>HTTPS_PROXY</code> 和各语言的 CA 信任变量）。</p>
+<p><strong>Token 体系</strong>。先看四类 token 的全貌。</p>
+<table>
+<thead>
+<tr>
+<th>Token</th>
+<th>TTL</th>
+<th>定位与止损</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Agent token <code>av_agt_</code></td>
+<td>无过期</td>
+<td>实例级长驻身份，CI&#x2F;CD、常驻 agent 用；止损靠 <code>agent rotate</code>，旧 token 立即失效</td>
+</tr>
+<tr>
+<td>作用域会话 <code>av_sess_</code></td>
+<td>5 分钟到 7 天，默认 24 小时</td>
+<td><code>vault run</code> 或 SDK 铸造，绑死单个 vault 和 proxy 角色，沙箱短时效 token</td>
+</tr>
+<tr>
+<td>操作员会话 <code>av_sess_</code></td>
+<td>绝对 1 年，闲置 30 天</td>
+<td>能批 proposal、能用 <code>credential list --reveal</code> 读值，系统里价值最高的 token</td>
+</tr>
+<tr>
+<td>审批令牌 <code>av_appr_</code></td>
+<td>24 小时</td>
+<td>proposal 只读；提交批准必须人类登录</td>
+</tr>
+</tbody></table>
+<p>所有 token 用 <code>crypto/rand</code> 生成 256 位熵，SHA-256 哈希后存储，原始值只在铸造时返回一次<a href="#n8">[N8]</a>；<code>agent rotate</code> 换发后旧 token 立即失效的语义出自 agents 文档<a href="#n9">[N9]</a>。</p>
+<p>评估一个 token 看三样。身份，出示 token 的是谁。授权价值，作用域、角色加逐请求策略，决定它能造成什么。至于风险窗口，TTL、吊销、轮换决定被偷之后危害持续多久。<strong>短 TTL 只动第三样，不产生第二样</strong>。反例就是 <code>av_agt_</code>，永不过期，授权价值一点不少。长命 token 靠收窄作用域加可轮换来治理，缩短 TTL 治不到它。</p>
+<p>agent 侧的 token 无论寿命长短都「轻」，proxy 角色读不到凭证值，注入发生在服务端的出站头，token 没有续期能力，扩权必须过人类审批<a href="#n8">[N8]</a>。短时只负责止损，授权来自作用域和角色。</p>
+<p>过期行为是三层确定性，不依赖任何观测。铸造后启动即校验，<code>agent-vault run</code> 在拉起 agent 进程前，先用环境变量里的 token 探测 <code>/discover</code>（源码核实<a href="#n7">[N7]</a>）；运行中逐请求校验，过期即 401 拒绝（fail-closed）；TTL 在铸造时就是已知值，orchestrator 直接计算。环境变量不能被外部进程改写，broker 也没有推送通道，「主动更新环境变量」这个需求本身不存在。续命只有两条路，TTL 覆盖任务全程（人类审批、暂停这类不可控时段要算进去），或到期后重新铸造加重启进程；长驻 agent 用无过期 token 加定期轮换。续期权限留在沙箱外是有意设计，沙箱内能自续期，等于无限 TTL。</p>
+<p>轮换约束的对象要摆正。沙箱里的 agent 本来就没有铸造和轮换能力（铸造只在 orchestrator 侧；把 <code>av_agt_</code> 放进沙箱等于给它自续期能力，明确的反模式）。约束落在 token 的逐请求行为面上，<code>unmatched_host_policy=deny</code> 的默认行为、路径级 service rules、按 (actor, vault) 分桶的限流、IP netguard（默认封 RFC-1918 私网段和云 metadata 端点，防 SSRF，即服务端请求伪造）、逐请求日志。<code>no_match</code> 那一行日志，就是「agent 在尝试奇怪操作」的痕迹<a href="#n8">[N8]</a>。注入攻击随 agent 处理的内容进来，跟用户的请求没有关系，所以约束的触发器应该挂在流量形态上，而 broker 天然看得见全部出站流量。</p>
+<p>OSS 版和平台版的关系一句话就能说清。开源版是单二进制自托管；Infisical 平台内建的 Agent Vault 提供 access bundles、time-bound session、企业支持与 SLA，README 明说生产场景推荐后者<a href="#n7">[N7]</a>。</p>
+<hr>
+<h2 id="§6-诚实的边界，挡住什么，不挡什么"><a href="#§6-诚实的边界，挡住什么，不挡什么" class="headerlink" title="§6 诚实的边界，挡住什么，不挡什么"></a>§6 诚实的边界，挡住什么，不挡什么</h2><p>凭证代理不解决所有问题，逐条对照。</p>
+<table>
+<thead>
+<tr>
+<th>攻击路径</th>
+<th>agent-vault 之前</th>
+<th>agent-vault 之后</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>注入后读 env 偷 key</td>
+<td>全暴露</td>
+<td>env 里只有占位值，挡住</td>
+</tr>
+<tr>
+<td>把 key 发到攻击者服务器</td>
+<td>防不住</td>
+<td>出口过滤直接 403，被拒请求也留日志痕（<code>no_match</code> 行）</td>
+</tr>
+<tr>
+<td>沙箱继承宿主环境变量</td>
+<td>全暴露</td>
+<td>env 无真值可读</td>
+</tr>
+<tr>
+<td>agent unset <code>HTTPS_PROXY</code>、不合规客户端直连</td>
+<td>不适用</td>
+<td>代理管不到，必须网络层封锁兜底（launch blog、CB4A、agent-vault 官方文档三方同源）</td>
+</tr>
+<tr>
+<td>数据本身外泄（prompt、代码进外发 body）</td>
+<td>防不住</td>
+<td>仍防不住；日志零捕获 body，走白名单通道的外发内容无从审计</td>
+</tr>
+<tr>
+<td>不经代理的出站流量（git over SSH、rsync、任意 TCP）</td>
+<td>暴露</td>
+<td>管不到，这是真边界；SSH remote 换成 HTTPS 加 PAT 可以迁回管辖内</td>
+</tr>
+</tbody></table>
+<p>最后一行是真正的边界。凭证不进 HTTP 请求，代理就没有注入点，也就无从拦截。Comment and Control 里 Copilot 的白名单通道外泄（凭证作为 commit 经 <code>github.com</code> 提交）是同一个道理的实例<a href="#n2">[N2]</a>。</p>
+<p>防线自身也是靶子。CB4A 的安全考量写得很直白，broker 是架构里最高价值的目标<a href="#n4">[N4]</a>。它集中了全组织的凭证，自身失守就是全局事件。缓解手段有几样。代理不落值，日志零凭证，部署在独立主机，后端还能挂到平台级加固。评估各家 broker 的加固程度，按这几样来。</p>
+<p>部署原则来自 README best practices<a href="#n7">[N7]</a>。agent-vault 部署在与 agent 隔离的独立主机；沙箱只放行到 vault 的出站；代理口 14322 只在 agent 网络可达；管理面 14321 按生产 Web 服务加固；同网络部署以压低延迟。</p>
+<p>还有两个边界，官方文档自己写明<a href="#n8">[N8]</a>。agent 与 broker 之间一段是明文 HTTP，<code>Proxy-Authorization</code> 里的会话 token 在这一段不加密，官方因此要求部署在可信或私有网络；<code>vault run</code> 的文档自认它是便捷包装不是沙箱，子进程可以 unset <code>HTTPS_PROXY</code>，也可以绕过注入的 CA 直连网络。</p>
+<hr>
+<h2 id="§7-落地指南，在自己的-agent-项目里引入"><a href="#§7-落地指南，在自己的-agent-项目里引入" class="headerlink" title="§7 落地指南，在自己的 agent 项目里引入"></a>§7 落地指南，在自己的 agent 项目里引入</h2><p>以 agent-vault 为例，模式对任何 Model A 实现通用。</p>
+<p>前置条件有两件。一是 vault 部署（多实例配 Postgres backend，<code>migrate-db</code> 迁移<a href="#n7">[N7]</a>）；二是网络侧有做沙箱出站白名单的能力。</p>
+<p>落地分五步。</p>
+<ol>
+<li>部署 vault，录凭证，配 service rules，deny 作为默认行为</li>
+<li>orchestrator 用 TS SDK 为每个沙箱铸短时效 token（scoped session）</li>
+<li>沙箱挂 CA 证书，注入 <code>buildProxyEnv</code> 算出的全套环境变量</li>
+<li>同步整改环境，env 里不再有真凭证。这一步和「沙箱脚本只用标准库」这类纪律互补，一个限制能力，一个切断凭证，双保险</li>
+<li>网络封锁，沙箱出站白名单里只有 vault 地址。<code>HTTPS_PROXY</code> 只是引导，封锁才是强制</li>
+</ol>
+<pre class="mermaid">%%{init: {'flowchart': {'htmlLabels': true, 'nodeSpacing': 45, 'rankSpacing': 55}}}%%
+flowchart LR
+    Orch["Orchestrator<br/>持 member token"]:::component
+    Mint["scoped session<br/>短时效 token（TTL 有界）"]:::artifact
+    Sandbox["Agent 沙箱<br/>挂 CA + buildProxyEnv<br/>env 无真凭证"]:::component
+    Vault["Agent Vault :14322"]:::component
+    Up["公网 API"]:::neutral
+    Deny["直连公网"]:::neutral
+    Orch -->|"铸 token"| Mint
+    Mint --> Sandbox
+    Sandbox -->|"唯一放行出口"| Vault
+    Vault -->|"注入真凭证后转发"| Up
+    Sandbox -.->|"网络封锁：拒绝"| Deny
+    classDef component fill:#e3f2fd,stroke:#1565c0,color:#0d47a1,stroke-width:2px
+    classDef artifact fill:#fff8e1,stroke:#f9a825,color:#4e342e,stroke-width:2px
+    classDef neutral fill:#f5f5f5,stroke:#9e9e9e,color:#424242,stroke-width:1px
+    linkStyle 2 stroke:#c62828,stroke-width:3px</pre>
+
+<p>沙箱的全部出站走 vault，直连在网络层被拒绝；orchestrator 铸 token、沙箱消费，凭证始终不落沙箱。</p>
+<p>验收标准有两条，都要写成可检查的。真凭证零出现在 agent 可读的环境变量和文件系统；出站请求有审计记录，且归因粒度明确到「哪个身份」。第二条比看起来难，vault 级的空 actor 记录也能字面满足「有记录」，归因要求必须显式写死。</p>
+<p>落地前还有几件事必须预研。</p>
+<p><strong>审计归因选择</strong>。经 <code>POST /v1/sessions</code> 铸造的短时效 token 有一个实现层的坑，请求日志里 <code>ActorType</code> 和 <code>ActorID</code> 为空串，按 (actor, vault) 分桶的限流对它整体失效即放行（fail-open）。短时效和审计归因在现有实现里不可兼得（源码核实<a href="#n7">[N7]</a>）。三条路。接受 vault 级归因，最小方案；每个 task 实时建 agent 换取归因，代价是 agent token 永不过期，收尾必须 revoke；vault-per-task 换 task 间访问面隔离，vault 是重对象，高频创建删除逆着设计走。单信任域的建议起点，1 个 vault，harness 持 member token，每 task 铸 scoped session，审计要求出现后再叠加 agent-per-task。</p>
+<p><strong>TLS 信任链</strong>。自签 CA 的分发矩阵，<code>SSL_CERT_FILE</code>、<code>REQUESTS_CA_BUNDLE</code>、<code>NODE_EXTRA_CA_CERTS</code>、<code>GIT_SSL_CAINFO</code> 等，SDK 的 <code>buildProxyEnv</code> 已经算全<a href="#n7">[N7]</a>；要排查哪些客户端做了证书固定（certificate pinning），它们会拒绝 MITM。</p>
+<p><strong>NO_PROXY 名单治理</strong>。内网服务（自建观测、内部网关、数据库）走不走代理，逐个决策。落地时最耗时的杂活。</p>
+<p><strong>Egress 基线</strong>。uv、pip、npm 装包要不要出网，给 PyPI 配 service rule 放行，还是 deny 模式下整体白名单化，取决于威胁模型。</p>
+<p><strong>延迟</strong>。同网络部署；LLM streaming 过代理的实测项。</p>
+<p><strong>多租户边界</strong>。个人 vault 还是团队共享，谁可读哪些凭证，上线前定清楚。</p>
+<hr>
+<h2 id="§8-收尾，选型考量"><a href="#§8-收尾，选型考量" class="headerlink" title="§8 收尾，选型考量"></a>§8 收尾，选型考量</h2><p>选型主要看三点。</p>
+<ul>
+<li>OSS agent-vault 换来自托管和全部源码；平台版 Infisical Agent Vault 换来企业支持与 SLA，README 推荐生产场景用后者</li>
+<li>官方状态是 research preview，原话是「我们预计 Agent Vault 的形态在未来一年还会变化」，API 不承诺稳定<a href="#n1">[N1]</a></li>
+<li>标准化现状，CB4A 只是个人草案（截至发稿仅 -00 一版），没有任何 adopted RFC。模式已经收敛，实现各家不同，标准还没落地，决策要自己拿</li>
+</ul>
+<p>读完可以立刻自查的三个问题。你的 agent 凭证现在存在哪？agent 被注入之后，攻击者够得到什么？能不能在五分钟内吊销任意一个 agent 的访问权？三个答案只要有一个含糊，凭证代理就值得排进计划。</p>
+<hr>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ol>
+<li><a id="n1"></a>Infisical, <em>Agent Vault: The Open Source Credential Proxy and Vault for Agents</em>, 2026-04-22. <a target="_blank" rel="noopener" href="https://infisical.com/blog/agent-vault-the-open-source-credential-proxy-and-vault-for-agents">infisical.com&#x2F;blog&#x2F;agent-vault-the-open-source-credential-proxy-and-vault-for-agents</a></li>
+<li><a id="n2"></a>Aonan Guan, <em>Comment and Control: Prompt Injection to Credential Theft in Claude Code, Gemini CLI, and GitHub Copilot Agent</em>, 2026-04-15. <a target="_blank" rel="noopener" href="https://oddguan.com/blog/comment-and-control-prompt-injection-credential-theft-claude-code-gemini-cli-github-copilot/">oddguan.com&#x2F;blog&#x2F;comment-and-control-prompt-injection-credential-theft-claude-code-gemini-cli-github-copilot</a></li>
+<li><a id="n3"></a>SecurityWeek, <em>Claude Code, Gemini CLI, GitHub Copilot Agents Vulnerable to Prompt Injection via Comments</em>, 2026-04. <a target="_blank" rel="noopener" href="https://www.securityweek.com/claude-code-gemini-cli-github-copilot-agents-vulnerable-to-prompt-injection-via-comments/">securityweek.com&#x2F;claude-code-gemini-cli-github-copilot-agents-vulnerable-to-prompt-injection-via-comments</a>；VentureBeat, <em>Three AI coding agents leaked secrets through a single prompt injection</em>, 2026. <a target="_blank" rel="noopener" href="https://venturebeat.com/security/ai-agent-runtime-security-system-card-audit-comment-and-control-2026">venturebeat.com&#x2F;security&#x2F;ai-agent-runtime-security-system-card-audit-comment-and-control-2026</a></li>
+<li><a id="n4"></a>K. Hartman, <em>Credential Broker for Agents (CB4A)</em>, IETF Internet-Draft draft-hartman-credential-broker-4-agents-00, 2026-03-29. <a target="_blank" rel="noopener" href="https://datatracker.ietf.org/doc/html/draft-hartman-credential-broker-4-agents-00">datatracker.ietf.org&#x2F;doc&#x2F;html&#x2F;draft-hartman-credential-broker-4-agents-00</a></li>
+<li><a id="n5"></a><em>IETF RFC 9110: HTTP Semantics</em>, §3.7 Intermediaries, §9.3.6 CONNECT. <a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc9110">rfc-editor.org&#x2F;rfc&#x2F;rfc9110</a></li>
+<li><a id="n6"></a>Anthropic Engineering, <em>Scaling Managed Agents: Decoupling the brain from the hands</em>, 2026-04-08. <a target="_blank" rel="noopener" href="https://www.anthropic.com/engineering/managed-agents">anthropic.com&#x2F;engineering&#x2F;managed-agents</a>；Pluto Security, <em>Inside Claude Managed Agents</em>, 2026-04-27. <a target="_blank" rel="noopener" href="https://pluto.security/blog/inside-claude-managed-agents">pluto.security&#x2F;blog&#x2F;inside-claude-managed-agents</a></li>
+<li><a id="n7"></a>Infisical, <em>agent-vault</em> 仓库及 README. <a target="_blank" rel="noopener" href="https://github.com/Infisical/agent-vault">github.com&#x2F;Infisical&#x2F;agent-vault</a></li>
+<li><a id="n8"></a>Agent Vault Docs, <em>Security</em>. <a target="_blank" rel="noopener" href="https://docs.agent-vault.dev/learn/security">docs.agent-vault.dev&#x2F;learn&#x2F;security</a></li>
+<li><a id="n9"></a>Agent Vault Docs, <em>Agents</em>. <a target="_blank" rel="noopener" href="https://docs.agent-vault.dev/agents/overview">docs.agent-vault.dev&#x2F;agents&#x2F;overview</a></li>
+<li><a id="n10"></a>Vercel Changelog, <em>Safely inject credentials in HTTP headers with Vercel Sandbox</em>, 2026-02-23. <a target="_blank" rel="noopener" href="https://vercel.com/changelog/safely-inject-credentials-in-http-headers-with-vercel-sandbox">vercel.com&#x2F;changelog&#x2F;safely-inject-credentials-in-http-headers-with-vercel-sandbox</a></li>
+<li><a id="n11"></a>Cloudflare Docs, <em>Outbound Workers</em>（Workers for Platforms）. <a target="_blank" rel="noopener" href="https://developers.cloudflare.com/cloudflare-for-platforms/workers-for-platforms/configuration/outbound-workers/">developers.cloudflare.com&#x2F;cloudflare-for-platforms&#x2F;workers-for-platforms&#x2F;configuration&#x2F;outbound-workers</a></li>
+<li><a id="n12"></a>Browser Use Engineering, <em>How We Built Secure, Scalable Agent Sandbox Infrastructure</em>, 2026-02-25. <a target="_blank" rel="noopener" href="https://browser-use.com/posts/two-ways-to-sandbox-agents">browser-use.com&#x2F;posts&#x2F;two-ways-to-sandbox-agents</a></li>
+<li><a id="n13"></a>1Password, <em>Introducing 1Password Credential Broker</em>, 2026-06-15. <a target="_blank" rel="noopener" href="https://1password.com/blog/introducing-1password-credential-broker">1password.com&#x2F;blog&#x2F;introducing-1password-credential-broker</a></li>
+<li><a id="n14"></a>Brex, <em>CrabTrap: an LLM-as-a-judge HTTP proxy to secure agents in production</em>. <a target="_blank" rel="noopener" href="https://www.brex.com/journal/building-crabtrap-open-source">brex.com&#x2F;journal&#x2F;building-crabtrap-open-source</a></li>
+</ol>
+
+    </article>
+    <!-- license -->
+        <div class="license-wrapper">
+            <p>Author：<a href="https://edison-a-n.github.io">Edison</a>
+            <p>Link：<a href="https://edison-a-n.github.io/2026/09/24/agent-sandbox-network-access-control/">https://edison-a-n.github.io/2026/09/24/agent-sandbox-network-access-control/</a>
+            <p>Publish date：<a href="https://edison-a-n.github.io/2026/09/24/agent-sandbox-network-access-control/">September 24th 2026, 12:00:00 am</a>
+            <p>Update date：<a href="https://edison-a-n.github.io/2026/09/24/agent-sandbox-network-access-control/">September 24th 2026, 5:39:27 pm</a>
+            <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+        </li>
+        <li class="previous">
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2026/06/02/claude-code-memory-research/" title="Claude Code 内置 Memory 深度研究：CLAUDE.md、Auto Memory 与上下文工程">
+                    <div class="prevTitle">Claude Code 内置 Memory 深度研究：CLAUDE.md、Auto Memory 与上下文工程</div>
+                </a>
+        </li>
+    </ul>
+    <!-- comment -->
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+            
+            
+            
+            <!-- utteranc评论 -->
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+            
+            
+            
+        </div>
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    <!-- Mathjax -->
+</main>
+
+                <!-- profile -->
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+        <div class="social">
+                            <a href="mailto:zhangn661@gmail.com" class="iconfont-archer email" title="email" ></a>
+                <a href="//github.com/Edison-A-N" class="iconfont-archer github" target="_blank" title="github"></a>
+
+        </div>
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    <!-- 不蒜子  -->
+        <div class="busuanzi-container">
+                <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+        </div>
+</footer>
+
+        </div>
+        <!-- toc -->
+            <div class="toc-wrapper toc-wrapper-loding" style=    top:50vh;
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%C2%A71-%E8%83%8C%E6%99%AF%EF%BC%8CAgent-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E8%83%BD%E6%8C%81%E6%9C%89%E5%87%AD%E8%AF%81"><span class="toc-number">1.</span> <span class="toc-text">§1 背景，Agent 为什么不能持有凭证</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%C2%A72-%E9%97%AE%E9%A2%98%E6%8B%86%E8%A7%A3%EF%BC%8CAgent-%E6%B2%99%E7%AE%B1%E7%9A%84%E5%87%BA%E7%AB%99%E6%9A%B4%E9%9C%B2%E9%9D%A2"><span class="toc-number">2.</span> <span class="toc-text">§2 问题拆解，Agent 沙箱的出站暴露面</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%C2%A73-%E8%AE%BE%E8%AE%A1%E7%A9%BA%E9%97%B4%EF%BC%8C%E5%87%AD%E8%AF%81%E4%BB%A3%E7%90%86%EF%BC%88credential-brokering%EF%BC%89"><span class="toc-number">3.</span> <span class="toc-text">§3 设计空间，凭证代理（credential brokering）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%C2%A74-%E4%BB%A3%E8%A1%A8%E6%96%B9%E6%A1%88"><span class="toc-number">4.</span> <span class="toc-text">§4 代表方案</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%C2%A75-Infisical-Agent-Vault-%E6%98%AF%E6%80%8E%E4%B9%88%E5%B7%A5%E4%BD%9C%E7%9A%84"><span class="toc-number">5.</span> <span class="toc-text">§5 Infisical Agent Vault 是怎么工作的</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%C2%A76-%E8%AF%9A%E5%AE%9E%E7%9A%84%E8%BE%B9%E7%95%8C%EF%BC%8C%E6%8C%A1%E4%BD%8F%E4%BB%80%E4%B9%88%EF%BC%8C%E4%B8%8D%E6%8C%A1%E4%BB%80%E4%B9%88"><span class="toc-number">6.</span> <span class="toc-text">§6 诚实的边界，挡住什么，不挡什么</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%C2%A77-%E8%90%BD%E5%9C%B0%E6%8C%87%E5%8D%97%EF%BC%8C%E5%9C%A8%E8%87%AA%E5%B7%B1%E7%9A%84-agent-%E9%A1%B9%E7%9B%AE%E9%87%8C%E5%BC%95%E5%85%A5"><span class="toc-number">7.</span> <span class="toc-text">§7 落地指南，在自己的 agent 项目里引入</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%C2%A78-%E6%94%B6%E5%B0%BE%EF%BC%8C%E9%80%89%E5%9E%8B%E8%80%83%E9%87%8F"><span class="toc-number">8.</span> <span class="toc-text">§8 收尾，选型考量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-number">9.</span> <span class="toc-text">参考资料</span></a></li></ol>
+            </div>
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 45
+        </div>
+        <!-- search  -->
+    </div>
+    <div class="post-archive">
+            <div class="archive-year"> 2026 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/24</span>
+            <a class="archive-post-title" href="/2026/09/24/agent-sandbox-network-access-control/">Agent 沙箱网络访问控制：从凭证暴露面到凭证代理</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/02</span>
+            <a class="archive-post-title" href="/2026/06/02/claude-code-memory-research/">Claude Code 内置 Memory 深度研究：CLAUDE.md、Auto Memory 与上下文工程</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/28</span>
+            <a class="archive-post-title" href="/2026/05/28/ai-agent-architectures-2026/">2026 AI Agent 架构演进：从单机助手到分布式执行系统</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/26</span>
+            <a class="archive-post-title" href="/2026/05/26/multi-agent-debate-technical-implementation/">Multi-Agent Debate 技术实现：从多 Agent 投票到可验证协作</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span>
+            <a class="archive-post-title" href="/2026/05/21/agent-memory-frontier-survey/">Agent Memory 前沿调研：从长期记忆到经验系统</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/13</span>
+            <a class="archive-post-title" href="/2026/05/13/saas-agent-design-doc/">SaaS Agent 应该怎么设计：从竞品实践到生产级架构</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/12</span>
+            <a class="archive-post-title" href="/2026/05/12/saas-agent-sandbox-research/">SaaS Agent Sandbox 设计原则：不要把 Sandbox 当成容器</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span>
+            <a class="archive-post-title" href="/2026/05/08/agent-engineer-interview-2026/">2026 Agent 开发工程师面试指南：从架构、MCP 到生产化</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/19</span>
+            <a class="archive-post-title" href="/2026/04/19/multi-agent-architecture-survey/">Multi-Agent LLM 系统架构全景调研（2023–2026）</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/14</span>
+            <a class="archive-post-title" href="/2026/04/14/llm-tool-calling-decision-bias/">LLM Agent 中 Skill/Tool 调用决策偏差：技术调研报告</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span>
+            <a class="archive-post-title" href="/2026/04/12/harness-engineering/">Harness Engineering：当 AI 的缰绳比 AI 本身更重要</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span>
+            <a class="archive-post-title" href="/2026/03/30/coding-agent-evolution/">从代码到行动：Coding Agent 如何演变为通用数字助手</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2026/03/21/multi-agent-investment-research/">用 OpenAgents Workspace 协调多 Agent 投研</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/16</span>
+            <a class="archive-post-title" href="/2026/03/16/agent-loop-study/">Agent Loop 技术调研报告</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/14</span>
+            <a class="archive-post-title" href="/2026/03/14/harness-engineering-practical-guide/">Harness Engineering 实践指南：来自 OpenAI、Stripe、Anthropic 等团队的一线经验</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/17</span>
+            <a class="archive-post-title" href="/2026/01/17/trading-drawdown-control-guide/">交易回撤控制指南：认知、守心与仓位管理</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2025 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/28</span>
+            <a class="archive-post-title" href="/2025/12/28/code-execution-sandbox-mcp/">LLM-Driven Agent Architecture with Sandbox and MCP Integration</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2025/11/10/mcp-recent-sharing/">MCP 近期内容分享：从 Resources、Tools 到 Prompts 的实践探索</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span>
+            <a class="archive-post-title" href="/2025/10/28/args_doc_format_comparison/">Tool Args Documentation Format Comparison Analysis</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span>
+            <a class="archive-post-title" href="/2025/10/27/asgi_lifespan_complete_guide/">ASGI Lifespan 完整指南</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/mcp-output-schema/">MCP Output Schema：数据验证与结构化输出的技术实现</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/stop-converting-rest-api-to-mcp/">停止转换REST API到MCP：设计AI原生接口的正确方式</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span>
+            <a class="archive-post-title" href="/2025/09/20/llm-consistency-challenges-large-data-processing/">大型语言模型在处理大批量数据时的一致性挑战与解决方案</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/01</span>
+            <a class="archive-post-title" href="/2024/02/01/nextjs-pagination/">nextjs-pagination</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span>
+            <a class="archive-post-title" href="/2023/09/20/smart-contract-demo/">smart-contract-demo</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/30</span>
+            <a class="archive-post-title" href="/2023/08/30/multi-tenant/">多租户应用与架构设计关注点</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2022 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span>
+            <a class="archive-post-title" href="/2022/12/13/go-ddd/">go-ddd</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/07</span>
+            <a class="archive-post-title" href="/2022/12/07/git-rebase/">使用 `git pull --rebase`</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span>
+            <a class="archive-post-title" href="/2022/12/03/opentelemetry-jaeger/">opnetelemetry-jaeger</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/09</span>
+            <a class="archive-post-title" href="/2022/06/09/ddd-thinking/">ddd-thinking</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/23</span>
+            <a class="archive-post-title" href="/2022/05/23/mvc-and-ddd/">mvc-and-ddd</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span>
+            <a class="archive-post-title" href="/2022/02/13/commit-format-and-auto-changelog/">Git commit 规范</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/tight-lipped/">思考与交流</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/30</span>
+            <a class="archive-post-title" href="/2022/01/30/knowledge-breath-and-depth/">知识掌握的广度与深度</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2021 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/16</span>
+            <a class="archive-post-title" href="/2021/12/16/software-design-doc/">如何撰写技术设计文档</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/21</span>
+            <a class="archive-post-title" href="/2021/11/21/breaking-creation-product/">突破式创新的产品设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span>
+            <a class="archive-post-title" href="/2021/07/15/parallel-and-asynchronous-python/">DRF Exception Handle</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/17</span>
+            <a class="archive-post-title" href="/2021/06/17/DRF-Exception/">DRF Exception Handle</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span>
+            <a class="archive-post-title" href="/2021/06/15/Django-With-DDD/">Django With DDD</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/09</span>
+            <a class="archive-post-title" href="/2021/05/09/Agile-Design/">敏捷软件开发：设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span>
+            <a class="archive-post-title" href="/2021/03/30/DRF-Bussiness-Logic/">Django Restful Framework Business Logic</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2021/03/21/graphql-and-restful/">Graphql and Restful API</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/08</span>
+            <a class="archive-post-title" href="/2021/03/08/grpc-hello-world/">grpc hello world</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/03</span>
+            <a class="archive-post-title" href="/2021/01/03/New-Coding-Language/">我如何学一门新的编程语言</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2020 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/08</span>
+            <a class="archive-post-title" href="/2020/11/08/Agile-Dev/">敏捷开发辅助新项目验证与落地</a>
+        </li>
+            </ul>
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+            <span class="sidebar-tag-name" data-tags="agile">
+                <span class="iconfont-archer">&#xe606;</span>
+                agile
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="LLM">
+                <span class="iconfont-archer">&#xe606;</span>
+                LLM
+            </span>
+            <span class="sidebar-tag-name" data-tags="MCP">
+                <span class="iconfont-archer">&#xe606;</span>
+                MCP
+            </span>
+            <span class="sidebar-tag-name" data-tags="面试">
+                <span class="iconfont-archer">&#xe606;</span>
+                面试
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent Loop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent Loop
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent Memory">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent Memory
+            </span>
+            <span class="sidebar-tag-name" data-tags="Memory System">
+                <span class="iconfont-archer">&#xe606;</span>
+                Memory System
+            </span>
+            <span class="sidebar-tag-name" data-tags="Security">
+                <span class="iconfont-archer">&#xe606;</span>
+                Security
+            </span>
+            <span class="sidebar-tag-name" data-tags="Credential Brokering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Credential Brokering
+            </span>
+            <span class="sidebar-tag-name" data-tags="Sandbox">
+                <span class="iconfont-archer">&#xe606;</span>
+                Sandbox
+            </span>
+            <span class="sidebar-tag-name" data-tags="OpenAI Symphony">
+                <span class="iconfont-archer">&#xe606;</span>
+                OpenAI Symphony
+            </span>
+            <span class="sidebar-tag-name" data-tags="Google Agent Executor">
+                <span class="iconfont-archer">&#xe606;</span>
+                Google Agent Executor
+            </span>
+            <span class="sidebar-tag-name" data-tags="GitHub Copilot">
+                <span class="iconfont-archer">&#xe606;</span>
+                GitHub Copilot
+            </span>
+            <span class="sidebar-tag-name" data-tags="SeekTool">
+                <span class="iconfont-archer">&#xe606;</span>
+                SeekTool
+            </span>
+            <span class="sidebar-tag-name" data-tags="企业级架构">
+                <span class="iconfont-archer">&#xe606;</span>
+                企业级架构
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Format">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Format
+            </span>
+            <span class="sidebar-tag-name" data-tags="ASGI, Python, FastAPI">
+                <span class="iconfont-archer">&#xe606;</span>
+                ASGI, Python, FastAPI
+            </span>
+            <span class="sidebar-tag-name" data-tags="Claude Code">
+                <span class="iconfont-archer">&#xe606;</span>
+                Claude Code
+            </span>
+            <span class="sidebar-tag-name" data-tags="Memory">
+                <span class="iconfont-archer">&#xe606;</span>
+                Memory
+            </span>
+            <span class="sidebar-tag-name" data-tags="Context Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Context Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="Hooks">
+                <span class="iconfont-archer">&#xe606;</span>
+                Hooks
+            </span>
+            <span class="sidebar-tag-name" data-tags="Skills">
+                <span class="iconfont-archer">&#xe606;</span>
+                Skills
+            </span>
+            <span class="sidebar-tag-name" data-tags="Architecture">
+                <span class="iconfont-archer">&#xe606;</span>
+                Architecture
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI
+            </span>
+            <span class="sidebar-tag-name" data-tags="Harness Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Harness Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="thinking">
+                <span class="iconfont-archer">&#xe606;</span>
+                thinking
+            </span>
+            <span class="sidebar-tag-name" data-tags="DDD">
+                <span class="iconfont-archer">&#xe606;</span>
+                DDD
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Calling">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Calling
+            </span>
+            <span class="sidebar-tag-name" data-tags="Prompt Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Prompt Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="Multi-Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                Multi-Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI Architecture">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI Architecture
+            </span>
+            <span class="sidebar-tag-name" data-tags="OpenAgents">
+                <span class="iconfont-archer">&#xe606;</span>
+                OpenAgents
+            </span>
+            <span class="sidebar-tag-name" data-tags="投研">
+                <span class="iconfont-archer">&#xe606;</span>
+                投研
+            </span>
+            <span class="sidebar-tag-name" data-tags="multi-tenant">
+                <span class="iconfont-archer">&#xe606;</span>
+                multi-tenant
+            </span>
+            <span class="sidebar-tag-name" data-tags="可观测性">
+                <span class="iconfont-archer">&#xe606;</span>
+                可观测性
+            </span>
+            <span class="sidebar-tag-name" data-tags="opentelemetry">
+                <span class="iconfont-archer">&#xe606;</span>
+                opentelemetry
+            </span>
+            <span class="sidebar-tag-name" data-tags="SaaS">
+                <span class="iconfont-archer">&#xe606;</span>
+                SaaS
+            </span>
+            <span class="sidebar-tag-name" data-tags="系统设计">
+                <span class="iconfont-archer">&#xe606;</span>
+                系统设计
+            </span>
+            <span class="sidebar-tag-name" data-tags="产品设计">
+                <span class="iconfont-archer">&#xe606;</span>
+                产品设计
+            </span>
+            <span class="sidebar-tag-name" data-tags="API Design">
+                <span class="iconfont-archer">&#xe606;</span>
+                API Design
+            </span>
+            <span class="sidebar-tag-name" data-tags="Trading">
+                <span class="iconfont-archer">&#xe606;</span>
+                Trading
+            </span>
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+        <span class="sidebar-category-name" data-categories="AI Agent">
+            <span class="iconfont-archer">&#xe60a;</span>
+            AI Agent
+        </span>
+        <span class="sidebar-category-name" data-categories="交易策略">
+            <span class="iconfont-archer">&#xe60a;</span>
+            交易策略
+        </span>
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "https://edison-a-n.github.io",
+        root: siteMetaRoot,
+        author: "Edison"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+        <!-- main func -->
+        <script src="/scripts/main.js"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.umd.js" onload="window.Fancybox.bind('[data-fancybox]')" defer></script>
+        <!-- algolia -->
+        <!-- busuanzi -->
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        <!-- async load share.js -->
+            <script src="/scripts/share.js" async></script>
+        <!-- mermaid -->
+            <script src='https://cdn.jsdelivr.net/npm/mermaid@8.11.0/dist/mermaid.min.js' onload="window.mermaid.initialize({theme: 'dark'})" async></script>
+    </body>
+</html>
