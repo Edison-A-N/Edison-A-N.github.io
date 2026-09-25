@@ -23,7 +23,7 @@ toc: true
 
 先看一件真事。2026 年 4 月 15 日，Johns Hopkins 大学的研究员 Aonan Guan 披露了一类攻击，命名为 Comment and Control[[N2]](#n2)。攻击者向公开仓库提交 PR，在标题里藏一段注入指令。仓库里跑的 Claude Code Security Review（Anthropic 官方的 PR 安全审查 agent）读到标题，把它当成任务上下文，执行了里面的命令。`ps auxeww` 抓取全部进程的环境变量，`ANTHROPIC_API_KEY` 和 `GITHUB_TOKEN` 作为「安全发现」贴进了公开的 PR 评论。
 
-同一个模式在另外两家复现。Google Gemini CLI Action 被一段伪造的「Trusted Content Section」压过安全指令，`GEMINI_API_KEY` 贴进公开 issue。GitHub Copilot Agent 的案例最曲折。指令藏在 HTML 注释里，渲染后的页面上完全不可见，只有 agent 会解析；受害者把 issue 指派给 Copilot 时看不到任何异常。Copilot 的三层运行时防御被逐一绕过。环境变量过滤只作用于 bash 子进程，父进程和 MCP server 持有全量环境，用 `/proc` 就能读到；base64 编码骗过 `ghs_` 特征的 secret scanning；`github.com` 本在网络防火墙白名单里，凭证编码后作为一次正常的 commit 提交出去。
+同一个模式在另外两家复现。Google Gemini CLI Action 被一段伪造的「Trusted Content Section」压过安全指令，`GEMINI_API_KEY` 贴进公开 issue。GitHub Copilot Agent 的案例最曲折。指令藏在 HTML 注释里，渲染后不可见，只有 agent 会解析；受害者指派 issue 时看不到任何异常。Copilot 的三层运行时防御被逐一绕过。环境变量过滤只作用于 bash 子进程，父进程和 MCP server 持有全量环境，`/proc` 就能读到；base64 编码骗过 `ghs_` 特征的 secret scanning；`github.com` 本在防火墙白名单里，凭证编码后作为正常 commit 提交出去。
 
 三家厂商都付了赏金，没有一个发布 CVE 或安全公告；Anthropic 后来把严重级别从 Critical 降为 None，理由是「设计上并未针对 prompt injection 做加固」（原话："The action is not designed to be hardened against prompt injection"）[[N2]](#n2)。SecurityWeek 和 VentureBeat 都做了报道[[N3]](#n3)。
 
@@ -33,7 +33,7 @@ toc: true
 
 agent 需要凭证才能干活，本职却是处理不可信输入。两个需求直接冲突，这就是 agent 时代的凭证问题。
 
-它和传统应用差在哪。传统 secrets manager（Infisical、HashiCorp Vault 这类）的模型是「把凭证还给应用」，应用启动时从 vault 拉取密钥放进环境变量，之后正常调用。这个模型对 agent 失效，因为 agent 不是一段确定性代码，它会读文档、抓网页、收 issue，再把这一切拼进自己的上下文。Infisical 在 agent-vault 的发布文里把攻击链说得很直白，RAG 管线里的毒文档、或一次工具调用拉进来的恶意网页，都可以指示 agent 把 secrets 转发到攻击者控制的端点。官方同时承认，guardrails 再强也无法保证 agent 不被操纵外泄[[N1]](#n1)。Anthropic 的工程博客对此有一句第一方自述，讲的就是旧架构，不可信代码和凭证跑在同一个容器里，「prompt injection 只需要说服 Claude 去读它自己的环境」[[N6]](#n6)。
+它和传统应用差在哪。传统 secrets manager（Infisical 这类）的模型是「把凭证还给应用」，应用启动时从 vault 拉取密钥放进环境变量，之后正常调用。这个模型对 agent 失效，agent 会读文档、抓网页、收 issue，再把这一切拼进自己的上下文。Infisical 把攻击链说得很直白，RAG 管线里的毒文档、或工具调用拉进来的恶意网页，都可以指示 agent 把 secrets 转发到攻击者控制的端点；官方同时承认，guardrails 再强也无法保证 agent 不被操纵外泄[[N1]](#n1)。Anthropic 的第一方自述更直接，旧架构里「prompt injection 只需要说服 Claude 去读它自己的环境」[[N6]](#n6)。
 
 为什么短时效、轮换、动态秘密不够。这些手段都在压缩凭证被盗后的窗口期，没有改变一个事实，凭证还在 agent 的可读空间里，agent 还是被骗的持有者，还能把密钥发出去[[N1]](#n1)。窗口短了，泄露照样发生。
 
@@ -72,7 +72,17 @@ IETF 今年 3 月底出现一份个人草案 CB4A（Credential Broker for Agents
 
 凭证代理（credential brokering）指的是，凭证不进 agent 可读空间，agent 的出站请求经由一个代理，凭证在代理侧注入。Anthropic 把旧架构称为 coupled design，结构性修复则是「确保 token 从 Claude 代码所在的沙箱里永远不可达」[[N6]](#n6)。两家表述不同，结构判断是同一个，凭证出沙箱，注入发生在代理侧。
 
-标准化也在跟进。IETF 2026 年 3 月 29 日挂出个人草案 CB4A（Credential Broker for Agents）[[N4]](#n4)，把凭证代理架构形式化。决策点与发放点分离（PDP 不碰凭证，CDP 不做策略），DPoP 发送方约束令牌，三级审批，不可变审计链。状态要说清楚，它是个人提案（individual submission），未被 IETF 采纳，按 Internet-Draft 六个月规则 2026 年 9 月 30 日到期，截至本文写作只有 -00 一版。收敛发生在模式层，标准化还在路上，后文的方案对比都以这个判断为前提。
+标准化也在跟进。IETF 2026 年 3 月 29 日收到个人草案 CB4A（Credential Broker for Agents）[[N4]](#n4)，把凭证代理架构形式化。状态要说清楚，它是个人提案（individual submission），未被 IETF 采纳，按 Internet-Draft 六个月规则 2026 年 9 月 30 日到期，截至本文写作只有 -00 一版。收敛发生在模式层，标准化还在路上，后文的方案对比都以这个判断为前提。
+
+**CB4A 的技术骨架**值得展开，它回答的是「代理自己怎么不被打穿」。
+
+第一根支柱是策略与发放分离。CB4A 按 NIST 零信任架构（SP 800-207）把 broker 拆成策略决策点（PDP，Policy Decision Point）和凭证发放点（CDP，Credential Delivery Point）。PDP 只做判断，这个请求该不该批，它不接触任何凭证材料；CDP 只管发放，拿到签名的批准决定才交出凭证，它不做任何策略判断。两个组件能力互不重叠，攻破决策点拿不到凭证，攻破发放点绕不过策略。
+
+第二根支柱是令牌约束。agent 拿到的短时效 token 本质上是 bearer 凭证，谁持有谁能用，被偷了照样能重放。CB4A 用 DPoP（Demonstrating Proof-of-Possession，RFC 9449）补这个洞。铸造时 agent 生成一对临时密钥，把公钥交给发放点，token 与公钥绑定；之后每次调用，agent 用私钥对请求签名，出示持有证明。攻击者偷到 token，没有私钥就绑不上自己的请求。
+
+第三根支柱是审批与审计。请求按风险分三级，低风险走策略自动批，越出行为基线的升级为人工审批，破坏性操作强制多因素认证。全部决策写进只增不改的审计链，日志放在独立信任边界内，broker 自己也无权修改。
+
+这套骨架是完整形态，代价是组件多、运维重。开源实现 agent-vault 走了更轻的路径，没有 PDP/CDP 分离，也没有 DPoP，§5 细看时能看到这个取舍。
 
 这个设计空间看两个问题就够了。
 
@@ -111,7 +121,7 @@ flowchart LR
 
 这两个问题相互独立。今天主流的代理注入类实现（agent-vault、Anthropic、Vercel、Cloudflare）都在 Model A 一侧；Model B 的现实对应物是云厂商原生短时效凭证（AWS STS、GitHub App installation token 这类）和 1Password 的运行时交付。这个对应是我们做的分析，草案没有点名任何产品。
 
-**为什么不发明新接口**。agent 的调用入口看起来很多，API、CLI、SDK、MCP，各有生态。但接口在顶层发散、在底部收敛，所有调用最后都落到同一套 HTTP 栈，而 HTTP 栈里本来就有一个标准化的出口配置点，`HTTPS_PROXY`。curl 认它，Python、Node、Go 的主流客户端都认它。这个方案聪明的地方就一句话，不发明新接口，把控制点挂到现成的位置。接入要做的事只剩配一个环境变量，允许列表、限流、审计、按 agent 划分的凭证作用域，全部在这一层统一生效。Infisical 的原话：integration surface collapses down to almost nothing, while policy becomes consistent everywhere[[N1]](#n1)。
+**为什么不发明新接口**。agent 的调用入口看起来很多，API、CLI、SDK、MCP，各有生态。但接口在顶层发散、在底部收敛，所有调用最后都落到同一套 HTTP 栈，而 HTTP 栈里本来就有一个标准化的出口配置点，`HTTPS_PROXY`。凭证代理的聪明之处一句话，不发明新接口，把控制点挂到现成的位置。接入只剩配一个环境变量，允许列表、限流、审计、按 agent 划分的凭证作用域，全部在这一层统一生效。Infisical 的原话：integration surface collapses down to almost nothing, while policy becomes consistent everywhere[[N1]](#n1)。
 
 **但引导不等于强制**。`HTTPS_PROXY` 是客户端自愿遵守的配置，agent 可以 unset 它，不合规的客户端可以直连。Infisical 在文档里把话说死，单靠这个环境变量无法保证流量走代理，完整部署必须在网络层封锁，让出站流量只能到代理[[N1]](#n1)。CB4A 从 CASB（Cloud Access Security Broker）二十年部署史里学到的第二条教训是同一句话，网络层强制优于 agent 合作[[N4]](#n4)。§6 的边界表和 §7 的落地步骤还会回到这一点。
 
@@ -121,19 +131,19 @@ flowchart LR
 
 先看时间线。2 月 23 日 Vercel 给沙箱上线出站 header 注入[[N10]](#n10)；两天后 Browser Use 发出控制面架构长文[[N12]](#n12)；3 月 29 日 CB4A 草案提交[[N4]](#n4)；4 月 8 日 Anthropic 发表 Managed Agents 架构博客[[N6]](#n6)；4 月 22 日 Infisical 开源 agent-vault[[N1]](#n1)；4 月 27 日 Pluto Security 发布对 Managed Agents 的第三方逆向[[N15]](#n15)；6 月 15 日 1Password Credential Broker 开启私有 beta[[N13]](#n13)。半年之内，平台实践、标准化草案、龙头厂商的动作、开源实现、密码管理商全部到齐，这个速度说明需求真实存在。
 
-**Vercel Sandbox**。沙箱网络策略里配置 `transform` 规则，出站 HTTPS 命中指定域名时，防火墙层替换指定 header，而且是全量替换，沙箱代码自带同名 header 也会被覆盖，想混入自己的凭证也没有机会。官方给这个功能的定位就是 prompt injection 防御：「即使 agent 被攻陷，也没有东西可偷，凭证只存在于 VM 之外的层」[[N10]](#n10)。还有一个两阶段用法很实用，仓库拉取阶段注入 GitHub token，跑不可信代码之前用一条 `deny-all` 把策略整个收掉。
+**Vercel Sandbox**。沙箱网络策略里配置 `transform` 规则，出站 HTTPS 命中指定域名时，防火墙层全量替换指定 header，沙箱代码自带同名 header 也会被覆盖[[N10]](#n10)。两阶段用法很实用，仓库拉取阶段注入 GitHub token，跑不可信代码前用一条 `deny-all` 把策略整个收掉。
 
-**Cloudflare Outbound Workers**。平台侧的出站 `fetch()` 钩子，用户 Worker 的每个子请求都过一道 Outbound Worker，可以记录、放行、封禁，也可以「在后台配好认证，终端开发者不需要碰凭证」[[N11]](#n11)。启用之后平台的 `connect()` TCP 直连被封死，出站强制走钩子，网络层强制内建在平台里。顺带一提它自己的缺口，Durable Objects 里的 fetch 不被拦截。
+**Cloudflare Outbound Workers**。平台侧的出站 `fetch()` 钩子，用户 Worker 的每个子请求都过一道 Outbound Worker，可以记录、放行、封禁，也可以「在后台配好认证，终端开发者不需要碰凭证」[[N11]](#n11)。启用后 `connect()` TCP 直连被封死，网络层强制内建在平台里；缺口是 Durable Objects 里的 fetch 不被拦截。
 
-**Browser Use**。他们把沙箱方案总结成两种模式，隔离工具（危险操作进沙箱，agent 在后端）和隔离 agent（整个 agent 进沙箱，经控制面出站），并从前者迁到了后者[[N12]](#n12)。现在的形态，沙箱只收三个环境变量（`SESSION_TOKEN`、`CONTROL_PLANE_URL`、`SESSION_ID`），读完就从 `os.environ` 删掉；LLM 调用、S3 预签名 URL（presigned URL）、计费全部经控制面代理。他们文末的一句话差不多就是这类方案的总结，your agent should have nothing worth stealing and nothing worth preserving。
+**Browser Use**。他们把沙箱方案归成两种模式，隔离工具（危险操作进沙箱，agent 在后端）和隔离 agent（整个 agent 进沙箱，经控制面出站），并从前者迁到了后者[[N12]](#n12)。沙箱只收三个环境变量，读完就从 `os.environ` 删掉；LLM 调用、S3 预签名 URL、计费全部经控制面代理。文末一句话是这类方案的总结，your agent should have nothing worth stealing and nothing worth preserving。
 
 **Anthropic Managed Agents**。闭源自用，机制两条腿，MCP 工具走专用代理，agent 调工具时代理持凭证完成外部调用，「harness 全程不接触任何凭证」；git 另走一条路，克隆时把 token 注入本地 remote，push/pull 可用而 agent 全程不碰 token[[N6]](#n6)。
 
-**1Password Credential Broker**。密码管理商向运行时中介的延伸。私有 beta 先覆盖 CI 场景，GitHub Actions 用 Workload Identity Federation 证明身份（repo、branch、workflow 级别的签名 token），1Password 验证后按策略交付凭证，不发放任何常驻 vault 访问权，每次取用全归因审计[[N13]](#n13)。agent 场景官方承诺年内扩展，短时效、按任务限 scope、没有 refresh token，agent 想自续期也没有途径，日志同时记录 agent 身份和授权人。也有一句难得的诚实，被取出的凭证在上游系统里活多久，仍取决于上游自己的策略，自动轮换不在这个版本里。
+**1Password Credential Broker**。密码管理商向运行时中介的延伸。私有 beta 先覆盖 CI，GitHub Actions 用 Workload Identity Federation 证明身份，1Password 验证后按策略交付凭证，每次取用全归因审计[[N13]](#n13)。agent 场景承诺年内扩展，短时效、按任务限 scope、没有 refresh token，日志同时记录 agent 身份和授权人。官方也承认，被取出的凭证在上游系统里活多久仍取决于上游策略，自动轮换不在这个版本里。
 
-**Brex CrabTrap**。名单里唯一不做凭证中介的，开源的出站请求判决代理。同样挂 `HTTP(S)_PROXY`、同样做 TLS 拦截，管的却是另一件事，出站请求的放行判决。静态规则优先，deny 优先级最高，微秒级生效；长尾请求交给 LLM-as-a-judge 按自然语言策略判 ALLOW 或 DENY，生产环境 judge 只触发不到 3% 的请求[[N14]](#n14)。judge 自身的防注入加固做得很细，请求以结构化 JSON 递交（用户可控内容全部转义）、header 封顶 4KB 防 context 膨胀、body 截断 16KB。它和凭证代理可以叠加，一个管请求该不该出去，一个管凭证怎么出去。
+**Brex CrabTrap**。名单里唯一不做凭证中介的，开源的出站请求判决代理。同样挂 `HTTP(S)_PROXY`、同样做 TLS 拦截，管的是出站请求的放行判决。静态规则 deny 优先、微秒级生效；长尾交给 LLM-as-a-judge 按自然语言策略判 ALLOW 或 DENY，生产环境 judge 只触发不到 3% 的请求[[N14]](#n14)。judge 的防注入加固做得很细，结构化 JSON 递交、header 封顶 4KB、body 截断 16KB。它和凭证代理可以叠加，一个管请求该不该出去，一个管凭证怎么出去。
 
-**Infisical agent-vault**。名单里唯一同时满足独立部署、开源、接口无关的凭证代理。前面的先行者把 credential brokering 做成自家平台的封闭组件，Infisical 把同一个模式翻成了人人可用的基础设施。下一节单独讲它。
+**Infisical agent-vault**。名单里唯一同时满足独立部署、开源、接口无关的凭证代理。先行者把 credential brokering 做成自家平台的封闭组件，Infisical 把同一个模式翻成了人人可用的基础设施。下一节单独讲它。
 
 | 方案 | 中介器所在层 | 对应 CB4A 模型 | 开放性 | 一句话机制 |
 |---|---|---|---|---|
@@ -151,7 +161,7 @@ flowchart LR
 
 ## §5 Infisical Agent Vault 是怎么工作的
 
-agent-vault 值得单独讲，因为它是唯一开源、可自托管、接口无关的实现，读者可以自己拉起来验证。
+为什么单独讲它，唯一开源、可自托管、接口无关，读者可以自己拉起来验证。
 
 定义一句话就能说完。agent 不持有真凭证，出站 HTTP(S) 全部经它中转，凭证在代理侧注入。agent 的环境里只放占位值（dummy value），比如 `ANTHROPIC_API_KEY=__anthropic_api_key__`，真值永远不进 agent 可读空间[[N7]](#n7)。
 
@@ -181,7 +191,7 @@ flowchart TB
     linkStyle 1 stroke:#c62828,stroke-width:3px
 ```
 
-真凭证只在 vault 与出站请求头之间存在；agent 可读空间里只有占位值。管理面与代理口分离，代理口只对 agent 网络开放[[N7]](#n7)。
+管理面与代理口分离，代理口只对 agent 网络开放；agent 可读空间里只有占位值[[N7]](#n7)。
 
 它有四个核心概念[[N7]](#n7)。
 
@@ -209,11 +219,13 @@ sequenceDiagram
     Note over V: 日志只记方法、主机、路径、命中规则、状态码<br/>header 值、body、query 永不落库
 ```
 
-CONNECT 请求带着会话 token 进来，本地受信 CA 终止 TLS，代理在 wire 上伪装成上游；剥离 agent 自带的凭证 header，按 `vault + host + port + path` 匹配 service rule，注入 vault 里的真凭证；对真实上游重建标准 TLS 并完成验证。上游目标在连接时固定，防止请求中途重定向；CA 私钥的静态加密级别与凭证相同[[N1]](#n1)[[N8]](#n8)。
+本地受信 CA 终止 TLS，代理在 wire 上伪装成上游；按 `vault + host + port + path` 匹配 service rule，注入真凭证；对真实上游重建标准 TLS。上游目标在连接时固定，防止请求中途重定向；CA 私钥的加密级别与凭证相同[[N1]](#n1)[[N8]](#n8)。
 
-**协议语义，装作隧道的网关**。这一段回答两个常见疑问。为什么客户端要装 CA 证书？这算不算一个合法的代理？CONNECT 握手它照走全流程，wire 上和真隧道无法区分；但 200 返回之后，「不透明中继」这个隧道契约被它自己吃掉，剩下的是两段独立会话加一次中间翻译。RFC 9110 把 HTTP 中间设备分成三种角色[[N5]](#n5)，agent-vault 每个座位都占了。proxy 是入场身份，客户端用 `HTTPS_PROXY` 选中它。gateway 管 200 之后的事，在面向客户端的连接上扮演源站、翻译请求后向内转发，MITM CA 就是「扮演源站」的实现。tunnel 的本义是盲转发、不改消息，这恰是它没遵守的一条契约。CONNECT 握手时用 token 认证，对应 RFC 9110 §9.3.6 的原文：Proxy authentication might be used to establish the authority to create a tunnel。它以 proxy 身份入场，握手时长得像 tunnel，实际执行的是 gateway 的职能。
+**协议语义，装作隧道的网关**。这一段回答两个常见疑问。为什么客户端要装 CA 证书？这算不算一个合法的代理？CONNECT 握手照走全流程，wire 上和真隧道无法区分；但 200 之后，「不透明中继」这个隧道契约被它自己吃掉。RFC 9110 把中间设备分成三种角色[[N5]](#n5)。proxy 是入场身份，客户端用 `HTTPS_PROXY` 选中它。gateway 管 200 之后的事，扮演源站、翻译请求后向内转发，MITM CA 就是「扮演源站」的实现。tunnel 的本义是盲转发，恰是它没遵守的契约。CONNECT 握手用 token 认证，对应 RFC 9110 §9.3.6 的原文，Proxy authentication might be used to establish the authority to create a tunnel。它以 proxy 身份入场，按 tunnel 的形式握手，干的是 gateway 的活。
 
 **机制关键点**[[N7]](#n7)[[N8]](#n8)。两种 broker 方式，占位值替换和 header 整体替换；请求日志即 agent 行为审计面，且 secret-free by construction，header 值、body、query string 永不落库；可插拔的凭证后端（pluggable credential store），vault 后端可以挂到 Infisical 平台换取动态秘密和轮换；TS SDK 的 `buildProxyEnv` 专为 orchestrator 给沙箱发短时效 token 设计，一次算出全套环境变量（`HTTPS_PROXY` 和各语言的 CA 信任变量）。
+
+对照 §3 的 CB4A 骨架，agent-vault 没有做 PDP/CDP 分离，也没有上 DPoP，被偷的短时效 token 在 TTL 内仍可重放。这是轻量路径的取舍，缓解靠 TTL 有界、代理口的网络位置限制和逐请求行为面约束，换来的是单二进制的部署简单。
 
 **Token 体系**。先看四类 token 的全貌。
 
@@ -323,7 +335,7 @@ flowchart LR
 - 官方状态是 research preview，原话是「我们预计 Agent Vault 的形态在未来一年还会变化」，API 不承诺稳定[[N1]](#n1)
 - 标准化现状，CB4A 只是个人草案（截至发稿仅 -00 一版），没有任何 adopted RFC。模式已经收敛，实现各家不同，标准还没落地，决策要自己拿
 
-读完可以立刻自查的三个问题。你的 agent 凭证现在存在哪？agent 被注入之后，攻击者够得到什么？能不能在五分钟内吊销任意一个 agent 的访问权？三个答案只要有一个含糊，凭证代理就值得排进计划。
+这套方案适不适合自己的项目，对照两个事实就能判断。其一，agent 是否处理不可信内容，用户输入、抓取的网页、文档、issue 都算。其二，真凭证是否出现在 agent 可读空间，环境变量、配置文件、随镜像打包的 `.env` 都算。两条都成立，§1 的威胁模型对你的项目就成立，凭证代理加网络封锁是针对性的结构修复，选型看 §4 的对照表，落地走 §7 的五步。两条都不成立的话，这篇就当背景读物。
 
 ---
 
