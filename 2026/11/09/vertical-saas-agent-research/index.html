@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- title -->
+<!-- keywords -->
+<head>
+    <meta charset="utf-8">
+    <meta name="google-site-verification" content="JB-maqhhwUFVUFApXAdvEnVFMjbiaUSIwUQFvCk1VMQ" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Edison">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Edison">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,software architecture,domain-driven design,DDD,AI agents,MCP,Model Context Protocol,Python,Go,full-stack development,LLM,software engineering,hexo blog">
+    <meta name="description" content="垂类 AI 的钱和增长都在变多，但多数 agent 项目死在落地环节。决定成败的是四件事：切进具体工作流并嵌进现有系统、有自己积累的数据、算清每次运行的成本并按客户认可的结果收费、结果可评测可审计可复核。">
+    <link rel="canonical" href="https://edison-a-n.github.io/2026/11/09/vertical-saas-agent-research/"/>
+    <meta name="description" content="垂类 AI 的钱和增长都在变多，但多数 agent 项目死在落地环节。决定成败的是四件事：切进具体工作流并嵌进现有系统、有自己积累的数据、算清每次运行的成本并按客户认可的结果收费、结果可评测可审计可复核。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="全球垂类 Agent &#x2F; SaaS Agent 调研：需要关注什么">
+<meta property="og:url" content="https://edison-a-n.github.io/2026/11/09/vertical-saas-agent-research/">
+<meta property="og:site_name" content="Edison&#39;s Tech Blog">
+<meta property="og:description" content="垂类 AI 的钱和增长都在变多，但多数 agent 项目死在落地环节。决定成败的是四件事：切进具体工作流并嵌进现有系统、有自己积累的数据、算清每次运行的成本并按客户认可的结果收费、结果可评测可审计可复核。">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-11-09T09:00:00.000Z">
+<meta property="article:modified_time" content="2026-11-10T00:36:00.280Z">
+<meta property="article:author" content="Edison">
+<meta property="article:tag" content="AI Agent">
+<meta property="article:tag" content="SaaS">
+<meta property="article:tag" content="Vertical AI">
+<meta property="article:tag" content="Pricing">
+<meta property="article:tag" content="Deep Research">
+<meta name="twitter:card" content="summary">
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/avatar/avatar.jpg">
+    <title>全球垂类 Agent / SaaS Agent 调研：需要关注什么 · Edison&#39;s Tech Blog | Software Architecture, AI &amp; DDD</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .footer-fixed-btn,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(
+            -45deg,
+            #444 0,
+            #444 80px,
+            #333 80px,
+            #333 160px
+        );
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link id="stylesheet-fancybox" rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link id="stylesheet-base" rel="preload" href="/css/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link id="stylesheet-mobile" rel="preload" href="/css/mobile.css" as="style" onload="this.onload=null;this.rel='stylesheet';this.media='screen and (max-width: 960px)'">
+    <link id="stylesheet-theme-dark" rel="preload" href="/css/dark.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    <!-- 百度统计  -->
+    <!-- 谷歌统计  -->
+        <script>
+            var cnzz_s_tag = document.createElement('script');
+            cnzz_s_tag.type = 'text/javascript';
+            cnzz_s_tag.async = true;
+            cnzz_s_tag.charset = 'utf-8';
+            cnzz_s_tag.src = 'https://w.cnzz.com/c.php?id=&async=1';
+            var root_s = document.getElementsByTagName('script')[0];
+            root_s.parentNode.insertBefore(cnzz_s_tag, root_s);
+        </script>
+    <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-188648772-3"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-188648772-3');
+        </script>
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Edison's Tech Blog" type="application/atom+xml">
+</head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+        <body class="post-body">
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        <div class="header-sidebar-menu">
+            <div style="padding-left: 1px;">&#xe775;</div>
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href="/">Edison's Studio.</a>
+        </span>
+    </div>
+    <!-- toggle banner -->
+    <div class="banner">
+        <div class="blog-title header-element">
+            <a href="/">Edison&#39;s Studio.</a>
+        </div>
+        <div class="post-title header-element">
+            <a href="#" class="post-name">全球垂类 Agent / SaaS Agent 调研：需要关注什么</a>
+        </div>
+    </div>
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- donate button -->
+
+    <!-- back to top button -->
+    <div class="footer-fixed-btn footer-fixed-btn--hidden back-top">
+        <div>&#xe639;</div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="    height:50vh;
+">
+    <!-- 主页  -->
+    <!-- 404页  -->
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+                全球垂类 Agent / SaaS Agent 调研：需要关注什么
+            <!-- 404 -->
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            <!-- 404 -->
+        </p>
+        <!-- 文章页 meta -->
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                    <div class="post-intro-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="SaaS">SaaS</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Vertical AI">Vertical AI</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Pricing">Pricing</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Deep Research">Deep Research</a>
+</div>
+
+                <!-- 文章字数统计 -->
+                    <div class="post-intro-read">
+                        <span>Word count: <span class="post-count word-count">1.7k</span>Reading time: <span class="post-count reading-time">6 min</span></span>
+                    </div>
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2026/11/09</span>
+                    <!-- busuanzi -->
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" alt="loading">
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <blockquote>
+<p><strong>摘要</strong>：垂类 AI 的钱和增长都在变多，但多数 agent 项目死在落地环节，原因很少是模型不够强。决定成败的是四件事：切进一个具体工作流并嵌进客户现有系统；有自己积累的数据；能算清每次运行的成本并按客户认可的结果收费；结果可评测、可审计、可复核，满足合规。</p>
+<p>调研时间 2026 年 11 月，资料以公开报告和行业文章为主，部分数字各来源不一致，只适合看量级。</p>
+</blockquote>
+<h2 id="现状"><a href="#现状" class="headerlink" title="现状"></a>现状</h2><h3 id="钱在流向垂类"><a href="#钱在流向垂类" class="headerlink" title="钱在流向垂类"></a>钱在流向垂类</h3><p>Menlo Ventures 2025 年企业 AI 报告：垂类 AI 支出从 2024 年的 12 亿美元涨到 2025 年的 35 亿美元，接近 3 倍。医疗约 15 亿美元，接近一半，超过排在后面的四个行业之和；法律约 6.5 亿美元。<a target="_blank" rel="noopener" href="https://menlovc.com/wp-content/uploads/2025/12/menlo_ventures_enterprise_ai_report-2025-123125.pdf">来源</a></p>
+<h3 id="头部公司增长很快"><a href="#头部公司增长很快" class="headerlink" title="头部公司增长很快"></a>头部公司增长很快</h3><table>
+<thead>
+<tr>
+<th>公司</th>
+<th>行业</th>
+<th>公开数据</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Harvey</td>
+<td>法律</td>
+<td>2025 年底 ARR 约 1.9 亿美元（一年前 5000 万）；2026 年 2 月传出 110 亿美元估值融资洽谈</td>
+</tr>
+<tr>
+<td>Abridge</td>
+<td>医疗（临床病历）</td>
+<td>合同 ARR 1.17 亿美元；积累 150 万次诊疗对话</td>
+</tr>
+<tr>
+<td>EvenUp</td>
+<td>法律（人身伤害索赔）</td>
+<td>估值超 20 亿美元；积累几十万个案件</td>
+</tr>
+<tr>
+<td>Hippocratic AI</td>
+<td>医疗</td>
+<td>估值 35 亿美元，1.15 亿次临床交互</td>
+</tr>
+</tbody></table>
+<p>来源：<a target="_blank" rel="noopener" href="https://ai2roi.substack.com/p/ai-to-roi-big-story-the-power-of">AI to ROI</a>、<a target="_blank" rel="noopener" href="https://www.buildmvpfast.com/blog/vertical-ai-eating-horizontal-saas-2026">buildmvpfast</a>。Harvey 的 ARR 在不同文章里有写到 3 亿美元的，口径不一。</p>
+<h3 id="失败率也很高"><a href="#失败率也很高" class="headerlink" title="失败率也很高"></a>失败率也很高</h3><ul>
+<li>Gartner 预测到 2027 年超过 40% 的 agentic AI 项目会被砍掉，原因是成本失控、业务价值不清、风险控制不足。<a target="_blank" rel="noopener" href="https://www.moring.ai/blogs/what-gartner-40pct-cancellation-means-for-ai">来源</a></li>
+<li>MIT NANDA 研究称 95% 的生成式 AI 试点拿不出可衡量的 ROI，根因是没能集成进真实业务流程。<a target="_blank" rel="noopener" href="https://www.healthcareitnews.com/news/mit-95-enterprise-ai-pilots-fail-deliver-measurable-roi">来源</a></li>
+</ul>
+<p>两份结论指向同一点：失败多数出在落地、成本和治理上，模型能力不是主因。</p>
+<h2 id="需要关注的点"><a href="#需要关注的点" class="headerlink" title="需要关注的点"></a>需要关注的点</h2><h3 id="从一个高摩擦工作流切进去"><a href="#从一个高摩擦工作流切进去" class="headerlink" title="从一个高摩擦工作流切进去"></a>从一个高摩擦工作流切进去</h3><p>成功的公司都先吃下一个具体环节（病历记录、合同审查、索赔文书），再扩展成串起多个 agent 的完整系统。已经拿到一个工作流的数据上下文后，再加下一个 agent 的边际成本很低，所以多 agent 的公司收入高于单 agent 公司。<a target="_blank" rel="noopener" href="https://www.saasmag.com/vertical-ai-agents-eating-horizontal-saas">来源</a></p>
+<h3 id="护城河在数据和流程嵌入"><a href="#护城河在数据和流程嵌入" class="headerlink" title="护城河在数据和流程嵌入"></a>护城河在数据和流程嵌入</h3><p>模型本身构不成壁垒。Abridge、EvenUp 的优势来自持续积累的专有数据；NFX 调查中超过一半的 VC 认为专有数据的质量和稀缺性是持久壁垒。底座模型厂商也在亲自进入大垂类，只靠 prompt 加模型的产品会被挤压。</p>
+<h3 id="跑在现有记录系统之上"><a href="#跑在现有记录系统之上" class="headerlink" title="跑在现有记录系统之上"></a>跑在现有记录系统之上</h3><p>EHR、账本、CRM 这类记录系统会留下来，agent 是它上面的执行层，试图整套替换现有系统的做法很难推。<a target="_blank" rel="noopener" href="https://easyclaw.com/blog/ai-agent-101/best-vertical-ai-agents">来源</a> 集成深度直接决定试点能不能转成生产使用，这正是 MIT 报告里 95% 失败的主要原因。</p>
+<h3 id="定价从按席位转向按结果"><a href="#定价从按席位转向按结果" class="headerlink" title="定价从按席位转向按结果"></a>定价从按席位转向按结果</h3><p>客服领域已经形成按结果计价的价格带：</p>
+<table>
+<thead>
+<tr>
+<th>产品</th>
+<th>计费单位</th>
+<th>价格</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Intercom Fin</td>
+<td>成功解决</td>
+<td>0.99 美元 &#x2F; 次</td>
+</tr>
+<tr>
+<td>Zendesk AI</td>
+<td>确认解决</td>
+<td>1.2～2 美元 &#x2F; 次</td>
+</tr>
+<tr>
+<td>Salesforce Agentforce</td>
+<td>对话</td>
+<td>2 美元 &#x2F; 次，不论是否解决</td>
+</tr>
+</tbody></table>
+<p>来源：<a target="_blank" rel="noopener" href="https://tech-insider.org/intercom-fin-vs-zendesk-ai-vs-agentforce-2026">tech-insider</a>。Forrester 数据显示，「基础订阅 + 用量或结果计费」的混合模式一年内从 27% 升到 41%，是目前的主流。<a target="_blank" rel="noopener" href="https://www.paperclipped.de/en/blog/ai-agent-pricing-models">来源</a></p>
+<p>按结果计价的前提是能可靠判定「这次算不算成功」，而且这个指标是买方本来就在跟踪的。</p>
+<h3 id="毛利结构不同，要从第一天算推理成本"><a href="#毛利结构不同，要从第一天算推理成本" class="headerlink" title="毛利结构不同，要从第一天算推理成本"></a>毛利结构不同，要从第一天算推理成本</h3><ul>
+<li>ICONIQ 2026 年报告：AI 原生产品平均毛利预计约 52%，传统 SaaS 是 75%～85%，差距主要来自推理成本。<a target="_blank" rel="noopener" href="https://www.thesaascfo.com/how-to-calculate-the-inference-efficiency-ratio">来源</a></li>
+<li>Bessemer 把高增长 AI 公司分为两类：增长极快但毛利约 25% 的「超新星」，和毛利约 60%、稳步复利增长的「流星」。<a target="_blank" rel="noopener" href="https://startupmentors.in/blog/supernovas-or-shooting-stars-what-bessemers-2025-ai-data-says-about-the-right-growth-path">来源</a></li>
+</ul>
+<p>每次运行的 token 和计算成本要能归到具体客户和任务上。Gartner 列出的第一条砍项目原因就是成本失控。</p>
+<h3 id="可靠性、评测、审计是采购门槛"><a href="#可靠性、评测、审计是采购门槛" class="headerlink" title="可靠性、评测、审计是采购门槛"></a>可靠性、评测、审计是采购门槛</h3><ul>
+<li>企业买方要求上线前有基于数据集和评分器的评测，上线后有生产 trace 监控。<a target="_blank" rel="noopener" href="https://www.braintrust.dev/articles/best-llm-evaluation-tools-enterprise-teams-2026">来源</a></li>
+<li>审计日志要能证明发生了什么、为什么发生、谁负责，普通日志不够。<a target="_blank" rel="noopener" href="https://createos.sh/blogs/ai-agent-audit-trails-enterprise">来源</a></li>
+<li>医疗、金融、法律等受监管行业要求结果可追溯、可复核，人在回路（HITL）是常规配置。</li>
+</ul>
+<h3 id="合规有明确时间点"><a href="#合规有明确时间点" class="headerlink" title="合规有明确时间点"></a>合规有明确时间点</h3><p>EU AI Act 第 50 条从 2026 年 8 月 2 日起生效：与人直接交互的 AI 系统（包括 agent）必须告知用户对方是 AI，生成内容要带机器可读标记，罚款最高 1500 万欧元或全球营业额的 3%。<a target="_blank" rel="noopener" href="https://www.cooley.com/news/insight/2026/2026-08-03-eu-ai-act-transparency-obligations-take-effect-2-august-2026">来源</a> 健康、法律、金融等敏感领域可能还要周期性重复提醒。<a target="_blank" rel="noopener" href="https://www.traverssmith.com/knowledge/knowledge-container/is-it-a-bot-eu-ai-act-transparency-rules-take-effect-2-august-2026">来源</a></p>
+<h3 id="用标准协议做互操作"><a href="#用标准协议做互操作" class="headerlink" title="用标准协议做互操作"></a>用标准协议做互操作</h3><p>目前的分工共识是 MCP 负责 agent 调用工具，A2A 负责 agent 之间协作，A2A 已有 150 多家组织支持。<a target="_blank" rel="noopener" href="https://www.babybots.ai/blog/a2a-protocol-enterprise-2026">来源</a> Gartner 预测到 2028 年 90% 的 B2B 采购会经过 AI agent，API 优先、可组合的产品更容易被客户自己的 agent 调用。</p>
+<h3 id="每个项目要有负责人和量化指标"><a href="#每个项目要有负责人和量化指标" class="headerlink" title="每个项目要有负责人和量化指标"></a>每个项目要有负责人和量化指标</h3><p>对应 Gartner 和 MIT 的结论，做法是一个工作流配一个负责人、一个可衡量的结果指标，治理和审批路径在试点之前就设计好。</p>
+<h2 id="对-SAR-InSight-的启示"><a href="#对-SAR-InSight-的启示" class="headerlink" title="对 SAR InSight 的启示"></a>对 SAR InSight 的启示</h2><p>药物研发属于「数据敏感、结果必须可复核」的垂类，上面几条里最直接相关的是：</p>
+<table>
+<thead>
+<tr>
+<th>方向</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>结果可复核</td>
+<td>报告里的结论要能追溯到具体分子、数据和计算步骤；用户确认的关键选择（活性列、骨架等）要留痕</td>
+</tr>
+<tr>
+<td>成本归因</td>
+<td>一次 SAR 分析的模型调用和计算成本要能算到这次分析上，现有的用量计费标签是这个方向的基础</td>
+</tr>
+<tr>
+<td>计价单位</td>
+<td>如果以后按结果收费，需要先定义什么算「一份有效的 SAR 报告」，并且能自动判定</td>
+</tr>
+<tr>
+<td>工作流嵌入</td>
+<td>切入点是药化团队已有的 SAR 分析环节，结果要能回到他们现有的数据和工具里，而非另起一套系统</td>
+</tr>
+<tr>
+<td>数据</td>
+<td>客户化合物数据的隔离和合规是前提，在合规前提下积累的分析经验是潜在壁垒</td>
+</tr>
+</tbody></table>
+<h2 id="来源说明"><a href="#来源说明" class="headerlink" title="来源说明"></a>来源说明</h2><p>Menlo Ventures、ICONIQ、Gartner、MIT、Cooley、Travers Smith 是一手或权威来源；其余多为行业博客转述，个别数字（如 Harvey ARR）各处不一致。需要正式引用时应回到原始报告核对。</p>
+
+    </article>
+    <!-- license -->
+        <div class="license-wrapper">
+            <p>Author：<a href="https://edison-a-n.github.io">Edison</a>
+            <p>Link：<a href="https://edison-a-n.github.io/2026/11/09/vertical-saas-agent-research/">https://edison-a-n.github.io/2026/11/09/vertical-saas-agent-research/</a>
+            <p>Publish date：<a href="https://edison-a-n.github.io/2026/11/09/vertical-saas-agent-research/">November 9th 2026, 5:00:00 pm</a>
+            <p>Update date：<a href="https://edison-a-n.github.io/2026/11/09/vertical-saas-agent-research/">November 10th 2026, 8:36:00 am</a>
+            <p>License：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+        </li>
+        <li class="previous">
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2026/09/24/agent-sandbox-network-access-control/" title="Agent 沙箱网络访问控制：从凭证暴露面到凭证代理">
+                    <div class="prevTitle">Agent 沙箱网络访问控制：从凭证暴露面到凭证代理</div>
+                </a>
+        </li>
+    </ul>
+    <!-- comment -->
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+            
+            
+            
+            <!-- utteranc评论 -->
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+            
+            
+            
+        </div>
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    <!-- Mathjax -->
+</main>
+
+                <!-- profile -->
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+        <div class="social">
+                            <a href="mailto:zhangn661@gmail.com" class="iconfont-archer email" title="email" ></a>
+                <a href="//github.com/Edison-A-N" class="iconfont-archer github" target="_blank" title="github"></a>
+
+        </div>
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    <!-- 不蒜子  -->
+        <div class="busuanzi-container">
+                <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+        </div>
+</footer>
+
+        </div>
+        <!-- toc -->
+            <div class="toc-wrapper toc-wrapper-loding" style=    top:50vh;
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%B0%E7%8A%B6"><span class="toc-number">1.</span> <span class="toc-text">现状</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%92%B1%E5%9C%A8%E6%B5%81%E5%90%91%E5%9E%82%E7%B1%BB"><span class="toc-number">1.1.</span> <span class="toc-text">钱在流向垂类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%B4%E9%83%A8%E5%85%AC%E5%8F%B8%E5%A2%9E%E9%95%BF%E5%BE%88%E5%BF%AB"><span class="toc-number">1.2.</span> <span class="toc-text">头部公司增长很快</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%B1%E8%B4%A5%E7%8E%87%E4%B9%9F%E5%BE%88%E9%AB%98"><span class="toc-number">1.3.</span> <span class="toc-text">失败率也很高</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9C%80%E8%A6%81%E5%85%B3%E6%B3%A8%E7%9A%84%E7%82%B9"><span class="toc-number">2.</span> <span class="toc-text">需要关注的点</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8E%E4%B8%80%E4%B8%AA%E9%AB%98%E6%91%A9%E6%93%A6%E5%B7%A5%E4%BD%9C%E6%B5%81%E5%88%87%E8%BF%9B%E5%8E%BB"><span class="toc-number">2.1.</span> <span class="toc-text">从一个高摩擦工作流切进去</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8A%A4%E5%9F%8E%E6%B2%B3%E5%9C%A8%E6%95%B0%E6%8D%AE%E5%92%8C%E6%B5%81%E7%A8%8B%E5%B5%8C%E5%85%A5"><span class="toc-number">2.2.</span> <span class="toc-text">护城河在数据和流程嵌入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B7%91%E5%9C%A8%E7%8E%B0%E6%9C%89%E8%AE%B0%E5%BD%95%E7%B3%BB%E7%BB%9F%E4%B9%8B%E4%B8%8A"><span class="toc-number">2.3.</span> <span class="toc-text">跑在现有记录系统之上</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9A%E4%BB%B7%E4%BB%8E%E6%8C%89%E5%B8%AD%E4%BD%8D%E8%BD%AC%E5%90%91%E6%8C%89%E7%BB%93%E6%9E%9C"><span class="toc-number">2.4.</span> <span class="toc-text">定价从按席位转向按结果</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%AF%9B%E5%88%A9%E7%BB%93%E6%9E%84%E4%B8%8D%E5%90%8C%EF%BC%8C%E8%A6%81%E4%BB%8E%E7%AC%AC%E4%B8%80%E5%A4%A9%E7%AE%97%E6%8E%A8%E7%90%86%E6%88%90%E6%9C%AC"><span class="toc-number">2.5.</span> <span class="toc-text">毛利结构不同，要从第一天算推理成本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%AF%E9%9D%A0%E6%80%A7%E3%80%81%E8%AF%84%E6%B5%8B%E3%80%81%E5%AE%A1%E8%AE%A1%E6%98%AF%E9%87%87%E8%B4%AD%E9%97%A8%E6%A7%9B"><span class="toc-number">2.6.</span> <span class="toc-text">可靠性、评测、审计是采购门槛</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%88%E8%A7%84%E6%9C%89%E6%98%8E%E7%A1%AE%E6%97%B6%E9%97%B4%E7%82%B9"><span class="toc-number">2.7.</span> <span class="toc-text">合规有明确时间点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E6%A0%87%E5%87%86%E5%8D%8F%E8%AE%AE%E5%81%9A%E4%BA%92%E6%93%8D%E4%BD%9C"><span class="toc-number">2.8.</span> <span class="toc-text">用标准协议做互操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%AF%8F%E4%B8%AA%E9%A1%B9%E7%9B%AE%E8%A6%81%E6%9C%89%E8%B4%9F%E8%B4%A3%E4%BA%BA%E5%92%8C%E9%87%8F%E5%8C%96%E6%8C%87%E6%A0%87"><span class="toc-number">2.9.</span> <span class="toc-text">每个项目要有负责人和量化指标</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AF%B9-SAR-InSight-%E7%9A%84%E5%90%AF%E7%A4%BA"><span class="toc-number">3.</span> <span class="toc-text">对 SAR InSight 的启示</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%A5%E6%BA%90%E8%AF%B4%E6%98%8E"><span class="toc-number">4.</span> <span class="toc-text">来源说明</span></a></li></ol>
+            </div>
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 46
+        </div>
+        <!-- search  -->
+    </div>
+    <div class="post-archive">
+            <div class="archive-year"> 2026 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span>
+            <a class="archive-post-title" href="/2026/11/09/vertical-saas-agent-research/">全球垂类 Agent / SaaS Agent 调研：需要关注什么</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/24</span>
+            <a class="archive-post-title" href="/2026/09/24/agent-sandbox-network-access-control/">Agent 沙箱网络访问控制：从凭证暴露面到凭证代理</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/02</span>
+            <a class="archive-post-title" href="/2026/06/02/claude-code-memory-research/">Claude Code 内置 Memory 深度研究：CLAUDE.md、Auto Memory 与上下文工程</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/28</span>
+            <a class="archive-post-title" href="/2026/05/28/ai-agent-architectures-2026/">2026 AI Agent 架构演进：从单机助手到分布式执行系统</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/26</span>
+            <a class="archive-post-title" href="/2026/05/26/multi-agent-debate-technical-implementation/">Multi-Agent Debate 技术实现：从多 Agent 投票到可验证协作</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span>
+            <a class="archive-post-title" href="/2026/05/21/agent-memory-frontier-survey/">Agent Memory 前沿调研：从长期记忆到经验系统</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/13</span>
+            <a class="archive-post-title" href="/2026/05/13/saas-agent-design-doc/">SaaS Agent 应该怎么设计：从竞品实践到生产级架构</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/12</span>
+            <a class="archive-post-title" href="/2026/05/12/saas-agent-sandbox-research/">SaaS Agent Sandbox 设计原则：不要把 Sandbox 当成容器</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span>
+            <a class="archive-post-title" href="/2026/05/08/agent-engineer-interview-2026/">2026 Agent 开发工程师面试指南：从架构、MCP 到生产化</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/19</span>
+            <a class="archive-post-title" href="/2026/04/19/multi-agent-architecture-survey/">Multi-Agent LLM 系统架构全景调研（2023–2026）</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/14</span>
+            <a class="archive-post-title" href="/2026/04/14/llm-tool-calling-decision-bias/">LLM Agent 中 Skill/Tool 调用决策偏差：技术调研报告</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span>
+            <a class="archive-post-title" href="/2026/04/12/harness-engineering/">Harness Engineering：当 AI 的缰绳比 AI 本身更重要</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span>
+            <a class="archive-post-title" href="/2026/03/30/coding-agent-evolution/">从代码到行动：Coding Agent 如何演变为通用数字助手</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2026/03/21/multi-agent-investment-research/">用 OpenAgents Workspace 协调多 Agent 投研</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/16</span>
+            <a class="archive-post-title" href="/2026/03/16/agent-loop-study/">Agent Loop 技术调研报告</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/14</span>
+            <a class="archive-post-title" href="/2026/03/14/harness-engineering-practical-guide/">Harness Engineering 实践指南：来自 OpenAI、Stripe、Anthropic 等团队的一线经验</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/17</span>
+            <a class="archive-post-title" href="/2026/01/17/trading-drawdown-control-guide/">交易回撤控制指南：认知、守心与仓位管理</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2025 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/28</span>
+            <a class="archive-post-title" href="/2025/12/28/code-execution-sandbox-mcp/">LLM-Driven Agent Architecture with Sandbox and MCP Integration</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2025/11/10/mcp-recent-sharing/">MCP 近期内容分享：从 Resources、Tools 到 Prompts 的实践探索</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span>
+            <a class="archive-post-title" href="/2025/10/28/args_doc_format_comparison/">Tool Args Documentation Format Comparison Analysis</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span>
+            <a class="archive-post-title" href="/2025/10/27/asgi_lifespan_complete_guide/">ASGI Lifespan 完整指南</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/mcp-output-schema/">MCP Output Schema：数据验证与结构化输出的技术实现</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/stop-converting-rest-api-to-mcp/">停止转换REST API到MCP：设计AI原生接口的正确方式</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span>
+            <a class="archive-post-title" href="/2025/09/20/llm-consistency-challenges-large-data-processing/">大型语言模型在处理大批量数据时的一致性挑战与解决方案</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/01</span>
+            <a class="archive-post-title" href="/2024/02/01/nextjs-pagination/">nextjs-pagination</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span>
+            <a class="archive-post-title" href="/2023/09/20/smart-contract-demo/">smart-contract-demo</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/30</span>
+            <a class="archive-post-title" href="/2023/08/30/multi-tenant/">多租户应用与架构设计关注点</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2022 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span>
+            <a class="archive-post-title" href="/2022/12/13/go-ddd/">go-ddd</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/07</span>
+            <a class="archive-post-title" href="/2022/12/07/git-rebase/">使用 `git pull --rebase`</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span>
+            <a class="archive-post-title" href="/2022/12/03/opentelemetry-jaeger/">opnetelemetry-jaeger</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/09</span>
+            <a class="archive-post-title" href="/2022/06/09/ddd-thinking/">ddd-thinking</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/23</span>
+            <a class="archive-post-title" href="/2022/05/23/mvc-and-ddd/">mvc-and-ddd</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span>
+            <a class="archive-post-title" href="/2022/02/13/commit-format-and-auto-changelog/">Git commit 规范</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/tight-lipped/">思考与交流</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/30</span>
+            <a class="archive-post-title" href="/2022/01/30/knowledge-breath-and-depth/">知识掌握的广度与深度</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2021 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/16</span>
+            <a class="archive-post-title" href="/2021/12/16/software-design-doc/">如何撰写技术设计文档</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/21</span>
+            <a class="archive-post-title" href="/2021/11/21/breaking-creation-product/">突破式创新的产品设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span>
+            <a class="archive-post-title" href="/2021/07/15/parallel-and-asynchronous-python/">DRF Exception Handle</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/17</span>
+            <a class="archive-post-title" href="/2021/06/17/DRF-Exception/">DRF Exception Handle</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span>
+            <a class="archive-post-title" href="/2021/06/15/Django-With-DDD/">Django With DDD</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/09</span>
+            <a class="archive-post-title" href="/2021/05/09/Agile-Design/">敏捷软件开发：设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span>
+            <a class="archive-post-title" href="/2021/03/30/DRF-Bussiness-Logic/">Django Restful Framework Business Logic</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2021/03/21/graphql-and-restful/">Graphql and Restful API</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/08</span>
+            <a class="archive-post-title" href="/2021/03/08/grpc-hello-world/">grpc hello world</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/03</span>
+            <a class="archive-post-title" href="/2021/01/03/New-Coding-Language/">我如何学一门新的编程语言</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2020 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/08</span>
+            <a class="archive-post-title" href="/2020/11/08/Agile-Dev/">敏捷开发辅助新项目验证与落地</a>
+        </li>
+            </ul>
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+            <span class="sidebar-tag-name" data-tags="agile">
+                <span class="iconfont-archer">&#xe606;</span>
+                agile
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="LLM">
+                <span class="iconfont-archer">&#xe606;</span>
+                LLM
+            </span>
+            <span class="sidebar-tag-name" data-tags="MCP">
+                <span class="iconfont-archer">&#xe606;</span>
+                MCP
+            </span>
+            <span class="sidebar-tag-name" data-tags="面试">
+                <span class="iconfont-archer">&#xe606;</span>
+                面试
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent Loop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent Loop
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent Memory">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent Memory
+            </span>
+            <span class="sidebar-tag-name" data-tags="Memory System">
+                <span class="iconfont-archer">&#xe606;</span>
+                Memory System
+            </span>
+            <span class="sidebar-tag-name" data-tags="Security">
+                <span class="iconfont-archer">&#xe606;</span>
+                Security
+            </span>
+            <span class="sidebar-tag-name" data-tags="Credential Brokering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Credential Brokering
+            </span>
+            <span class="sidebar-tag-name" data-tags="Sandbox">
+                <span class="iconfont-archer">&#xe606;</span>
+                Sandbox
+            </span>
+            <span class="sidebar-tag-name" data-tags="OpenAI Symphony">
+                <span class="iconfont-archer">&#xe606;</span>
+                OpenAI Symphony
+            </span>
+            <span class="sidebar-tag-name" data-tags="Google Agent Executor">
+                <span class="iconfont-archer">&#xe606;</span>
+                Google Agent Executor
+            </span>
+            <span class="sidebar-tag-name" data-tags="GitHub Copilot">
+                <span class="iconfont-archer">&#xe606;</span>
+                GitHub Copilot
+            </span>
+            <span class="sidebar-tag-name" data-tags="SeekTool">
+                <span class="iconfont-archer">&#xe606;</span>
+                SeekTool
+            </span>
+            <span class="sidebar-tag-name" data-tags="企业级架构">
+                <span class="iconfont-archer">&#xe606;</span>
+                企业级架构
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Format">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Format
+            </span>
+            <span class="sidebar-tag-name" data-tags="ASGI, Python, FastAPI">
+                <span class="iconfont-archer">&#xe606;</span>
+                ASGI, Python, FastAPI
+            </span>
+            <span class="sidebar-tag-name" data-tags="Claude Code">
+                <span class="iconfont-archer">&#xe606;</span>
+                Claude Code
+            </span>
+            <span class="sidebar-tag-name" data-tags="Memory">
+                <span class="iconfont-archer">&#xe606;</span>
+                Memory
+            </span>
+            <span class="sidebar-tag-name" data-tags="Context Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Context Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="Hooks">
+                <span class="iconfont-archer">&#xe606;</span>
+                Hooks
+            </span>
+            <span class="sidebar-tag-name" data-tags="Skills">
+                <span class="iconfont-archer">&#xe606;</span>
+                Skills
+            </span>
+            <span class="sidebar-tag-name" data-tags="Architecture">
+                <span class="iconfont-archer">&#xe606;</span>
+                Architecture
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="thinking">
+                <span class="iconfont-archer">&#xe606;</span>
+                thinking
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI
+            </span>
+            <span class="sidebar-tag-name" data-tags="Harness Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Harness Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="DDD">
+                <span class="iconfont-archer">&#xe606;</span>
+                DDD
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Calling">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Calling
+            </span>
+            <span class="sidebar-tag-name" data-tags="Prompt Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Prompt Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="Multi-Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                Multi-Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI Architecture">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI Architecture
+            </span>
+            <span class="sidebar-tag-name" data-tags="OpenAgents">
+                <span class="iconfont-archer">&#xe606;</span>
+                OpenAgents
+            </span>
+            <span class="sidebar-tag-name" data-tags="投研">
+                <span class="iconfont-archer">&#xe606;</span>
+                投研
+            </span>
+            <span class="sidebar-tag-name" data-tags="multi-tenant">
+                <span class="iconfont-archer">&#xe606;</span>
+                multi-tenant
+            </span>
+            <span class="sidebar-tag-name" data-tags="可观测性">
+                <span class="iconfont-archer">&#xe606;</span>
+                可观测性
+            </span>
+            <span class="sidebar-tag-name" data-tags="opentelemetry">
+                <span class="iconfont-archer">&#xe606;</span>
+                opentelemetry
+            </span>
+            <span class="sidebar-tag-name" data-tags="SaaS">
+                <span class="iconfont-archer">&#xe606;</span>
+                SaaS
+            </span>
+            <span class="sidebar-tag-name" data-tags="系统设计">
+                <span class="iconfont-archer">&#xe606;</span>
+                系统设计
+            </span>
+            <span class="sidebar-tag-name" data-tags="产品设计">
+                <span class="iconfont-archer">&#xe606;</span>
+                产品设计
+            </span>
+            <span class="sidebar-tag-name" data-tags="API Design">
+                <span class="iconfont-archer">&#xe606;</span>
+                API Design
+            </span>
+            <span class="sidebar-tag-name" data-tags="Trading">
+                <span class="iconfont-archer">&#xe606;</span>
+                Trading
+            </span>
+            <span class="sidebar-tag-name" data-tags="Vertical AI">
+                <span class="iconfont-archer">&#xe606;</span>
+                Vertical AI
+            </span>
+            <span class="sidebar-tag-name" data-tags="Pricing">
+                <span class="iconfont-archer">&#xe606;</span>
+                Pricing
+            </span>
+            <span class="sidebar-tag-name" data-tags="Deep Research">
+                <span class="iconfont-archer">&#xe606;</span>
+                Deep Research
+            </span>
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+        <span class="sidebar-category-name" data-categories="AI Agent">
+            <span class="iconfont-archer">&#xe60a;</span>
+            AI Agent
+        </span>
+        <span class="sidebar-category-name" data-categories="交易策略">
+            <span class="iconfont-archer">&#xe60a;</span>
+            交易策略
+        </span>
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "https://edison-a-n.github.io",
+        root: siteMetaRoot,
+        author: "Edison"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+        <!-- main func -->
+        <script src="/scripts/main.js"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.umd.js" onload="window.Fancybox.bind('[data-fancybox]')" defer></script>
+        <!-- algolia -->
+        <!-- busuanzi -->
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        <!-- async load share.js -->
+            <script src="/scripts/share.js" async></script>
+        <!-- mermaid -->
+            <script src='https://cdn.jsdelivr.net/npm/mermaid@8.11.0/dist/mermaid.min.js' onload="window.mermaid.initialize({theme: 'dark'})" async></script>
+    </body>
+</html>

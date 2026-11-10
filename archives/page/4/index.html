@@ -431,6 +431,30 @@
                 <main class="main index-page">
             
         <article class="index-post">
+            <a class="abstract-title" href="/2022/06/09/ddd-thinking/">
+                <span class="abstract-title-text">ddd-thinking</span>
+            </a>
+            <div class="abstract-content">
+                DDD 关键概念Domain 中的概念Context一个Domain独占一个Context。在Context中完成下述的一系列逻辑。在应用DDD中，最难的一步是，划定Context。将不同Domain的边界准确的描述清楚，对于抽象能力、业务理解准确性与未来预期的判断能力要求极高。边界划定的不好，也将难以保障内聚与耦合的合理性。
+Aggregate、Entity、Value Object将三者放在一起，是因为三者是一个包含关系，并对上层提供引用。在这些model中，会提供独占的attribute以及对应的对attribute的访问方法。
+Service对于一些无法由一个model完成执行的...
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2026/03/14">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2022/06/09</span>
+                </div>
+                <!-- tags -->
+                    <div class="abstract-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="DDD">DDD</a>
+</div>
+
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+            
+        <article class="index-post">
             <a class="abstract-title" href="/2022/05/23/mvc-and-ddd/">
                 <span class="abstract-title-text">mvc-and-ddd</span>
             </a>
@@ -640,31 +664,6 @@ exception 处理器
             </div>
         </article>
         <div class="index-post-divider"></div>
-            
-        <article class="index-post">
-            <a class="abstract-title" href="/2021/05/09/Agile-Design/">
-                <span class="abstract-title-text">敏捷软件开发：设计</span>
-            </a>
-            <div class="abstract-content">
-                本篇为阅读《敏捷软件开发：原则，模式与实践》后的读后感。主要阅读的是第二部分：敏捷设计。这本书的第一部分，关于敏捷开发中的测试驱动开发与重构，可以阅读其他专门的书籍。我阅读的是《重构，改善既有代码设计》。本书第三部分的案例，可自由选择是否阅读以加深理解。我自己更多的是结合自己遇到的问题，从书中描述找到问题的解决方案。
-什么是敏捷设计软件越来越难维护软件在第一版本发布的时候，是软件设计最干净清晰的时候。随着复杂的需求与软件持续迭代，软件代码往往会在原来的设计上做各种hack以满足新的需求。
-这系列的破坏设计的操作，会在后续的需求增加的过程中逐渐变得难以维护，而后的需求迭代速率将越来越慢。
-...
-            </div>
-            <!-- read more -->
-            <div class="abstract-post-meta">
-                <!-- date -->
-                <div class="abstract-date" title="Last updated: 2026/03/14">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/05/09</span>
-                </div>
-                <!-- tags -->
-                    <div class="abstract-tags" >
-        <a class="post-tag" href="javascript:void(0);" data-tags="agile">agile</a>
-</div>
-
-            </div>
-        </article>
-        <div class="index-post-divider"></div>
     <!-- paginator  -->
         <nav class="page-nav">
             <a class="extend prev" rel="prev" href="/archives/page/3/">&lt; PREV</a><a class="page-number" href="/archives/">1</a><a class="page-number" href="/archives/page/2/">2</a><a class="page-number" href="/archives/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/archives/page/5/">5</a><a class="extend next" rel="next" href="/archives/page/5/">NEXT &gt;</a>
@@ -748,15 +747,20 @@ exception 处理器
         
         
         
+        
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 45
+        Total : 46
         </div>
         <!-- search  -->
     </div>
     <div class="post-archive">
             <div class="archive-year"> 2026 </div>
             <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span>
+            <a class="archive-post-title" href="/2026/11/09/vertical-saas-agent-research/">全球垂类 Agent / SaaS Agent 调研：需要关注什么</a>
+        </li>
         <li class="archive-post-item">
             <span class="archive-post-date">09/24</span>
             <a class="archive-post-title" href="/2026/09/24/agent-sandbox-network-access-control/">Agent 沙箱网络访问控制：从凭证暴露面到凭证代理</a>
@@ -1061,6 +1065,10 @@ exception 处理器
                 <span class="iconfont-archer">&#xe606;</span>
                 Agent
             </span>
+            <span class="sidebar-tag-name" data-tags="thinking">
+                <span class="iconfont-archer">&#xe606;</span>
+                thinking
+            </span>
             <span class="sidebar-tag-name" data-tags="AI">
                 <span class="iconfont-archer">&#xe606;</span>
                 AI
@@ -1068,10 +1076,6 @@ exception 处理器
             <span class="sidebar-tag-name" data-tags="Harness Engineering">
                 <span class="iconfont-archer">&#xe606;</span>
                 Harness Engineering
-            </span>
-            <span class="sidebar-tag-name" data-tags="thinking">
-                <span class="iconfont-archer">&#xe606;</span>
-                thinking
             </span>
             <span class="sidebar-tag-name" data-tags="DDD">
                 <span class="iconfont-archer">&#xe606;</span>
@@ -1132,6 +1136,18 @@ exception 处理器
             <span class="sidebar-tag-name" data-tags="Trading">
                 <span class="iconfont-archer">&#xe606;</span>
                 Trading
+            </span>
+            <span class="sidebar-tag-name" data-tags="Vertical AI">
+                <span class="iconfont-archer">&#xe606;</span>
+                Vertical AI
+            </span>
+            <span class="sidebar-tag-name" data-tags="Pricing">
+                <span class="iconfont-archer">&#xe606;</span>
+                Pricing
+            </span>
+            <span class="sidebar-tag-name" data-tags="Deep Research">
+                <span class="iconfont-archer">&#xe606;</span>
+                Deep Research
             </span>
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
