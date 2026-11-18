@@ -2,243 +2,45 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://edison-a-n.github.io/2026/05/13/saas-agent-design-doc/</loc>
+    <loc>https://edison-a-n.github.io/2026/11/18/architecture-design-essentials/</loc>
     
-    <lastmod>2026-05-15</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/2026/05/12/saas-agent-sandbox-research/</loc>
-    
-    <lastmod>2026-05-13</lastmod>
+    <lastmod>2026-11-18</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://edison-a-n.github.io/2026/05/08/agent-engineer-interview-2026/</loc>
+    <loc>https://edison-a-n.github.io/2026/11/09/vertical-saas-agent-research/</loc>
     
-    <lastmod>2026-05-13</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/2026/03/30/coding-agent-evolution/</loc>
-    
-    <lastmod>2026-05-08</lastmod>
+    <lastmod>2026-11-18</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://edison-a-n.github.io/2026/04/12/harness-engineering/</loc>
+    <loc>https://edison-a-n.github.io/2026/06/02/claude-code-memory-research/</loc>
     
-    <lastmod>2026-04-20</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/2026/04/14/llm-tool-calling-decision-bias/</loc>
-    
-    <lastmod>2026-04-20</lastmod>
+    <lastmod>2026-11-18</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://edison-a-n.github.io/2026/04/19/multi-agent-architecture-survey/</loc>
+    <loc>https://edison-a-n.github.io/2026/09/24/agent-sandbox-network-access-control/</loc>
     
-    <lastmod>2026-04-20</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/2026/03/16/agent-loop-study/</loc>
-    
-    <lastmod>2026-04-20</lastmod>
+    <lastmod>2026-11-18</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://edison-a-n.github.io/resume/</loc>
+    <loc>https://edison-a-n.github.io/2026/05/21/agent-memory-frontier-survey/</loc>
     
-    <lastmod>2026-04-19</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/2025/12/28/code-execution-sandbox-mcp/</loc>
-    
-    <lastmod>2026-03-30</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/2026/03/14/harness-engineering-practical-guide/</loc>
-    
-    <lastmod>2026-03-30</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/2026/03/21/multi-agent-investment-research/</loc>
-    
-    <lastmod>2026-03-30</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/about/</loc>
-    
-    <lastmod>2026-02-27</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/2026/01/17/trading-drawdown-control-guide/</loc>
-    
-    <lastmod>2026-01-17</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/2025/11/10/mcp-recent-sharing/</loc>
-    
-    <lastmod>2025-11-15</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/2025/09/20/llm-consistency-challenges-large-data-processing/</loc>
-    
-    <lastmod>2025-11-03</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/2025/09/29/mcp-output-schema/</loc>
-    
-    <lastmod>2025-11-03</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/2025/09/29/stop-converting-rest-api-to-mcp/</loc>
-    
-    <lastmod>2025-11-03</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/2025/10/28/args_doc_format_comparison/</loc>
-    
-    <lastmod>2025-11-03</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/2025/10/27/asgi_lifespan_complete_guide/</loc>
-    
-    <lastmod>2025-11-03</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/2024/02/01/nextjs-pagination/</loc>
-    
-    <lastmod>2025-09-26</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/2023/08/30/multi-tenant/</loc>
-    
-    <lastmod>2023-12-27</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/2023/09/20/smart-contract-demo/</loc>
-    
-    <lastmod>2023-12-27</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/2022/12/07/git-rebase/</loc>
-    
-    <lastmod>2023-08-29</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/2022/02/13/commit-format-and-auto-changelog/</loc>
-    
-    <lastmod>2023-08-29</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/2022/12/13/go-ddd/</loc>
-    
-    <lastmod>2023-08-29</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/2022/12/03/opentelemetry-jaeger/</loc>
-    
-    <lastmod>2023-08-29</lastmod>
+    <lastmod>2026-11-18</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -247,97 +49,97 @@
   <url>
     <loc>https://edison-a-n.github.io/tags/</loc>
     
-    <lastmod>2022-06-13</lastmod>
+    <lastmod>2026-11-18</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://edison-a-n.github.io/2021/06/17/DRF-Exception/</loc>
+    <loc>https://edison-a-n.github.io/about/</loc>
     
-    <lastmod>2022-06-13</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/2021/06/15/Django-With-DDD/</loc>
-    
-    <lastmod>2022-06-13</lastmod>
+    <lastmod>2026-11-18</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://edison-a-n.github.io/2021/01/03/New-Coding-Language/</loc>
+    <loc>https://edison-a-n.github.io/resume/</loc>
     
-    <lastmod>2022-06-13</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/2021/11/21/breaking-creation-product/</loc>
-    
-    <lastmod>2022-06-13</lastmod>
+    <lastmod>2026-11-18</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://edison-a-n.github.io/2022/06/09/ddd-thinking/</loc>
+    <loc>https://edison-a-n.github.io/2026/01/17/trading-drawdown-control-guide/</loc>
     
-    <lastmod>2022-06-13</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/2021/03/21/graphql-and-restful/</loc>
-    
-    <lastmod>2022-06-13</lastmod>
+    <lastmod>2026-11-18</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://edison-a-n.github.io/2021/03/08/grpc-hello-world/</loc>
+    <loc>https://edison-a-n.github.io/2026/05/12/saas-agent-sandbox-research/</loc>
     
-    <lastmod>2022-06-13</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/2022/01/30/knowledge-breath-and-depth/</loc>
-    
-    <lastmod>2022-06-13</lastmod>
+    <lastmod>2026-11-18</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://edison-a-n.github.io/2022/05/23/mvc-and-ddd/</loc>
+    <loc>https://edison-a-n.github.io/2026/05/13/saas-agent-design-doc/</loc>
     
-    <lastmod>2022-06-13</lastmod>
+    <lastmod>2026-11-18</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://edison-a-n.github.io/2021/07/15/parallel-and-asynchronous-python/</loc>
+    <loc>https://edison-a-n.github.io/2026/03/21/multi-agent-investment-research/</loc>
     
-    <lastmod>2022-06-13</lastmod>
+    <lastmod>2026-11-18</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2026/04/19/multi-agent-architecture-survey/</loc>
+    
+    <lastmod>2026-11-18</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2026/05/08/agent-engineer-interview-2026/</loc>
+    
+    <lastmod>2026-11-18</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/reports/bilibili-bv1hwvv63ewi/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2023/09/20/smart-contract-demo/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -346,7 +148,16 @@
   <url>
     <loc>https://edison-a-n.github.io/2021/12/16/software-design-doc/</loc>
     
-    <lastmod>2022-06-13</lastmod>
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2025/09/29/stop-converting-rest-api-to-mcp/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -355,7 +166,250 @@
   <url>
     <loc>https://edison-a-n.github.io/2022/02/03/tight-lipped/</loc>
     
-    <lastmod>2022-06-13</lastmod>
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2022/12/03/opentelemetry-jaeger/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2021/07/15/parallel-and-asynchronous-python/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2023/08/30/multi-tenant/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2022/05/23/mvc-and-ddd/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2024/02/01/nextjs-pagination/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2025/11/10/mcp-recent-sharing/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2022/01/30/knowledge-breath-and-depth/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2026/04/12/harness-engineering/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2025/09/20/llm-consistency-challenges-large-data-processing/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2026/04/14/llm-tool-calling-decision-bias/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2025/09/29/mcp-output-schema/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2021/03/21/graphql-and-restful/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2021/03/08/grpc-hello-world/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2026/03/14/harness-engineering-practical-guide/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2026/03/30/coding-agent-evolution/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2022/02/13/commit-format-and-auto-changelog/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2022/06/09/ddd-thinking/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2022/12/07/git-rebase/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2022/12/13/go-ddd/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2026/03/16/agent-loop-study/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2025/10/28/args_doc_format_comparison/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2025/10/27/asgi_lifespan_complete_guide/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2021/11/21/breaking-creation-product/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2025/12/28/code-execution-sandbox-mcp/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2021/06/17/DRF-Exception/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2021/06/15/Django-With-DDD/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2021/01/03/New-Coding-Language/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -364,16 +418,7 @@
   <url>
     <loc>https://edison-a-n.github.io/2021/05/09/Agile-Design/</loc>
     
-    <lastmod>2022-06-13</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/2021/03/30/DRF-Bussiness-Logic/</loc>
-    
-    <lastmod>2022-06-13</lastmod>
+    <lastmod>2026-09-25</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -382,7 +427,16 @@
   <url>
     <loc>https://edison-a-n.github.io/2020/11/08/Agile-Dev/</loc>
     
-    <lastmod>2022-06-13</lastmod>
+    <lastmod>2026-09-25</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/2021/03/30/DRF-Bussiness-Logic/</loc>
+    
+    <lastmod>2026-09-25</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -391,225 +445,309 @@
 
   <url>
     <loc>https://edison-a-n.github.io/</loc>
-    <lastmod>2026-05-16</lastmod>
+    <lastmod>2026-11-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
 
   
   <url>
-    <loc>https://edison-a-n.github.io/tags/agile/</loc>
-    <lastmod>2026-05-16</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/tags/LLM/</loc>
-    <lastmod>2026-05-16</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://edison-a-n.github.io/tags/AI-Agent/</loc>
-    <lastmod>2026-05-16</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/tags/Tool-Format/</loc>
-    <lastmod>2026-05-16</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/tags/ASGI-Python-FastAPI/</loc>
-    <lastmod>2026-05-16</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/tags/Architecture/</loc>
-    <lastmod>2026-05-16</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/tags/Agent/</loc>
-    <lastmod>2026-05-16</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/tags/Sandbox/</loc>
-    <lastmod>2026-05-16</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/tags/MCP/</loc>
-    <lastmod>2026-05-16</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/tags/AI/</loc>
-    <lastmod>2026-05-16</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/tags/Claude-Code/</loc>
-    <lastmod>2026-05-16</lastmod>
+    <lastmod>2026-11-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://edison-a-n.github.io/tags/Harness-Engineering/</loc>
-    <lastmod>2026-05-16</lastmod>
+    <lastmod>2026-11-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://edison-a-n.github.io/tags/DDD/</loc>
-    <lastmod>2026-05-16</lastmod>
+    <loc>https://edison-a-n.github.io/tags/Context-Engineering/</loc>
+    <lastmod>2026-11-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://edison-a-n.github.io/tags/Agent-Loop/</loc>
-    <lastmod>2026-05-16</lastmod>
+    <loc>https://edison-a-n.github.io/tags/agile/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/LLM/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/MCP/</loc>
+    <lastmod>2026-11-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://edison-a-n.github.io/tags/%E9%9D%A2%E8%AF%95/</loc>
-    <lastmod>2026-05-16</lastmod>
+    <lastmod>2026-11-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://edison-a-n.github.io/tags/thinking/</loc>
-    <lastmod>2026-05-16</lastmod>
+    <loc>https://edison-a-n.github.io/tags/Agent-Loop/</loc>
+    <lastmod>2026-11-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://edison-a-n.github.io/tags/Tool-Calling/</loc>
-    <lastmod>2026-05-16</lastmod>
+    <loc>https://edison-a-n.github.io/tags/Agent-Memory/</loc>
+    <lastmod>2026-11-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://edison-a-n.github.io/tags/Prompt-Engineering/</loc>
-    <lastmod>2026-05-16</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/tags/Multi-Agent/</loc>
-    <lastmod>2026-05-16</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/tags/AI-Architecture/</loc>
-    <lastmod>2026-05-16</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/tags/OpenAgents/</loc>
-    <lastmod>2026-05-16</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/tags/%E6%8A%95%E7%A0%94/</loc>
-    <lastmod>2026-05-16</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/tags/multi-tenant/</loc>
-    <lastmod>2026-05-16</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/tags/%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7/</loc>
-    <lastmod>2026-05-16</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/tags/opentelemetry/</loc>
-    <lastmod>2026-05-16</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/tags/SaaS/</loc>
-    <lastmod>2026-05-16</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/tags/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/</loc>
-    <lastmod>2026-05-16</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://edison-a-n.github.io/tags/%E4%BA%A7%E5%93%81%E8%AE%BE%E8%AE%A1/</loc>
-    <lastmod>2026-05-16</lastmod>
+    <loc>https://edison-a-n.github.io/tags/Memory-System/</loc>
+    <lastmod>2026-11-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://edison-a-n.github.io/tags/Security/</loc>
-    <lastmod>2026-05-16</lastmod>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/Credential-Brokering/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/Sandbox/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/Software-Architecture/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/Software-Design/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/Tool-Format/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/ASGI-Python-FastAPI/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/Claude-Code/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/Memory/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/Hooks/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/Skills/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/Architecture/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/Agent/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/AI/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/thinking/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/DDD/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/Tool-Calling/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/Prompt-Engineering/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/Multi-Agent/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/AI-Architecture/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/OpenAgents/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/%E6%8A%95%E7%A0%94/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/multi-tenant/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/%E5%8F%AF%E8%A7%82%E6%B5%8B%E6%80%A7/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/opentelemetry/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/SaaS/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/%E4%BA%A7%E5%93%81%E8%AE%BE%E8%AE%A1/</loc>
+    <lastmod>2026-11-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://edison-a-n.github.io/tags/API-Design/</loc>
-    <lastmod>2026-05-16</lastmod>
+    <lastmod>2026-11-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://edison-a-n.github.io/tags/Trading/</loc>
-    <lastmod>2026-05-16</lastmod>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/Vertical-AI/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/Pricing/</loc>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/tags/Deep-Research/</loc>
+    <lastmod>2026-11-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
@@ -618,14 +756,21 @@
   
   <url>
     <loc>https://edison-a-n.github.io/categories/AI-Agent/</loc>
-    <lastmod>2026-05-16</lastmod>
+    <lastmod>2026-11-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://edison-a-n.github.io/categories/%E8%BD%AF%E4%BB%B6%E6%9E%B6%E6%9E%84/</loc>
+    <lastmod>2026-11-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://edison-a-n.github.io/categories/%E4%BA%A4%E6%98%93%E7%AD%96%E7%95%A5/</loc>
-    <lastmod>2026-05-16</lastmod>
+    <lastmod>2026-11-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>

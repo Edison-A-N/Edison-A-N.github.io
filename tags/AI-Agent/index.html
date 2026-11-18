@@ -211,24 +211,15 @@
     <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
     <!-- algolia -->
     <!-- 百度统计  -->
-    <!-- 谷歌统计  -->
-        <script>
-            var cnzz_s_tag = document.createElement('script');
-            cnzz_s_tag.type = 'text/javascript';
-            cnzz_s_tag.async = true;
-            cnzz_s_tag.charset = 'utf-8';
-            cnzz_s_tag.src = 'https://w.cnzz.com/c.php?id=&async=1';
-            var root_s = document.getElementsByTagName('script')[0];
-            root_s.parentNode.insertBefore(cnzz_s_tag, root_s);
-        </script>
+    <!-- CNZZ 统计  -->
     <!-- Google tag (gtag.js) -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-188648772-3"></script>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-J2YNL2R8V3"></script>
         <script>
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
 
-            gtag('config', 'UA-188648772-3');
+            gtag('config', 'G-J2YNL2R8V3');
         </script>
 <meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Edison's Tech Blog" type="application/atom+xml">
 </head>
@@ -430,6 +421,105 @@
             <div class="container container-unloaded">
                 <main class="main index-page">
         <article class="index-post">
+            <a class="abstract-title" href="/2026/11/09/vertical-saas-agent-research/">
+                <span class="abstract-title-text">全球垂类 Agent / SaaS Agent 调研：需要关注什么</span>
+            </a>
+            <div class="abstract-content">
+                垂类 AI 的钱和增长都在变多，但多数 agent 项目死在落地环节。决定成败的是四件事：切进具体工作流并嵌进现有系统、有自己积累的数据、算清每次运行的成本并按客户认可的结果收费、结果可评测可审计可复核。
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2026/11/18">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2026/11/09</span>
+                </div>
+                <!-- tags -->
+                    <div class="abstract-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="SaaS">SaaS</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Vertical AI">Vertical AI</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Pricing">Pricing</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Deep Research">Deep Research</a>
+</div>
+
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+        <article class="index-post">
+            <a class="abstract-title" href="/2026/09/24/agent-sandbox-network-access-control/">
+                <span class="abstract-title-text">Agent 沙箱网络访问控制：从凭证暴露面到凭证代理</span>
+            </a>
+            <div class="abstract-content">
+                能跑代码的 agent 手里往往握着真正的 API key。本文从一次真实的三厂商凭证劫持事件讲起，拆解 agent 沙箱的出站暴露面，梳理凭证代理（credential brokering）的设计空间与代表方案，再细看开源实现 Infisical Agent Vault，看它怎么在出口注入凭证、防不住什么、怎么在自己的项目里落地。
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2026/11/18">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2026/09/24</span>
+                </div>
+                <!-- tags -->
+                    <div class="abstract-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Security">Security</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Credential Brokering">Credential Brokering</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Sandbox">Sandbox</a>
+</div>
+
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+        <article class="index-post">
+            <a class="abstract-title" href="/2026/06/02/claude-code-memory-research/">
+                <span class="abstract-title-text">Claude Code 内置 Memory 深度研究：CLAUDE.md、Auto Memory 与上下文工程</span>
+            </a>
+            <div class="abstract-content">
+                基于 Anthropic 官方文档梳理 Claude Code 的两套记忆机制：CLAUDE.md 与 Auto Memory / MEMORY.md，解释四级记忆层级、加载顺序、@import、上下文成本，以及 Memory、Skills、Hooks、Subagents 的边界。
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2026/11/18">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2026/06/02</span>
+                </div>
+                <!-- tags -->
+                    <div class="abstract-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Context Engineering">Context Engineering</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Claude Code">Claude Code</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Memory">Memory</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Hooks">Hooks</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Skills">Skills</a>
+</div>
+
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+        <article class="index-post">
+            <a class="abstract-title" href="/2026/05/21/agent-memory-frontier-survey/">
+                <span class="abstract-title-text">Agent Memory 前沿调研：从长期记忆到经验系统</span>
+            </a>
+            <div class="abstract-content">
+                一篇带源头出处的 Agent Memory 前沿综述：从认知模型、Memory OS、向量/图/情境/程序记忆，到 Letta、LangMem、Mem0、Zep、Cognee、Neo4j Agent Memory 与最新 benchmark。
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2026/11/18">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2026/05/21</span>
+                </div>
+                <!-- tags -->
+                    <div class="abstract-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="LLM">LLM</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Agent Memory">Agent Memory</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Memory System">Memory System</a>
+</div>
+
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+        <article class="index-post">
             <a class="abstract-title" href="/2026/05/13/saas-agent-design-doc/">
                 <span class="abstract-title-text">SaaS Agent 应该怎么设计：从竞品实践到生产级架构</span>
             </a>
@@ -439,13 +529,13 @@
             <!-- read more -->
             <div class="abstract-post-meta">
                 <!-- date -->
-                <div class="abstract-date" title="Last updated: 2026/05/15">
+                <div class="abstract-date" title="Last updated: 2026/11/18">
                     <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2026/05/13</span>
                 </div>
                 <!-- tags -->
                     <div class="abstract-tags" >
-        <a class="post-tag" href="javascript:void(0);" data-tags="LLM">LLM</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="LLM">LLM</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="SaaS">SaaS</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="系统设计">系统设计</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="产品设计">产品设计</a>
@@ -464,16 +554,16 @@
             <!-- read more -->
             <div class="abstract-post-meta">
                 <!-- date -->
-                <div class="abstract-date" title="Last updated: 2026/05/13">
+                <div class="abstract-date" title="Last updated: 2026/11/18">
                     <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2026/05/12</span>
                 </div>
                 <!-- tags -->
                     <div class="abstract-tags" >
         <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
-        <a class="post-tag" href="javascript:void(0);" data-tags="Architecture">Architecture</a>
-        <a class="post-tag" href="javascript:void(0);" data-tags="Sandbox">Sandbox</a>
-        <a class="post-tag" href="javascript:void(0);" data-tags="SaaS">SaaS</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="Security">Security</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Sandbox">Sandbox</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Architecture">Architecture</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="SaaS">SaaS</a>
 </div>
 
             </div>
@@ -489,13 +579,13 @@
             <!-- read more -->
             <div class="abstract-post-meta">
                 <!-- date -->
-                <div class="abstract-date" title="Last updated: 2026/05/13">
+                <div class="abstract-date" title="Last updated: 2026/11/18">
                     <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2026/05/08</span>
                 </div>
                 <!-- tags -->
                     <div class="abstract-tags" >
-        <a class="post-tag" href="javascript:void(0);" data-tags="LLM">LLM</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="LLM">LLM</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="MCP">MCP</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="面试">面试</a>
 </div>
@@ -513,13 +603,13 @@
             <!-- read more -->
             <div class="abstract-post-meta">
                 <!-- date -->
-                <div class="abstract-date" title="Last updated: 2026/04/20">
+                <div class="abstract-date" title="Last updated: 2026/09/25">
                     <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2026/04/14</span>
                 </div>
                 <!-- tags -->
                     <div class="abstract-tags" >
-        <a class="post-tag" href="javascript:void(0);" data-tags="LLM">LLM</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="LLM">LLM</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="Tool Calling">Tool Calling</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="Prompt Engineering">Prompt Engineering</a>
 </div>
@@ -537,14 +627,14 @@
             <!-- read more -->
             <div class="abstract-post-meta">
                 <!-- date -->
-                <div class="abstract-date" title="Last updated: 2026/04/20">
+                <div class="abstract-date" title="Last updated: 2026/09/25">
                     <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2026/04/12</span>
                 </div>
                 <!-- tags -->
                     <div class="abstract-tags" >
-        <a class="post-tag" href="javascript:void(0);" data-tags="LLM">LLM</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="Harness Engineering">Harness Engineering</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="LLM">LLM</a>
 </div>
 
             </div>
@@ -560,7 +650,7 @@
             <!-- read more -->
             <div class="abstract-post-meta">
                 <!-- date -->
-                <div class="abstract-date" title="Last updated: 2026/03/30">
+                <div class="abstract-date" title="Last updated: 2026/11/18">
                     <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2026/03/21</span>
                 </div>
                 <!-- tags -->
@@ -569,98 +659,6 @@
         <a class="post-tag" href="javascript:void(0);" data-tags="Multi-Agent">Multi-Agent</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="OpenAgents">OpenAgents</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="投研">投研</a>
-</div>
-
-            </div>
-        </article>
-        <div class="index-post-divider"></div>
-        <article class="index-post">
-            <a class="abstract-title" href="/2026/03/16/agent-loop-study/">
-                <span class="abstract-title-text">Agent Loop 技术调研报告</span>
-            </a>
-            <div class="abstract-content">
-                Agent Loop 是让 LLM 从"单轮问答"变成"自主执行任务"的核心机制。本文从一个最小模型出发建立直觉， 然后对 Anthropic Agent SDK、OpenAI Codex CLI、OpenClaw、Google ADK Loop Agents 与 LangChain Deep Agents 五大平台的实现进行横向对比，从控制论视角剖析其本质，并评估 ReAct、Reflection 等扩展范式的工程价值。
-            </div>
-            <!-- read more -->
-            <div class="abstract-post-meta">
-                <!-- date -->
-                <div class="abstract-date" title="Last updated: 2026/04/20">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2026/03/16</span>
-                </div>
-                <!-- tags -->
-                    <div class="abstract-tags" >
-        <a class="post-tag" href="javascript:void(0);" data-tags="LLM">LLM</a>
-        <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
-        <a class="post-tag" href="javascript:void(0);" data-tags="Agent Loop">Agent Loop</a>
-</div>
-
-            </div>
-        </article>
-        <div class="index-post-divider"></div>
-        <article class="index-post">
-            <a class="abstract-title" href="/2026/03/14/harness-engineering-practical-guide/">
-                <span class="abstract-title-text">Harness Engineering 实践指南：来自 OpenAI、Stripe、Anthropic 等团队的一线经验</span>
-            </a>
-            <div class="abstract-content">
-                基于 OpenAI、Stripe、Anthropic、LangChain、Mitchell Hashimoto 等团队的一线经验，系统整理 Harness Engineering 的十大实践，涵盖 AGENTS.md、架构约束、闭环验证、会话间记忆、熵治理等核心主题，附量化证据与 16 篇参考文献。
-            </div>
-            <!-- read more -->
-            <div class="abstract-post-meta">
-                <!-- date -->
-                <div class="abstract-date" title="Last updated: 2026/03/30">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2026/03/14</span>
-                </div>
-                <!-- tags -->
-                    <div class="abstract-tags" >
-        <a class="post-tag" href="javascript:void(0);" data-tags="LLM">LLM</a>
-        <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
-        <a class="post-tag" href="javascript:void(0);" data-tags="Harness Engineering">Harness Engineering</a>
-</div>
-
-            </div>
-        </article>
-        <div class="index-post-divider"></div>
-        <article class="index-post">
-            <a class="abstract-title" href="/2025/11/10/mcp-recent-sharing/">
-                <span class="abstract-title-text">MCP 近期内容分享：从 Resources、Tools 到 Prompts 的实践探索</span>
-            </a>
-            <div class="abstract-content">
-                本文是对近期接触 Model Context Protocol (MCP) 相关知识的分享，涵盖了 Resources、Tools、Prompts 等核心功能的设计理念、用户交互模型对比，以及在实际应用中的思考与实践。
-            </div>
-            <!-- read more -->
-            <div class="abstract-post-meta">
-                <!-- date -->
-                <div class="abstract-date" title="Last updated: 2025/11/16">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2025/11/10</span>
-                </div>
-                <!-- tags -->
-                    <div class="abstract-tags" >
-        <a class="post-tag" href="javascript:void(0);" data-tags="LLM">LLM</a>
-        <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
-        <a class="post-tag" href="javascript:void(0);" data-tags="MCP">MCP</a>
-</div>
-
-            </div>
-        </article>
-        <div class="index-post-divider"></div>
-        <article class="index-post">
-            <a class="abstract-title" href="/2025/10/28/args_doc_format_comparison/">
-                <span class="abstract-title-text">Tool Args Documentation Format Comparison Analysis</span>
-            </a>
-            <div class="abstract-content">
-                本文对比分析了 smolagents 项目中两种不同的 args_doc 组织形式（Indent 格式 vs JSON 格式），评估了它们在 Token 消耗、可读性、LLM 理解能力等方面的优劣势，并提出了推荐方案和使用场景建议。
-            </div>
-            <!-- read more -->
-            <div class="abstract-post-meta">
-                <!-- date -->
-                <div class="abstract-date" title="Last updated: 2025/11/03">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2025/10/28</span>
-                </div>
-                <!-- tags -->
-                    <div class="abstract-tags" >
-        <a class="post-tag" href="javascript:void(0);" data-tags="LLM">LLM</a>
-        <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
-        <a class="post-tag" href="javascript:void(0);" data-tags="Tool Format">Tool Format</a>
 </div>
 
             </div>
@@ -744,15 +742,40 @@
         
         
         
+        
+        
+        
+        
+        
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 40
+        Total : 45
         </div>
         <!-- search  -->
     </div>
     <div class="post-archive">
             <div class="archive-year"> 2026 </div>
             <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/18</span>
+            <a class="archive-post-title" href="/2026/11/18/architecture-design-essentials/">架构设计要点：分析、综合与评估</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span>
+            <a class="archive-post-title" href="/2026/11/09/vertical-saas-agent-research/">全球垂类 Agent / SaaS Agent 调研：需要关注什么</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/24</span>
+            <a class="archive-post-title" href="/2026/09/24/agent-sandbox-network-access-control/">Agent 沙箱网络访问控制：从凭证暴露面到凭证代理</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/02</span>
+            <a class="archive-post-title" href="/2026/06/02/claude-code-memory-research/">Claude Code 内置 Memory 深度研究：CLAUDE.md、Auto Memory 与上下文工程</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span>
+            <a class="archive-post-title" href="/2026/05/21/agent-memory-frontier-survey/">Agent Memory 前沿调研：从长期记忆到经验系统</a>
+        </li>
         <li class="archive-post-item">
             <span class="archive-post-date">05/13</span>
             <a class="archive-post-title" href="/2026/05/13/saas-agent-design-doc/">SaaS Agent 应该怎么设计：从竞品实践到生产级架构</a>
@@ -937,6 +960,18 @@
 
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
+            <span class="sidebar-tag-name" data-tags="AI Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="Harness Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Harness Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="Context Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Context Engineering
+            </span>
             <span class="sidebar-tag-name" data-tags="agile">
                 <span class="iconfont-archer">&#xe606;</span>
                 agile
@@ -945,9 +980,45 @@
                 <span class="iconfont-archer">&#xe606;</span>
                 LLM
             </span>
-            <span class="sidebar-tag-name" data-tags="AI Agent">
+            <span class="sidebar-tag-name" data-tags="MCP">
                 <span class="iconfont-archer">&#xe606;</span>
-                AI Agent
+                MCP
+            </span>
+            <span class="sidebar-tag-name" data-tags="面试">
+                <span class="iconfont-archer">&#xe606;</span>
+                面试
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent Loop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent Loop
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent Memory">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent Memory
+            </span>
+            <span class="sidebar-tag-name" data-tags="Memory System">
+                <span class="iconfont-archer">&#xe606;</span>
+                Memory System
+            </span>
+            <span class="sidebar-tag-name" data-tags="Security">
+                <span class="iconfont-archer">&#xe606;</span>
+                Security
+            </span>
+            <span class="sidebar-tag-name" data-tags="Credential Brokering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Credential Brokering
+            </span>
+            <span class="sidebar-tag-name" data-tags="Sandbox">
+                <span class="iconfont-archer">&#xe606;</span>
+                Sandbox
+            </span>
+            <span class="sidebar-tag-name" data-tags="Software Architecture">
+                <span class="iconfont-archer">&#xe606;</span>
+                Software Architecture
+            </span>
+            <span class="sidebar-tag-name" data-tags="Software Design">
+                <span class="iconfont-archer">&#xe606;</span>
+                Software Design
             </span>
             <span class="sidebar-tag-name" data-tags="Tool Format">
                 <span class="iconfont-archer">&#xe606;</span>
@@ -957,6 +1028,22 @@
                 <span class="iconfont-archer">&#xe606;</span>
                 ASGI, Python, FastAPI
             </span>
+            <span class="sidebar-tag-name" data-tags="Claude Code">
+                <span class="iconfont-archer">&#xe606;</span>
+                Claude Code
+            </span>
+            <span class="sidebar-tag-name" data-tags="Memory">
+                <span class="iconfont-archer">&#xe606;</span>
+                Memory
+            </span>
+            <span class="sidebar-tag-name" data-tags="Hooks">
+                <span class="iconfont-archer">&#xe606;</span>
+                Hooks
+            </span>
+            <span class="sidebar-tag-name" data-tags="Skills">
+                <span class="iconfont-archer">&#xe606;</span>
+                Skills
+            </span>
             <span class="sidebar-tag-name" data-tags="Architecture">
                 <span class="iconfont-archer">&#xe606;</span>
                 Architecture
@@ -965,41 +1052,17 @@
                 <span class="iconfont-archer">&#xe606;</span>
                 Agent
             </span>
-            <span class="sidebar-tag-name" data-tags="Sandbox">
-                <span class="iconfont-archer">&#xe606;</span>
-                Sandbox
-            </span>
-            <span class="sidebar-tag-name" data-tags="MCP">
-                <span class="iconfont-archer">&#xe606;</span>
-                MCP
-            </span>
             <span class="sidebar-tag-name" data-tags="AI">
                 <span class="iconfont-archer">&#xe606;</span>
                 AI
             </span>
-            <span class="sidebar-tag-name" data-tags="Claude Code">
+            <span class="sidebar-tag-name" data-tags="thinking">
                 <span class="iconfont-archer">&#xe606;</span>
-                Claude Code
-            </span>
-            <span class="sidebar-tag-name" data-tags="Harness Engineering">
-                <span class="iconfont-archer">&#xe606;</span>
-                Harness Engineering
+                thinking
             </span>
             <span class="sidebar-tag-name" data-tags="DDD">
                 <span class="iconfont-archer">&#xe606;</span>
                 DDD
-            </span>
-            <span class="sidebar-tag-name" data-tags="Agent Loop">
-                <span class="iconfont-archer">&#xe606;</span>
-                Agent Loop
-            </span>
-            <span class="sidebar-tag-name" data-tags="面试">
-                <span class="iconfont-archer">&#xe606;</span>
-                面试
-            </span>
-            <span class="sidebar-tag-name" data-tags="thinking">
-                <span class="iconfont-archer">&#xe606;</span>
-                thinking
             </span>
             <span class="sidebar-tag-name" data-tags="Tool Calling">
                 <span class="iconfont-archer">&#xe606;</span>
@@ -1049,10 +1112,6 @@
                 <span class="iconfont-archer">&#xe606;</span>
                 产品设计
             </span>
-            <span class="sidebar-tag-name" data-tags="Security">
-                <span class="iconfont-archer">&#xe606;</span>
-                Security
-            </span>
             <span class="sidebar-tag-name" data-tags="API Design">
                 <span class="iconfont-archer">&#xe606;</span>
                 API Design
@@ -1060,6 +1119,18 @@
             <span class="sidebar-tag-name" data-tags="Trading">
                 <span class="iconfont-archer">&#xe606;</span>
                 Trading
+            </span>
+            <span class="sidebar-tag-name" data-tags="Vertical AI">
+                <span class="iconfont-archer">&#xe606;</span>
+                Vertical AI
+            </span>
+            <span class="sidebar-tag-name" data-tags="Pricing">
+                <span class="iconfont-archer">&#xe606;</span>
+                Pricing
+            </span>
+            <span class="sidebar-tag-name" data-tags="Deep Research">
+                <span class="iconfont-archer">&#xe606;</span>
+                Deep Research
             </span>
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
@@ -1074,6 +1145,10 @@
         <span class="sidebar-category-name" data-categories="AI Agent">
             <span class="iconfont-archer">&#xe60a;</span>
             AI Agent
+        </span>
+        <span class="sidebar-category-name" data-categories="软件架构">
+            <span class="iconfont-archer">&#xe60a;</span>
+            软件架构
         </span>
         <span class="sidebar-category-name" data-categories="交易策略">
             <span class="iconfont-archer">&#xe60a;</span>
