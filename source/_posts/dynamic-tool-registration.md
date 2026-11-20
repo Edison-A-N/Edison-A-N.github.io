@@ -171,7 +171,7 @@ flowchart LR
 
 往尾部加的代价是 schema 识别。厂商原生方案里，追加的是 `tool_reference`，API 在交给模型前把它展开成完整定义，模型训练时就见过这个格式。strict 模式的约束语法按工具全集构建，调用参数仍受 schema 约束[[N4]](#n4)。
 
-Anthropic 还把这个能力单独开放成了 API：中途工具变更（mid-conversation tool changes，beta）[[N18]](#n18)。在对话中途追加一条 `role: "system"` 消息，里面放 `tool_addition` 或 `tool_removal` 块，就能从这一轮起上架或下架某个工具，**`tools` 数组和之前的消息原样不动，缓存照常命中**。`tool_addition` 有两种用法：按引用上架一个已在 `tools` 里声明、带 `defer_loading` 的工具；或者带上完整定义（`tool_definition`），引入一个会话开始时还不存在的工具。后一种不依赖内置搜索，召回逻辑可以完全在本地，搜到之后用 `tool_addition` 交给模型，得到的是正式工具，调用走原生 `tool_use`。
+Anthropic 还把这个能力单独开放成了 API：中途工具变更（mid-conversation tool changes，beta）[[N18]](#n18)。在对话中途追加一条 `role: "system"` 消息，里面放 `tool_addition` 或 `tool_removal` 块，就能从这一轮起上架或下架某个工具，<strong><code>tools</code> 数组和之前的消息原样不动，缓存照常命中</strong>。`tool_addition` 有两种用法：按引用上架一个已在 `tools` 里声明、带 `defer_loading` 的工具；或者带上完整定义（`tool_definition`），引入一个会话开始时还不存在的工具。后一种不依赖内置搜索，召回逻辑可以完全在本地，搜到之后用 `tool_addition` 交给模型，得到的是正式工具，调用走原生 `tool_use`。
 
 用不上这类 API 的场景（其他厂商、或旧模型）才需要退回到纯文本方案。这时 schema 只是 `tool_result` 里的一段文本，模型要在对话中间把它当接口说明来读。会话越长，这段文本离当前轮越远，模型越容易忽略它或记错参数。而且这个工具不在 `tools` 里，模型只能通过 `call_tool(name, args)` 这样的代理去调用，参数没有约束解码，只能由 harness 校验后报错重试。对应的工程做法有三条：`describe` 的结果紧贴在调用前返回；`call_tool` 严格按 schema 校验，失败时把 schema 一起带回给模型；高频工具升级为常驻。
 
