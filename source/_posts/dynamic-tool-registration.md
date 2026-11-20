@@ -67,7 +67,7 @@ toc: true
 
 ```mermaid
 flowchart TB
-    S["工具来源<br/>MCP · 内置工具 · skill<br/>HTTP API · CLI · 子 agent"]:::neutral -->|拉取 · 变更通知| SYNC["同步流程<br/>唯一写入方"]:::neutral
+    S["工具来源<br/>MCP · 内置工具 · skill<br/>HTTP API · CLI · 子 agent"]:::neutral -->|拉取 / 变更通知| SYNC["同步流程<br/>唯一写入方"]:::neutral
     SYNC --> IDX[("工具索引<br/>每个工具一条小记录")]:::critical
     IDX --> A["方向一：厂商原生<br/>标 defer_loading 随请求发送<br/>厂商负责搜索和展开"]:::component
     IDX --> B["方向二：本地实现<br/>元工具 + 召回策略<br/>可选代码执行"]:::component
