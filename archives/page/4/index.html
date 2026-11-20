@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
     <!-- title -->
 <!-- keywords -->
 <head>
@@ -10,7 +10,6 @@
     <meta name="renderer" content="webkit">
     <meta name="copyright" content="Edison">
         <meta name="keywords" content="hexo,hexo-theme,hexo-blog,software architecture,domain-driven design,DDD,AI agents,MCP,Model Context Protocol,Python,Go,full-stack development,LLM,software engineering,hexo blog">
-    <meta name="description" content="A software engineer's blog covering Domain-Driven Design, AI agents, MCP, Python, Go, and modern software architecture. Practical guides and deep dives.">
     <link rel="canonical" href="https://edison-a-n.github.io/archives/page/4/"/>
     <meta name="description" content="A software engineer&#39;s blog covering Domain-Driven Design, AI agents, MCP, Python, Go, and modern software architecture. Practical guides and deep dives.">
 <meta property="og:type" content="website">
@@ -18,7 +17,8 @@
 <meta property="og:url" content="https://edison-a-n.github.io/archives/page/4/">
 <meta property="og:site_name" content="Edison&#39;s Tech Blog">
 <meta property="og:description" content="A software engineer&#39;s blog covering Domain-Driven Design, AI agents, MCP, Python, Go, and modern software architecture. Practical guides and deep dives.">
-<meta property="og:locale" content="en_US">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://edison-a-n.github.io/intro/index-bg.jpg">
 <meta property="article:author" content="Edison">
 <meta property="article:tag" content="software architecture">
 <meta property="article:tag" content="domain-driven design">
@@ -30,7 +30,9 @@
 <meta property="article:tag" content="full-stack development">
 <meta property="article:tag" content="LLM">
 <meta property="article:tag" content="software engineering">
-<meta name="twitter:card" content="summary">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://edison-a-n.github.io/intro/index-bg.jpg">
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Edison's Tech Blog","alternateName":"Edison's Tech Blog | Software Architecture, AI & DDD","description":"A software engineer's blog covering Domain-Driven Design, AI agents, MCP, Python, Go, and modern software architecture. Practical guides and deep dives.","url":"https://edison-a-n.github.io","inLanguage":"zh-CN","publisher":{"@type":"Person","name":"Edison","url":"https://edison-a-n.github.io"}}</script>
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <link rel="icon" href="/avatar/avatar.jpg">
@@ -422,6 +424,30 @@
                 <main class="main index-page">
             
         <article class="index-post">
+            <a class="abstract-title" href="/2022/06/09/ddd-thinking/">
+                <span class="abstract-title-text">ddd-thinking</span>
+            </a>
+            <div class="abstract-content">
+                DDD 关键概念Domain 中的概念Context一个Domain独占一个Context。在Context中完成下述的一系列逻辑。在应用DDD中，最难的一步是，划定Context。将不同Domain的边界准确的描述清楚，对于抽象能力、业务理解准确性与未来预期的判断能力要求极高。边界划定的不好，也将难以保障内聚与耦合的合理性。
+Aggregate、Entity、Value Object将三者放在一起，是因为三者是一个包含关系，并对上层提供引用。在这些model中，会提供独占的attribute以及对应的对attribute的访问方法。
+Service对于一些无法由一个model完成执行的...
+            </div>
+            <!-- read more -->
+            <div class="abstract-post-meta">
+                <!-- date -->
+                <div class="abstract-date" title="Last updated: 2026/09/25">
+                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2022/06/09</span>
+                </div>
+                <!-- tags -->
+                    <div class="abstract-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="DDD">DDD</a>
+</div>
+
+            </div>
+        </article>
+        <div class="index-post-divider"></div>
+            
+        <article class="index-post">
             <a class="abstract-title" href="/2022/05/23/mvc-and-ddd/">
                 <span class="abstract-title-text">mvc-and-ddd</span>
             </a>
@@ -631,31 +657,6 @@ exception 处理器
             </div>
         </article>
         <div class="index-post-divider"></div>
-            
-        <article class="index-post">
-            <a class="abstract-title" href="/2021/05/09/Agile-Design/">
-                <span class="abstract-title-text">敏捷软件开发：设计</span>
-            </a>
-            <div class="abstract-content">
-                本篇为阅读《敏捷软件开发：原则，模式与实践》后的读后感。主要阅读的是第二部分：敏捷设计。这本书的第一部分，关于敏捷开发中的测试驱动开发与重构，可以阅读其他专门的书籍。我阅读的是《重构，改善既有代码设计》。本书第三部分的案例，可自由选择是否阅读以加深理解。我自己更多的是结合自己遇到的问题，从书中描述找到问题的解决方案。
-什么是敏捷设计软件越来越难维护软件在第一版本发布的时候，是软件设计最干净清晰的时候。随着复杂的需求与软件持续迭代，软件代码往往会在原来的设计上做各种hack以满足新的需求。
-这系列的破坏设计的操作，会在后续的需求增加的过程中逐渐变得难以维护，而后的需求迭代速率将越来越慢。
-...
-            </div>
-            <!-- read more -->
-            <div class="abstract-post-meta">
-                <!-- date -->
-                <div class="abstract-date" title="Last updated: 2026/09/25">
-                    <span class="abstract-calander iconfont-archer">&#xe676;</span><span class="abstract-time">2021/05/09</span>
-                </div>
-                <!-- tags -->
-                    <div class="abstract-tags" >
-        <a class="post-tag" href="javascript:void(0);" data-tags="agile">agile</a>
-</div>
-
-            </div>
-        </article>
-        <div class="index-post-divider"></div>
     <!-- paginator  -->
         <nav class="page-nav">
             <a class="extend prev" rel="prev" href="/archives/page/3/">&lt; PREV</a><a class="page-number" href="/archives/">1</a><a class="page-number" href="/archives/page/2/">2</a><a class="page-number" href="/archives/page/3/">3</a><span class="page-number current">4</span><a class="page-number" href="/archives/page/5/">5</a><a class="extend next" rel="next" href="/archives/page/5/">NEXT &gt;</a>
@@ -739,15 +740,20 @@ exception 处理器
         
         
         
+        
     <div class="total-and-search">
         <div class="total-archive">
-        Total : 45
+        Total : 46
         </div>
         <!-- search  -->
     </div>
     <div class="post-archive">
             <div class="archive-year"> 2026 </div>
             <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/20</span>
+            <a class="archive-post-title" href="/2026/11/20/dynamic-tool-registration/">动态工具注册：把工具当成要检索的数据集</a>
+        </li>
         <li class="archive-post-item">
             <span class="archive-post-date">11/18</span>
             <a class="archive-post-title" href="/2026/11/18/architecture-design-essentials/">架构设计要点：分析、综合与评估</a>
@@ -1004,6 +1010,10 @@ exception 处理器
                 <span class="iconfont-archer">&#xe606;</span>
                 Sandbox
             </span>
+            <span class="sidebar-tag-name" data-tags="Tool Format">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Format
+            </span>
             <span class="sidebar-tag-name" data-tags="Software Architecture">
                 <span class="iconfont-archer">&#xe606;</span>
                 Software Architecture
@@ -1011,10 +1021,6 @@ exception 处理器
             <span class="sidebar-tag-name" data-tags="Software Design">
                 <span class="iconfont-archer">&#xe606;</span>
                 Software Design
-            </span>
-            <span class="sidebar-tag-name" data-tags="Tool Format">
-                <span class="iconfont-archer">&#xe606;</span>
-                Tool Format
             </span>
             <span class="sidebar-tag-name" data-tags="ASGI, Python, FastAPI">
                 <span class="iconfont-archer">&#xe606;</span>
@@ -1055,6 +1061,10 @@ exception 处理器
             <span class="sidebar-tag-name" data-tags="DDD">
                 <span class="iconfont-archer">&#xe606;</span>
                 DDD
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Use">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Use
             </span>
             <span class="sidebar-tag-name" data-tags="Tool Calling">
                 <span class="iconfont-archer">&#xe606;</span>
