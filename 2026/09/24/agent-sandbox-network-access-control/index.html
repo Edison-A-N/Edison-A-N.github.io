@@ -23,9 +23,9 @@
 <meta property="article:modified_time" content="2026-11-18T08:17:38.723Z">
 <meta property="article:author" content="Edison">
 <meta property="article:tag" content="AI Agent">
+<meta property="article:tag" content="Sandbox">
 <meta property="article:tag" content="Security">
 <meta property="article:tag" content="Credential Brokering">
-<meta property="article:tag" content="Sandbox">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://edison-a-n.github.io/intro/index-bg.jpg">
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Agent 沙箱网络访问控制：从凭证暴露面到凭证代理","description":"能跑代码的 agent 手里往往握着真正的 API key。本文从一次真实的三厂商凭证劫持事件讲起，拆解 agent 沙箱的出站暴露面，梳理凭证代理（credential brokering）的设计空间与代表方案，再细看开源实现 Infisical Agent Vault，看它怎么在出口注入凭证、防不住什么、怎么在自己的项目里落地。","url":"https://edison-a-n.github.io/2026/09/24/agent-sandbox-network-access-control/","mainEntityOfPage":{"@type":"WebPage","@id":"https://edison-a-n.github.io/2026/09/24/agent-sandbox-network-access-control/"},"image":["https://edison-a-n.github.io/intro/index-bg.jpg"],"datePublished":"2026-09-23T16:00:00.000Z","dateModified":"2026-11-18T08:17:38.723Z","author":{"@type":"Person","name":"Edison","url":"https://edison-a-n.github.io"},"publisher":{"@type":"Person","name":"Edison"}}</script>
@@ -299,9 +299,9 @@
                 <!-- 文章页标签  -->
                     <div class="post-intro-tags" >
         <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Sandbox">Sandbox</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="Security">Security</a>
         <a class="post-tag" href="javascript:void(0);" data-tags="Credential Brokering">Credential Brokering</a>
-        <a class="post-tag" href="javascript:void(0);" data-tags="Sandbox">Sandbox</a>
 </div>
 
                 <!-- 文章字数统计 -->
@@ -1176,14 +1176,6 @@ flowchart LR
                 <span class="iconfont-archer">&#xe606;</span>
                 LLM
             </span>
-            <span class="sidebar-tag-name" data-tags="MCP">
-                <span class="iconfont-archer">&#xe606;</span>
-                MCP
-            </span>
-            <span class="sidebar-tag-name" data-tags="面试">
-                <span class="iconfont-archer">&#xe606;</span>
-                面试
-            </span>
             <span class="sidebar-tag-name" data-tags="Agent Loop">
                 <span class="iconfont-archer">&#xe606;</span>
                 Agent Loop
@@ -1196,26 +1188,6 @@ flowchart LR
                 <span class="iconfont-archer">&#xe606;</span>
                 Memory System
             </span>
-            <span class="sidebar-tag-name" data-tags="Security">
-                <span class="iconfont-archer">&#xe606;</span>
-                Security
-            </span>
-            <span class="sidebar-tag-name" data-tags="Credential Brokering">
-                <span class="iconfont-archer">&#xe606;</span>
-                Credential Brokering
-            </span>
-            <span class="sidebar-tag-name" data-tags="Sandbox">
-                <span class="iconfont-archer">&#xe606;</span>
-                Sandbox
-            </span>
-            <span class="sidebar-tag-name" data-tags="ASGI, Python, FastAPI">
-                <span class="iconfont-archer">&#xe606;</span>
-                ASGI, Python, FastAPI
-            </span>
-            <span class="sidebar-tag-name" data-tags="Tool Format">
-                <span class="iconfont-archer">&#xe606;</span>
-                Tool Format
-            </span>
             <span class="sidebar-tag-name" data-tags="Software Architecture">
                 <span class="iconfont-archer">&#xe606;</span>
                 Software Architecture
@@ -1224,29 +1196,17 @@ flowchart LR
                 <span class="iconfont-archer">&#xe606;</span>
                 Software Design
             </span>
-            <span class="sidebar-tag-name" data-tags="Architecture">
+            <span class="sidebar-tag-name" data-tags="Tool Format">
                 <span class="iconfont-archer">&#xe606;</span>
-                Architecture
+                Tool Format
             </span>
-            <span class="sidebar-tag-name" data-tags="Agent">
+            <span class="sidebar-tag-name" data-tags="ASGI, Python, FastAPI">
                 <span class="iconfont-archer">&#xe606;</span>
-                Agent
-            </span>
-            <span class="sidebar-tag-name" data-tags="thinking">
-                <span class="iconfont-archer">&#xe606;</span>
-                thinking
-            </span>
-            <span class="sidebar-tag-name" data-tags="AI">
-                <span class="iconfont-archer">&#xe606;</span>
-                AI
+                ASGI, Python, FastAPI
             </span>
             <span class="sidebar-tag-name" data-tags="Claude Code">
                 <span class="iconfont-archer">&#xe606;</span>
                 Claude Code
-            </span>
-            <span class="sidebar-tag-name" data-tags="DDD">
-                <span class="iconfont-archer">&#xe606;</span>
-                DDD
             </span>
             <span class="sidebar-tag-name" data-tags="Memory">
                 <span class="iconfont-archer">&#xe606;</span>
@@ -1260,9 +1220,57 @@ flowchart LR
                 <span class="iconfont-archer">&#xe606;</span>
                 Skills
             </span>
+            <span class="sidebar-tag-name" data-tags="Architecture">
+                <span class="iconfont-archer">&#xe606;</span>
+                Architecture
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="Sandbox">
+                <span class="iconfont-archer">&#xe606;</span>
+                Sandbox
+            </span>
+            <span class="sidebar-tag-name" data-tags="MCP">
+                <span class="iconfont-archer">&#xe606;</span>
+                MCP
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI
+            </span>
+            <span class="sidebar-tag-name" data-tags="thinking">
+                <span class="iconfont-archer">&#xe606;</span>
+                thinking
+            </span>
+            <span class="sidebar-tag-name" data-tags="DDD">
+                <span class="iconfont-archer">&#xe606;</span>
+                DDD
+            </span>
             <span class="sidebar-tag-name" data-tags="Tool Use">
                 <span class="iconfont-archer">&#xe606;</span>
                 Tool Use
+            </span>
+            <span class="sidebar-tag-name" data-tags="Security">
+                <span class="iconfont-archer">&#xe606;</span>
+                Security
+            </span>
+            <span class="sidebar-tag-name" data-tags="Credential Brokering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Credential Brokering
+            </span>
+            <span class="sidebar-tag-name" data-tags="面试">
+                <span class="iconfont-archer">&#xe606;</span>
+                面试
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Calling">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Calling
+            </span>
+            <span class="sidebar-tag-name" data-tags="Prompt Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Prompt Engineering
             </span>
             <span class="sidebar-tag-name" data-tags="Multi-Agent">
                 <span class="iconfont-archer">&#xe606;</span>
@@ -1279,14 +1287,6 @@ flowchart LR
             <span class="sidebar-tag-name" data-tags="投研">
                 <span class="iconfont-archer">&#xe606;</span>
                 投研
-            </span>
-            <span class="sidebar-tag-name" data-tags="Tool Calling">
-                <span class="iconfont-archer">&#xe606;</span>
-                Tool Calling
-            </span>
-            <span class="sidebar-tag-name" data-tags="Prompt Engineering">
-                <span class="iconfont-archer">&#xe606;</span>
-                Prompt Engineering
             </span>
             <span class="sidebar-tag-name" data-tags="multi-tenant">
                 <span class="iconfont-archer">&#xe606;</span>
