@@ -289,6 +289,22 @@ title: 张楠 - 简历
 
     <div class="entry">
       <div class="entry-head">
+        <h3 class="entry-title">SAR Insight · 药物构效关系分析 Agent<span class="sub">Agent 架构师（主导架构与核心开发）</span></h3>
+        <span class="date">2026.02 – 至今</span>
+      </div>
+      <p class="lead">面向药物研发的长链路分析 Agent。用户上传化合物数据后，Agent 自主规划分析流程，在沙箱中调用化学计算服务，关键节点由人确认，最终生成交互式报告。<b>项目已上线生产。</b></p>
+      <p><span class="label">技术栈</span>LangGraph / DeepAgents · A2UI · FastAPI · PostgreSQL · E2B 沙箱 · Langfuse · K8s</p>
+      <ul>
+        <li><b>运行时架构</b>：设计 LLM 决策、编排控制、沙箱执行三层分离的架构，编排层由可组合的中间件链构成。通过 ADR 记录架构决策，团队和 Coding Agent 都按这套约束开发。</li>
+        <li><b>长链路可靠性</b>：针对生产中流截断引发的连锁故障，设计 LLM 调用的分层防线，包括截断守卫、历史修复和重试。基于 checkpoint 实现人机协同暂停后的恢复和崩溃续跑。</li>
+        <li><b>上下文工程</b>：让 system prompt 在整个会话内保持不变，动态状态改由工具按需读取，长会话因此能稳定命中 prompt 缓存，成本随之下降。</li>
+        <li><b>Agent 交互协议</b>：报告按 A2UI 协议交付，配有自定义组件目录，发版前先过 schema 校验。运行事件流参照 AG-UI 设计，前端可以直接渲染流式回复、人机确认和报告。</li>
+        <li><b>输出质量保障</b>：模型输出由代码校验，不合规就退回让模型重写，prompt 约束不住的错误在交付前被拦下。建立生产问题回放方法：截取线上模型调用的输入重放多次、统计结果，定位导致异常的 prompt 或配置。</li>
+      </ul>
+    </div>
+
+    <div class="entry">
+      <div class="entry-head">
         <h3 class="entry-title">开源贡献与技术影响力<span class="sub">16 个已合并 PR，影响数万开发者</span></h3>
         <span class="date">2024.07 – 至今</span>
       </div>
