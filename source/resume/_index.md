@@ -1,6 +1,8 @@
 ---
 layout: about
 title: Resume
+description: 张楠的软件工程简历，聚焦分布式系统、AI 应用架构、MCP 生态贡献与后端工程经验。
+noindex: true
 ---
 
 ## 张楠
@@ -161,7 +163,7 @@ SaaS + 私有化部署的药物研发计算平台，提供分子生成、自由�
 
 ## 技术栈
 
-**编程语言**：Golang（精通）· Python（精通）· Rust（熟悉）
+**编程语言**：Python（精通）· Golang（熟悉）· Rust（了解）
 
 **架构能力**：微服务 · DDD · 云原生 · 高并发系统 · 数据密集型应用
 
