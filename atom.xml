@@ -114,11 +114,11 @@
     
     <category term="AI Agent" scheme="https://edison-a-n.github.io/tags/AI-Agent/"/>
     
-    <category term="Sandbox" scheme="https://edison-a-n.github.io/tags/Sandbox/"/>
-    
     <category term="Security" scheme="https://edison-a-n.github.io/tags/Security/"/>
     
     <category term="Credential Brokering" scheme="https://edison-a-n.github.io/tags/Credential-Brokering/"/>
+    
+    <category term="Sandbox" scheme="https://edison-a-n.github.io/tags/Sandbox/"/>
     
   </entry>
   
@@ -228,11 +228,11 @@
     
     <category term="AI Agent" scheme="https://edison-a-n.github.io/tags/AI-Agent/"/>
     
-    <category term="Architecture" scheme="https://edison-a-n.github.io/tags/Architecture/"/>
+    <category term="Security" scheme="https://edison-a-n.github.io/tags/Security/"/>
     
     <category term="Sandbox" scheme="https://edison-a-n.github.io/tags/Sandbox/"/>
     
-    <category term="Security" scheme="https://edison-a-n.github.io/tags/Security/"/>
+    <category term="Architecture" scheme="https://edison-a-n.github.io/tags/Architecture/"/>
     
     <category term="SaaS" scheme="https://edison-a-n.github.io/tags/SaaS/"/>
     
@@ -361,11 +361,11 @@
     
     <category term="Harness Engineering" scheme="https://edison-a-n.github.io/tags/Harness-Engineering/"/>
     
+    <category term="MCP" scheme="https://edison-a-n.github.io/tags/MCP/"/>
+    
     <category term="Claude Code" scheme="https://edison-a-n.github.io/tags/Claude-Code/"/>
     
     <category term="Agent" scheme="https://edison-a-n.github.io/tags/Agent/"/>
-    
-    <category term="MCP" scheme="https://edison-a-n.github.io/tags/MCP/"/>
     
     <category term="AI" scheme="https://edison-a-n.github.io/tags/AI/"/>
     
@@ -489,13 +489,13 @@
     
     <category term="LLM" scheme="https://edison-a-n.github.io/tags/LLM/"/>
     
-    <category term="Architecture" scheme="https://edison-a-n.github.io/tags/Architecture/"/>
-    
-    <category term="Agent" scheme="https://edison-a-n.github.io/tags/Agent/"/>
+    <category term="MCP" scheme="https://edison-a-n.github.io/tags/MCP/"/>
     
     <category term="Sandbox" scheme="https://edison-a-n.github.io/tags/Sandbox/"/>
     
-    <category term="MCP" scheme="https://edison-a-n.github.io/tags/MCP/"/>
+    <category term="Architecture" scheme="https://edison-a-n.github.io/tags/Architecture/"/>
+    
+    <category term="Agent" scheme="https://edison-a-n.github.io/tags/Agent/"/>
     
   </entry>
   
