@@ -206,22 +206,7 @@ LongMemEval 明确评估 knowledge updates、temporal reasoning、abstention 等
 | LongMemEval-V2 | 2026 | web agent experience memory，25M-115M token 级历史 | 从 user-assistant memory 推进到 web agent 经验记忆，强调 workflows、gotchas、premise 等维度 | [[B6]](#b6) |
 | EvoMemBench | 2026 | self-evolving agent memory | 区分 in-episode / cross-episode，knowledge evolution / execution evolution | [[B7]](#b7) |
 
-```mermaid
-quadrantChart
-    title Agent Memory 评测关注点
-    x-axis 单点事实召回 --> 跨会话经验推理
-    y-axis 静态离线评测 --> 交互/演化评测
-    quadrant-1 经验型 Agent Memory
-    quadrant-2 交互式记忆诊断
-    quadrant-3 基础长期对话 QA
-    quadrant-4 轨迹级 Agent 评测
-    LoCoMo: [0.42, 0.30]
-    LongMemEval: [0.52, 0.34]
-    MemoryAgentBench: [0.68, 0.58]
-    AMA-Bench: [0.76, 0.62]
-    AMemGym: [0.58, 0.82]
-    LongMemEval-V2: [0.86, 0.70]
-```
+![Agent Memory 评测关注点：横轴从单点事实召回到跨会话经验推理，纵轴从静态离线评测到交互/演化评测](/images/agent-memory-benchmark-quadrant.svg)
 
 ### 2. 评测不能只看 accuracy
 

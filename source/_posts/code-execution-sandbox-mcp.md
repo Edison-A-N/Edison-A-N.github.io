@@ -87,8 +87,9 @@ graph LR
     SB -.->|受限网络访问| NET
     MCP -.->|返回结果| SB
     SB -.->|执行结果| CC
-    STORAGE ~~~ MCP
+    STORAGE --- MCP
     
+    linkStyle 6 stroke-width:0px,fill:none
     style LLM fill:#e1f5ff
     style CC fill:#b3e5fc
     style SB fill:#fff9c4

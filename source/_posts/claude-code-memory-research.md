@@ -157,12 +157,12 @@ Git 工作流见 @docs/git-instructions.md
 
 ```mermaid
 graph LR
-    A["CLAUDE.md"] -->|@docs/arch.md| B["docs/arch.md"]
-    A -->|@~/.claude/override.md| C["~/.claude/override.md"]
-    B -->|@deeper.md| D["第 2 跳"]
+    A["CLAUDE.md"] -->|"@docs/arch.md"| B["docs/arch.md"]
+    A -->|"@~/.claude/override.md"| C["~/.claude/override.md"]
+    B -->|"@deeper.md"| D["第 2 跳"]
     D --> E["第 3 跳"]
     E --> F["第 4 跳"]
-    F -.->|❌ 超过 4 跳| G["不再展开"]
+    F -.->|"❌ 超过 4 跳"| G["不再展开"]
 
     style A fill:#e3f2fd,stroke:#1565c0,color:#000
     style G fill:#ffebee,stroke:#c62828,color:#000
@@ -221,8 +221,8 @@ graph LR
         TASK["当前任务相关内容"]
     end
 
-    CM -.->|即使在做无关工作<br/>也占用 token| COST["💰 持续 token 成本"]
-    SK -.->|正文按需加载<br/>不调用≈零成本| SAVE["🟢 省上下文"]
+    CM -.->|"即使在做无关工作<br/>也占用 token"| COST["💰 持续 token 成本"]
+    SK -.->|"正文按需加载<br/>不调用≈零成本"| SAVE["🟢 省上下文"]
 
     style CM fill:#ffe0b2,stroke:#e65100,color:#000
     style SK fill:#c8e6c9,stroke:#2e7d32,color:#000
@@ -262,7 +262,7 @@ flowchart TD
     LAYER --> L2[个人偏好放 user 或 local]
     LAYER --> L3[私有内容加入 gitignore]
 
-    MODULE --> M1[用 @import 拆分]
+    MODULE --> M1["用 @import 拆分"]
     MODULE --> M2[长材料移入 Skills]
 
     ENFORCE --> E1[确定性要求用 Hooks]
@@ -291,10 +291,10 @@ flowchart TD
 ```mermaid
 graph TD
     Q{"我需要什么？"}
-    Q -->|静态、每次都要的项目约定| CM["📝 CLAUDE.md / Memory<br/>始终在上下文<br/>模型自行解读"]
-    Q -->|长篇、按需的专门能力| SK["🧩 Skills<br/>仅描述常驻<br/>正文调用时才载入"]
-    Q -->|必须确定性发生的动作| HK["🪝 Hooks<br/>确定性控制<br/>不依赖 LLM 选择"]
-    Q -->|隔离的子任务上下文| SA["🤖 Subagents<br/>替换系统提示<br/>记忆仍走正常消息流"]
+    Q -->|"静态、每次都要的项目约定"| CM["📝 CLAUDE.md / Memory<br/>始终在上下文<br/>模型自行解读"]
+    Q -->|"长篇、按需的专门能力"| SK["🧩 Skills<br/>仅描述常驻<br/>正文调用时才载入"]
+    Q -->|"必须确定性发生的动作"| HK["🪝 Hooks<br/>确定性控制<br/>不依赖 LLM 选择"]
+    Q -->|"隔离的子任务上下文"| SA["🤖 Subagents<br/>替换系统提示<br/>记忆仍走正常消息流"]
 
     style CM fill:#e3f2fd,stroke:#1565c0,color:#000
     style SK fill:#e8f5e9,stroke:#2e7d32,color:#000
