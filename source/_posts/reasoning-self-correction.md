@@ -107,7 +107,7 @@ flowchart TD
     Next -->|none / low| Follow["照着前提执行"]
     Next -->|medium / high| Pause["停下核实"]
     Pause --> Env{"环境里有没有依据"}
-    Env -->|有，模型去取| Fix["推翻前提，改正"]
+    Env -->|"有，模型去取"| Fix["推翻前提，改正"]
     Env -->|没有| Intro["只能回看自己的输出"]
     Intro --> Confirm["大多确认前文"]
     Hint["通用复核提示"] -.-> Intro
