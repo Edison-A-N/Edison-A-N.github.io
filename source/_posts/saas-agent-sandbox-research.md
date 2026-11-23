@@ -1,5 +1,6 @@
 ---
 title: SaaS Agent Sandbox 设计原则：不要把 Sandbox 当成容器
+seo_description: 讨论 SaaS Agent 的受控执行边界，覆盖 sandbox 生命周期、权限、凭证、网络、状态恢复、多租户配额和人类审批。
 tags:
   - AI Agent
   - Sandbox

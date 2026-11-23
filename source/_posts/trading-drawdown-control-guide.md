@@ -1,5 +1,6 @@
 ---
 title: 交易回撤控制指南：认知、守心与仓位管理
+seo_description: 从交易认知、风险纪律、心理控制和仓位管理角度，整理回撤控制的原则、方法和执行清单。
 tags:
   - Trading
 categories:

@@ -1,5 +1,6 @@
 ---
 title: Multi-Agent LLM 系统架构全景调研（2023–2026）
+seo_description: 调研 2023 到 2026 年 Multi-Agent LLM 系统的论文、架构范式、生产框架和工程实践趋势。
 tags:
   - Multi-Agent
   - LLM

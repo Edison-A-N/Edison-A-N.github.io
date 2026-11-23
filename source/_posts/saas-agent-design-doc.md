@@ -1,5 +1,6 @@
 ---
 title: SaaS Agent 应该怎么设计：从竞品实践到生产级架构
+seo_description: 系统拆解 SaaS Agent 的产品边界、生产级架构、权限治理、工具调用、审批、评估、可观测性与 MVP 路线图。
 tags:
   - AI Agent
   - SaaS

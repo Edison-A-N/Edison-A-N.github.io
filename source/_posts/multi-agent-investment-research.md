@@ -1,5 +1,6 @@
 ---
 title: 用 OpenAgents Workspace 协调多 Agent 投研
+seo_description: 介绍如何用 OpenAgents Workspace 协调多个 Agent 完成投资研究任务，覆盖角色分工、协作流程和结果沉淀。
 tags:
   - AI Agent
   - OpenAgents

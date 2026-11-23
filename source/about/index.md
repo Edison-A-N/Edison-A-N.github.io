@@ -1,6 +1,8 @@
 ---
 layout: about
 title: About
+date: 2026-11-18 16:19:58.630
+description: 张楠的个人介绍，记录后端系统、AI Agent、MCP、DDD、云原生与软件架构相关经验。
 ---
 
 ## 张楠

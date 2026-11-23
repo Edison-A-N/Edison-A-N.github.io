@@ -1,5 +1,6 @@
 ---
 title: 2026 Agent 开发工程师面试指南：从架构、MCP 到生产化
+seo_description: 梳理 2026 年 Agent 开发工程师面试中的架构、MCP、工具调用、评估、可观测性、安全和生产化高频问题。
 tags:
   - AI Agent
   - LLM
