@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 880 330" role="img" aria-label="一段旧对话随时间变化：原文先变成完整摘要，再变成简略摘要，最后只剩一行锚点；原文一直存在外面，重要度高、常被用到的段变得慢" style="max-width:880px">
+<title>一段旧对话随时间变化：原文先变成完整摘要，再变成简略摘要，最后只剩一行锚点；原文一直存在外面，重要度高、常被用到的段变得慢</title>
+<defs>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d1d5db"/></marker>
+</defs>
+<style>text{font-family:-apple-system, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'Noto Sans SC', sans-serif;}</style>
+<rect x="0" y="0" width="880" height="330" rx="14" fill="#111827"/>
+<text x="40" y="38" fill="#e5e7eb" font-size="15" text-anchor="start" font-weight="bold">一段对话随时间变化</text>
+<text x="125" y="82" fill="#9ca3af" font-size="12" text-anchor="middle" font-weight="normal">在最近窗口里</text>
+<rect x="40" y="96" width="170" height="118" rx="6" fill="#f5f5f5" stroke="#9e9e9e" stroke-width="1.5" opacity="1"/>
+<text x="52" y="116" fill="#424242" font-size="13" text-anchor="start" font-weight="bold">原文</text>
+<rect x="52" y="128" width="150" height="5" rx="2.5" fill="#d4d4d4"/>
+<rect x="52" y="139" width="120" height="5" rx="2.5" fill="#d4d4d4"/>
+<rect x="52" y="150" width="150" height="5" rx="2.5" fill="#d4d4d4"/>
+<rect x="52" y="161" width="90" height="5" rx="2.5" fill="#d4d4d4"/>
+<rect x="52" y="172" width="140" height="5" rx="2.5" fill="#d4d4d4"/>
+<rect x="52" y="183" width="110" height="5" rx="2.5" fill="#d4d4d4"/>
+<rect x="52" y="194" width="150" height="5" rx="2.5" fill="#d4d4d4"/>
+<line x1="216" y1="111" x2="244" y2="111" stroke="#d1d5db" stroke-width="1.6" marker-end="url(#ar)"/>
+<text x="335" y="82" fill="#9ca3af" font-size="12" text-anchor="middle" font-weight="normal">移出最近窗口</text>
+<rect x="250" y="96" width="170" height="69" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="2" opacity="1"/>
+<text x="262" y="116" fill="#b71c1c" font-size="13" text-anchor="start" font-weight="bold">完整摘要</text>
+<rect x="262" y="128" width="150" height="5" rx="2.5" fill="#f4b6bd"/>
+<rect x="262" y="139" width="130" height="5" rx="2.5" fill="#f4b6bd"/>
+<rect x="262" y="150" width="110" height="5" rx="2.5" fill="#f4b6bd"/>
+<line x1="426" y1="111" x2="454" y2="111" stroke="#d1d5db" stroke-width="1.6" marker-end="url(#ar)"/>
+<text x="545" y="82" fill="#9ca3af" font-size="12" text-anchor="middle" font-weight="normal">变旧</text>
+<rect x="460" y="96" width="170" height="47" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="2" opacity="1"/>
+<text x="472" y="116" fill="#b71c1c" font-size="13" text-anchor="start" font-weight="bold">简略摘要</text>
+<rect x="472" y="128" width="130" height="5" rx="2.5" fill="#f4b6bd"/>
+<line x1="636" y1="111" x2="664" y2="111" stroke="#d1d5db" stroke-width="1.6" marker-end="url(#ar)"/>
+<text x="755" y="82" fill="#9ca3af" font-size="12" text-anchor="middle" font-weight="normal">更旧</text>
+<rect x="670" y="96" width="170" height="30" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="2" opacity="1"/>
+<text x="682" y="116" fill="#b71c1c" font-size="13" text-anchor="start" font-weight="bold">一行锚点</text>
+<line x1="40" y1="236" x2="840" y2="236" stroke="#9ca3af" stroke-width="1.2" marker-end="url(#ar)"/>
+<text x="40" y="228" fill="#9ca3af" font-size="12" text-anchor="start" font-weight="normal">时间</text>
+<rect x="250" y="250" width="420" height="26" rx="13" fill="none" stroke="#9ca3af" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="460" y="268" fill="#e5e7eb" font-size="12" text-anchor="middle" font-weight="normal">重要度高、常被用到的段，这几步走得慢</text>
+<rect x="40" y="292" width="800" height="28" rx="6" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5" opacity="1"/>
+<text x="440" y="311" fill="#0d47a1" font-size="13" text-anchor="middle" font-weight="bold">完整的原始记录：原文一直存着，任何一档都能取回原文</text>
+<line x1="125" y1="214" x2="125" y2="288" stroke="#d1d5db" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#ar)"/>
+<line x1="755" y1="130" x2="755" y2="288" stroke="#d1d5db" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#ar)"/>
+<text x="762" y="200" fill="#e5e7eb" font-size="12" text-anchor="start" font-weight="normal">需要细节时</text>
+<text x="762" y="216" fill="#e5e7eb" font-size="12" text-anchor="start" font-weight="normal">取回</text>
+</svg>

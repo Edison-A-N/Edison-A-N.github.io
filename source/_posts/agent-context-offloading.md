@@ -349,7 +349,7 @@ flowchart LR
 
 换到别的 agent 框架，判断顺序也一样：先确认原文能不能找回来，再算缓存账，最后再考虑要不要把压缩时机交给模型。
 
-分段摘要、衰减和保护尾这几个部件，在认知科学、Transformer 长上下文结构和 agent 记忆系统里各有哪些先例，magic-context 新在哪里，见《[长对话怎么记：从人的记忆到 Agent 上下文衰减](/2026/11/25/long-conversation-memory/)》。
+旧对话怎么按时间压缩、怎么按内容索引，认知科学、Transformer 长上下文结构和 agent 记忆系统里各有哪些做法，见《[长对话怎么记：按时间压缩，按内容索引](/2026/11/25/long-conversation-memory/)》。
 
 ---
 

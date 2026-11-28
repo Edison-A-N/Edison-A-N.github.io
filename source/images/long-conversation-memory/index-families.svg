@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 880 500" role="img" aria-label="按内容建索引的三种做法：打标签、按 embedding 归类、连成知识图谱；写入时建好索引，查询时一次找回散在各轮的相关内容" style="max-width:880px">
+<title>按内容建索引的三种做法：打标签、按 embedding 归类、连成知识图谱；写入时建好索引，查询时一次找回散在各轮的相关内容</title>
+<defs>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d1d5db"/></marker>
+</defs>
+<style>text{font-family:-apple-system, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'Noto Sans SC', sans-serif;}</style>
+<rect x="0" y="0" width="880" height="500" rx="14" fill="#111827"/>
+<text x="40" y="38" fill="#e5e7eb" font-size="15" text-anchor="start" font-weight="bold">同一批旧对话，三种建索引的方式</text>
+<rect x="24" y="58" width="276" height="330" rx="10" fill="#1f2937" stroke="#374151" stroke-width="1.2"/>
+<text x="40" y="86" fill="#e5e7eb" font-size="14" text-anchor="start" font-weight="bold">打标签和话题名</text>
+<rect x="302" y="58" width="276" height="330" rx="10" fill="#1f2937" stroke="#374151" stroke-width="1.2"/>
+<text x="318" y="86" fill="#e5e7eb" font-size="14" text-anchor="start" font-weight="bold">按 embedding 归类</text>
+<rect x="580" y="58" width="276" height="330" rx="10" fill="#1f2937" stroke="#374151" stroke-width="1.2"/>
+<text x="596" y="86" fill="#e5e7eb" font-size="14" text-anchor="start" font-weight="bold">连成知识图谱</text>
+<rect x="40" y="106" width="64" height="20" rx="10.0" fill="#ffebee" stroke="#c62828" stroke-width="1.2"/>
+<text x="72.0" y="120" fill="#b71c1c" font-size="12" text-anchor="middle" font-weight="normal">查：部署</text>
+<rect x="40" y="146" width="244" height="34" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="1.8" opacity="1"/>
+<text x="52" y="168" fill="#b71c1c" font-size="12" text-anchor="start" font-weight="normal">第 12 轮</text>
+<rect x="116" y="161" width="70" height="5" rx="2.5" fill="#f4b6bd"/>
+<rect x="226" y="153" width="48" height="20" rx="10.0" fill="#ffebee" stroke="#c62828" stroke-width="1.2"/>
+<text x="250.0" y="167" fill="#b71c1c" font-size="12" text-anchor="middle" font-weight="normal">部署</text>
+<rect x="40" y="190" width="244" height="34" rx="6" fill="#111827" stroke="#4b5563" stroke-width="1" opacity="1"/>
+<text x="52" y="212" fill="#9ca3af" font-size="12" text-anchor="start" font-weight="normal">第 47 轮</text>
+<rect x="116" y="205" width="70" height="5" rx="2.5" fill="#4b5563"/>
+<rect x="226" y="197" width="48" height="20" rx="10.0" fill="#374151" stroke="#6b7280" stroke-width="1.2"/>
+<text x="250.0" y="211" fill="#d1d5db" font-size="12" text-anchor="middle" font-weight="normal">测试</text>
+<rect x="40" y="234" width="244" height="34" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="1.8" opacity="1"/>
+<text x="52" y="256" fill="#b71c1c" font-size="12" text-anchor="start" font-weight="normal">第 103 轮</text>
+<rect x="116" y="249" width="70" height="5" rx="2.5" fill="#f4b6bd"/>
+<rect x="226" y="241" width="48" height="20" rx="10.0" fill="#ffebee" stroke="#c62828" stroke-width="1.2"/>
+<text x="250.0" y="255" fill="#b71c1c" font-size="12" text-anchor="middle" font-weight="normal">部署</text>
+<rect x="40" y="278" width="244" height="34" rx="6" fill="#111827" stroke="#4b5563" stroke-width="1" opacity="1"/>
+<text x="52" y="300" fill="#9ca3af" font-size="12" text-anchor="start" font-weight="normal">第 188 轮</text>
+<rect x="116" y="293" width="70" height="5" rx="2.5" fill="#4b5563"/>
+<rect x="226" y="285" width="48" height="20" rx="10.0" fill="#374151" stroke="#6b7280" stroke-width="1.2"/>
+<text x="250.0" y="299" fill="#d1d5db" font-size="12" text-anchor="middle" font-weight="normal">偏好</text>
+<path d="M104,116 C280,116 250,132 250,151" fill="none" stroke="#fca5a5" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#ar)"/>
+<path d="M104,116 C280,116 250,220 250,239" fill="none" stroke="#fca5a5" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#ar)"/>
+<rect x="322" y="106" width="236" height="170" rx="6" fill="#111827" stroke="#374151"/>
+<ellipse cx="382" cy="156" rx="44" ry="30" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="4 3"/>
+<circle cx="380.1" cy="158.7" r="4" fill="#6b7280"/>
+<circle cx="380.8" cy="154.8" r="4" fill="#6b7280"/>
+<circle cx="371.8" cy="154.4" r="4" fill="#6b7280"/>
+<circle cx="395.6" cy="159.6" r="4" fill="#6b7280"/>
+<circle cx="394.1" cy="158.0" r="4" fill="#6b7280"/>
+<circle cx="384.3" cy="156.8" r="4" fill="#6b7280"/>
+<text x="430" y="134" fill="#9ca3af" font-size="12" text-anchor="start" font-weight="normal">测试</text>
+<ellipse cx="492" cy="151" rx="44" ry="30" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="4 3"/>
+<circle cx="471.0" cy="158.5" r="4" fill="#6b7280"/>
+<circle cx="496.6" cy="154.1" r="4" fill="#6b7280"/>
+<circle cx="473.1" cy="137.6" r="4" fill="#6b7280"/>
+<circle cx="482.0" cy="147.4" r="4" fill="#6b7280"/>
+<circle cx="493.3" cy="150.9" r="4" fill="#6b7280"/>
+<circle cx="497.2" cy="146.5" r="4" fill="#6b7280"/>
+<text x="540" y="129" fill="#9ca3af" font-size="12" text-anchor="start" font-weight="normal">偏好</text>
+<ellipse cx="432" cy="226" rx="44" ry="30" fill="none" stroke="#c62828" stroke-width="1.4" stroke-dasharray="4 3"/>
+<circle cx="434.1" cy="227.8" r="4" fill="#ef5350"/>
+<circle cx="423.6" cy="241.1" r="4" fill="#ef5350"/>
+<circle cx="439.0" cy="236.4" r="4" fill="#ef5350"/>
+<circle cx="425.1" cy="220.4" r="4" fill="#ef5350"/>
+<circle cx="430.3" cy="225.6" r="4" fill="#ef5350"/>
+<circle cx="437.5" cy="227.5" r="4" fill="#ef5350"/>
+<text x="480" y="204" fill="#fca5a5" font-size="12" text-anchor="start" font-weight="normal">部署</text>
+<path d="M450,209 L453,215 L459,215 L454,219 L456,226 L450,222 L444,226 L446,219 L441,215 L447,215 Z" fill="#ffffff" stroke="#c62828" stroke-width="1.2"/>
+<text x="464" y="242" fill="#e5e7eb" font-size="12" text-anchor="start" font-weight="normal">查询落在这里</text>
+<text x="330" y="270" fill="#9ca3af" font-size="11" text-anchor="start" font-weight="normal">每个点是一段对话的 embedding</text>
+<text x="322" y="302" fill="#9ca3af" font-size="12" text-anchor="start" font-weight="normal">摘要树：每簇再写一段摘要，</text>
+<text x="322" y="320" fill="#9ca3af" font-size="12" text-anchor="start" font-weight="normal">摘要再归类，层层往上</text>
+<line x1="718" y1="178" x2="636" y2="136" stroke="#ef5350" stroke-width="2"/>
+<text x="681.0" y="153.0" fill="#9ca3af" font-size="11" text-anchor="start" font-weight="normal">用</text>
+<line x1="718" y1="178" x2="802" y2="144" stroke="#ef5350" stroke-width="2"/>
+<line x1="718" y1="178" x2="646" y2="244" stroke="#ef5350" stroke-width="2"/>
+<text x="686.0" y="207.0" fill="#9ca3af" font-size="11" text-anchor="start" font-weight="normal">发到</text>
+<line x1="646" y1="244" x2="794" y2="246" stroke="#4b5563" stroke-width="1.2"/>
+<text x="724.0" y="241.0" fill="#9ca3af" font-size="11" text-anchor="start" font-weight="normal">连</text>
+<line x1="794" y1="246" x2="794" y2="314" stroke="#4b5563" stroke-width="1.2"/>
+<rect x="685.0" y="164" width="66" height="28" rx="14" fill="#ffebee" stroke="#c62828" stroke-width="2.6" opacity="1"/>
+<text x="718" y="183" fill="#b71c1c" font-size="12" text-anchor="middle" font-weight="bold">部署脚本</text>
+<rect x="615.0" y="122" width="42" height="28" rx="14" fill="#ffebee" stroke="#c62828" stroke-width="1.4" opacity="1"/>
+<text x="636" y="141" fill="#b71c1c" font-size="12" text-anchor="middle" font-weight="normal">Bun</text>
+<rect x="769.0" y="130" width="66" height="28" rx="14" fill="#ffebee" stroke="#c62828" stroke-width="1.4" opacity="1"/>
+<text x="802" y="149" fill="#b71c1c" font-size="12" text-anchor="middle" font-weight="normal">CI 配置</text>
+<rect x="613.0" y="230" width="66" height="28" rx="14" fill="#ffebee" stroke="#c62828" stroke-width="1.4" opacity="1"/>
+<text x="646" y="249" fill="#b71c1c" font-size="12" text-anchor="middle" font-weight="normal">服务器 A</text>
+<rect x="767.0" y="232" width="54" height="28" rx="14" fill="#374151" stroke="#6b7280" stroke-width="1.4" opacity="1"/>
+<text x="794" y="251" fill="#d1d5db" font-size="12" text-anchor="middle" font-weight="normal">数据库</text>
+<rect x="761.0" y="300" width="66" height="28" rx="14" fill="#374151" stroke="#6b7280" stroke-width="1.4" opacity="1"/>
+<text x="794" y="319" fill="#d1d5db" font-size="12" text-anchor="middle" font-weight="normal">密码规则</text>
+<text x="600" y="358" fill="#9ca3af" font-size="12" text-anchor="start" font-weight="normal">从查询里的「部署脚本」出发，</text>
+<text x="600" y="376" fill="#9ca3af" font-size="12" text-anchor="start" font-weight="normal">红色是一跳能到的内容</text>
+<text x="32" y="414" fill="#e5e7eb" font-size="12" text-anchor="start" font-weight="normal">写入时：LLM 给每段打标签、写话题名</text>
+<text x="32" y="434" fill="#e5e7eb" font-size="12" text-anchor="start" font-weight="normal">查询时：按标签或话题名找</text>
+<text x="32" y="456" fill="#93c5fd" font-size="12" text-anchor="start" font-weight="normal">A-MEM、LD-Agent、MemoChat</text>
+<text x="310" y="414" fill="#e5e7eb" font-size="12" text-anchor="start" font-weight="normal">写入时：每段算 embedding，相近的归成一簇</text>
+<text x="310" y="434" fill="#e5e7eb" font-size="12" text-anchor="start" font-weight="normal">查询时：找最相近的簇和段</text>
+<text x="310" y="456" fill="#93c5fd" font-size="12" text-anchor="start" font-weight="normal">RAPTOR、MemTree、Think-in-Memory</text>
+<text x="588" y="414" fill="#e5e7eb" font-size="12" text-anchor="start" font-weight="normal">写入时：抽出实体和关系，连成图</text>
+<text x="588" y="434" fill="#e5e7eb" font-size="12" text-anchor="start" font-weight="normal">查询时：从实体出发，沿边扩散</text>
+<text x="588" y="456" fill="#93c5fd" font-size="12" text-anchor="start" font-weight="normal">HippoRAG、Zep、Mem0 图版本</text>
+</svg>

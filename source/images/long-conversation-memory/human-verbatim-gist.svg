@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 880 380" role="img" aria-label="人记一段对话：原话很快就忘，意思留得久；带意图、态度的话，原话也记得久" style="max-width:880px">
+<title>人记一段对话：原话很快就忘，意思留得久；带意图、态度的话，原话也记得久</title>
+<defs>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d1d5db"/></marker>
+</defs>
+<style>text{font-family:-apple-system, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'Noto Sans SC', sans-serif;}</style>
+<rect x="0" y="0" width="880" height="380" rx="14" fill="#111827"/>
+<text x="40" y="38" fill="#e5e7eb" font-size="15" text-anchor="start" font-weight="bold">人记一段对话，原话和意思留得不一样久</text>
+<line x1="170" y1="300" x2="850" y2="300" stroke="#9ca3af" stroke-width="1.2" marker-end="url(#ar)"/>
+<line x1="190" y1="300" x2="190" y2="305" stroke="#9ca3af" stroke-width="1"/>
+<text x="190" y="322" fill="#9ca3af" font-size="12" text-anchor="middle" font-weight="normal">刚听完这句</text>
+<text x="190" y="338" fill="#6b7280" font-size="11" text-anchor="middle" font-weight="normal">Jarvella 1971</text>
+<line x1="380" y1="300" x2="380" y2="305" stroke="#9ca3af" stroke-width="1"/>
+<text x="380" y="322" fill="#9ca3af" font-size="12" text-anchor="middle" font-weight="normal">再听 80～160 个音节</text>
+<text x="380" y="338" fill="#6b7280" font-size="11" text-anchor="middle" font-weight="normal">Sachs 1967</text>
+<line x1="580" y1="300" x2="580" y2="305" stroke="#9ca3af" stroke-width="1"/>
+<text x="580" y="322" fill="#9ca3af" font-size="12" text-anchor="middle" font-weight="normal">对话结束 5 分钟</text>
+<text x="580" y="338" fill="#6b7280" font-size="11" text-anchor="middle" font-weight="normal">Stafford 和 Daly 1984</text>
+<line x1="780" y1="300" x2="780" y2="305" stroke="#9ca3af" stroke-width="1"/>
+<text x="780" y="322" fill="#9ca3af" font-size="12" text-anchor="middle" font-weight="normal">30 小时后</text>
+<text x="780" y="338" fill="#6b7280" font-size="11" text-anchor="middle" font-weight="normal">Keenan 等 1977</text>
+<text x="850" y="360" fill="#6b7280" font-size="11" text-anchor="end" font-weight="normal">横轴只表示先后，不按比例</text>
+<text x="40" y="108" fill="#e5e7eb" font-size="13" text-anchor="start" font-weight="bold">原话</text>
+<text x="40" y="178" fill="#e5e7eb" font-size="13" text-anchor="start" font-weight="bold">意思</text>
+<text x="40" y="248" fill="#e5e7eb" font-size="13" text-anchor="start" font-weight="bold">重要的话的原话</text>
+<rect x="170" y="86" width="110" height="34" rx="6" fill="#f5f5f5" stroke="#9e9e9e" stroke-width="2" opacity="1"/>
+<text x="182" y="108" fill="#424242" font-size="11" text-anchor="start" font-weight="normal">只有最后一个分句</text>
+<defs><linearGradient id="fdv" x1="0" x2="1"><stop offset="0" stop-color="#f5f5f5"/><stop offset="1" stop-color="#f5f5f5" stop-opacity="0"/></linearGradient></defs><rect x="280" y="86" width="150" height="34" rx="6" fill="url(#fdv)"/>
+<text x="440" y="108" fill="#e5e7eb" font-size="12" text-anchor="start" font-weight="normal">句式改了，和瞎猜差不多</text>
+<rect x="170" y="156" width="680" height="34" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="2" opacity="1"/>
+<text x="184" y="178" fill="#b71c1c" font-size="12" text-anchor="start" font-weight="normal">意思改了还认得出；逐字和要点分两份存，要点存得久（模糊痕迹理论）</text>
+<rect x="170" y="226" width="680" height="34" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="2" opacity="1"/>
+<text x="184" y="248" fill="#b71c1c" font-size="12" text-anchor="start" font-weight="normal">带说话人意图、态度或彼此关系的话，原话和意思都记得很好</text>
+<text x="170" y="140" fill="#9ca3af" font-size="11" text-anchor="start" font-weight="normal">真实对话结束 5 分钟，能回忆出的内容约 10%</text>
+</svg>
