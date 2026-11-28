@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <!-- title -->
+<!-- keywords -->
+<head>
+    <meta charset="utf-8">
+    <meta name="google-site-verification" content="JB-maqhhwUFVUFApXAdvEnVFMjbiaUSIwUQFvCk1VMQ" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Edison">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Edison">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,software architecture,domain-driven design,DDD,AI agents,MCP,Model Context Protocol,Python,Go,full-stack development,LLM,software engineering,hexo blog">
+    <link rel="canonical" href="https://edison-a-n.github.io/2026/11/23/reasoning-self-correction/"/>
+    <meta name="description" content="一个 agent 在 HITL 的问题里自己加了一条停止条件，用户回答后，它照着这句话结束了任务。推理档从 none 调到 high，20 次重放里 18 次改了过来。推理让模型有机会停下来核实自己写下的话，核实能不能成功，取决于环境里有没有独立于模型输出的依据：案例里改过来的几乎都去读了 skill 文档，工具明确报错时模型九成以上能察觉，没有外部依据时推理里的反思大多只是确认前文。反复自纠偶尔">
+<meta property="og:type" content="article">
+<meta property="og:title" content="推理能帮 agent 纠偏，但成败取决于环境给不给依据">
+<meta property="og:url" content="https://edison-a-n.github.io/2026/11/23/reasoning-self-correction/">
+<meta property="og:site_name" content="Edison&#39;s Tech Blog">
+<meta property="og:description" content="一个 agent 在 HITL 的问题里自己加了一条停止条件，用户回答后，它照着这句话结束了任务。推理档从 none 调到 high，20 次重放里 18 次改了过来。推理让模型有机会停下来核实自己写下的话，核实能不能成功，取决于环境里有没有独立于模型输出的依据：案例里改过来的几乎都去读了 skill 文档，工具明确报错时模型九成以上能察觉，没有外部依据时推理里的反思大多只是确认前文。反复自纠偶尔">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://edison-a-n.github.io/intro/index-bg.jpg">
+<meta property="article:published_time" content="2026-11-23T08:00:00.000Z">
+<meta property="article:modified_time" content="2026-11-28T06:57:19.847Z">
+<meta property="article:author" content="Edison">
+<meta property="article:tag" content="AI Agent">
+<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="Harness Engineering">
+<meta property="article:tag" content="Reasoning">
+<meta property="article:tag" content="Self-Correction">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://edison-a-n.github.io/intro/index-bg.jpg">
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"推理能帮 agent 纠偏，但成败取决于环境给不给依据","description":"一个 agent 在 HITL 的问题里自己加了一条停止条件，用户回答后，它照着这句话结束了任务。推理档从 none 调到 high，20 次重放里 18 次改了过来。推理让模型有机会停下来核实自己写下的话，核实能不能成功，取决于环境里有没有独立于模型输出的依据：案例里改过来的几乎都去读了 skill 文档，工具明确报错时模型九成以上能察觉，没有外部依据时推理里的反思大多只是确认前文。反复自纠偶尔会把对的改错，多数模型影响在 2 个百分点以内，是次要问题。","url":"https://edison-a-n.github.io/2026/11/23/reasoning-self-correction/","mainEntityOfPage":{"@type":"WebPage","@id":"https://edison-a-n.github.io/2026/11/23/reasoning-self-correction/"},"image":["https://edison-a-n.github.io/intro/index-bg.jpg"],"datePublished":"2026-11-23T08:00:00.000Z","dateModified":"2026-11-28T06:57:19.847Z","author":{"@type":"Person","name":"Edison","url":"https://edison-a-n.github.io"},"publisher":{"@type":"Person","name":"Edison"}}</script>
+
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/avatar/avatar.jpg">
+    <title>推理能帮 agent 纠偏，但成败取决于环境给不给依据 · Edison&#39;s Tech Blog | Software Architecture, AI &amp; DDD</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .footer-fixed-btn,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(
+            -45deg,
+            #444 0,
+            #444 80px,
+            #333 80px,
+            #333 160px
+        );
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link id="stylesheet-fancybox" rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link id="stylesheet-base" rel="preload" href="/css/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link id="stylesheet-mobile" rel="preload" href="/css/mobile.css" as="style" onload="this.onload=null;this.rel='stylesheet';this.media='screen and (max-width: 960px)'">
+    <link id="stylesheet-theme-dark" rel="preload" href="/css/dark.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    <!-- 百度统计  -->
+    <!-- CNZZ 统计  -->
+    <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-J2YNL2R8V3"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-J2YNL2R8V3');
+        </script>
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Edison's Tech Blog" type="application/atom+xml">
+</head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+        <body class="post-body">
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        <div class="header-sidebar-menu">
+            <div style="padding-left: 1px;">&#xe775;</div>
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href="/">Edison's Studio.</a>
+        </span>
+    </div>
+    <!-- toggle banner -->
+    <div class="banner">
+        <div class="blog-title header-element">
+            <a href="/">Edison&#39;s Studio.</a>
+        </div>
+        <div class="post-title header-element">
+            <a href="#" class="post-name">推理能帮 agent 纠偏，但成败取决于环境给不给依据</a>
+        </div>
+    </div>
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- donate button -->
+
+    <!-- back to top button -->
+    <div class="footer-fixed-btn footer-fixed-btn--hidden back-top">
+        <div>&#xe639;</div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="    height:50vh;
+">
+    <!-- 主页  -->
+    <!-- 404页  -->
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+                推理能帮 agent 纠偏，但成败取决于环境给不给依据
+            <!-- 404 -->
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            <!-- 404 -->
+        </p>
+        <!-- 文章页 meta -->
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                    <div class="post-intro-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="LLM">LLM</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Harness Engineering">Harness Engineering</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Reasoning">Reasoning</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Self-Correction">Self-Correction</a>
+</div>
+
+                <!-- 文章字数统计 -->
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">3.6k</span>阅读时长: <span class="post-count reading-time">14 min</span></span>
+                    </div>
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2026/11/23</span>
+                    <!-- busuanzi -->
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" alt="loading">
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <p>一个多步骤数据分析 agent 通过 HITL（human-in-the-loop，暂停并向用户提问）确认参数时，在 HITL 的问题里自己加了一句「如果你选『不适用』，我就停止分析」。按 skill 文档，「不适用」是合法选项，流程应该照常继续，这句话在流程规范、skill 文档和系统提示里都找不到出处。用户选了「不适用」，agent 把自己写的这句话当成已经定下的规则，结束了本轮。</p>
+<p>排查下来，编排器配置时漏设了推理档，模型按默认的 effort&#x3D;none 运行。编排器用的是某个模型，下称模型 A。</p>
+<p>为了弄清推理起了什么作用，我们用 trace 重放出错的这一步。输入和出错时完全一致，上下文里已经有模型写的那句话和用户的回答，每次只改一处，对模型 A 重跑多次，看它下一步继续执行还是照那句话结束。改的要么是推理档，要么是 harness 追加的一条提醒（harness 指驱动 agent 循环的程序，负责调模型、执行工具、把结果拼回上下文）。推理档调到 high，20 次里 18 次继续执行。</p>
+<p>这组对照实验和 2026 年的几项外部研究指向同一个结论：<strong>推理让模型有机会停下来核实自己写下的话，核实能不能成功，取决于环境里有没有独立于模型输出的依据。</strong> 案例里的依据是 skill 文档，开推理后模型会自己去读；工具明确报错是更直接的依据。没有依据时，推理只能回看模型自己写过的内容，大多是确认前文。</p>
+<p>依据之外还有一个条件：模型要把自己写的那句话当成待核实的说法，否则它会带着那句话去读依据，读出支持它的理由。反复自纠偶尔会把对的改错，但影响是边际的。</p>
+<hr>
+<h2 id="§1-推理让模型有机会核实自己写下的话"><a href="#§1-推理让模型有机会核实自己写下的话" class="headerlink" title="§1 推理让模型有机会核实自己写下的话"></a>§1 推理让模型有机会核实自己写下的话</h2><h3 id="1-1-推理档越高，改过来的越多"><a href="#1-1-推理档越高，改过来的越多" class="headerlink" title="1.1 推理档越高，改过来的越多"></a>1.1 推理档越高，改过来的越多</h3><p>只改推理档，后续每一步都用这个档位做多步重放：</p>
+<table>
+<thead class="nowrap-cell">
+<tr>
+<th>推理档</th>
+<th class="nowrap-cell">次数</th>
+<th>读了 skill → 继续</th>
+<th>没读 skill → 继续</th>
+<th>读了 skill → 结束</th>
+<th>没读 skill → 结束</th>
+<th class="nowrap-cell">看不出</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>none（与出错时一致）</td>
+<td class="nowrap-cell">10</td>
+<td class="nowrap-cell">0</td>
+<td class="nowrap-cell">0</td>
+<td class="nowrap-cell">0</td>
+<td class="nowrap-cell">10</td>
+<td class="nowrap-cell">0</td>
+</tr>
+<tr>
+<td class="nowrap-cell">low</td>
+<td class="nowrap-cell">20</td>
+<td class="nowrap-cell">0</td>
+<td class="nowrap-cell">3</td>
+<td class="nowrap-cell">0</td>
+<td class="nowrap-cell">16</td>
+<td class="nowrap-cell">1</td>
+</tr>
+<tr>
+<td class="nowrap-cell">medium</td>
+<td class="nowrap-cell">10</td>
+<td class="nowrap-cell">6</td>
+<td class="nowrap-cell">1</td>
+<td class="nowrap-cell">1</td>
+<td class="nowrap-cell">2</td>
+<td class="nowrap-cell">0</td>
+</tr>
+<tr>
+<td class="nowrap-cell">high</td>
+<td class="nowrap-cell">20</td>
+<td class="nowrap-cell">15</td>
+<td class="nowrap-cell">3</td>
+<td class="nowrap-cell">0</td>
+<td class="nowrap-cell">0</td>
+<td class="nowrap-cell">2</td>
+</tr>
+</tbody></table>
+<p>继续执行的次数：none 0&#x2F;10，low 3&#x2F;20，medium 7&#x2F;10，high 18&#x2F;20。</p>
+<h3 id="1-2-错误写在模型自己的输出里，非推理模型很难纠正"><a href="#1-2-错误写在模型自己的输出里，非推理模型很难纠正" class="headerlink" title="1.2 错误写在模型自己的输出里，非推理模型很难纠正"></a>1.2 错误写在模型自己的输出里，非推理模型很难纠正</h3><blockquote>
+<p><strong>ℹ️ 外部研究的时间和测试模型</strong></p>
+<p>文中引用的外部研究都在 2026 年发表或修订，括号里标了首发时间和所引版本的时间。发表时间新不代表测的模型新，DeepSeek-R1、QwQ 这些 2025 年的开源模型仍常被拿来测，所以每项研究都列出了测试模型。结论只对这些模型成立，模型更新后要重新核对。</p>
+</blockquote>
+<p>Self-Correction Bench（2025-07 首发，2026-08 v3，COLM 2026）<a href="#n1">[N1]</a> 把同一个错误注入上下文，只改它所在的对话角色。错误放在用户消息里，模型能可靠改对；放在模型自己的回复里，14 个开源非推理模型平均有 64.5% 改不过来，闭源的 Claude Sonnet 4 也有 41.4%。同一个 Qwen3 模型只打开 thinking，错误写在自己回复里时的平均准确率从 0.05–0.33 升到 0.84–0.89。</p>
+<p>作者把原因归到训练数据：SFT 数据里的人类示范几乎都是一次写对，很少有「写错再改」的序列，推理模型生成的训练数据里纠错标记多出几个数量级。从推理模型生成的数据集里抽 5306 条样本微调，盲区缩小 76%。在模型输出末尾追加一个 <code>Wait</code>，盲区也能缩小 89.3%。</p>
+<p>The Self-Correction Illusion（2026-06 首发，2026-07 v2）<a href="#n2">[N2]</a> 在 agent 轨迹里注入一条错误的 <code>&lt;thought&gt;</code>，挑出模型没纠正的题，再把这条说法逐字不变地挪到用户消息、工具返回或系统 <code>&lt;memory&gt;</code> 块里。测试模型包括 GPT-4o、Claude Sonnet 4、Gemini 2.5 Flash-Lite，以及 Llama-3.3-70B、Qwen2.5-72B 等开源模型。12 组实验里 10 组至少有一种挪法显著提高了模型指出错误的比例，提升 23 到 93 个百分点。推理模型基本不受这个问题影响，DeepSeek-R1 在所有条件下都能指出错误。</p>
+<p>案例正是这种情况：停止条件是模型自己写在 HITL 的问题里的。</p>
+<h3 id="1-3-推理能切断上下文错误的自我强化"><a href="#1-3-推理能切断上下文错误的自我强化" class="headerlink" title="1.3 推理能切断上下文错误的自我强化"></a>1.3 推理能切断上下文错误的自我强化</h3><p>The Illusion of Diminishing Returns（2025-09 首发，2026-03 v3，ICLR 2026）<a href="#n3">[N3]</a> 往对话历史里按比例注入错误，历史错误率越高，第 100 轮的准确率越低。Kimi-K2、DeepSeek-V3、Qwen3-235B-Instruct 这些 200B 以上的非推理模型照样受影响，把模型做大解决不了。开启 thinking 后，Qwen3 在第 100 轮的准确率基本不随历史错误率变化。</p>
+<p>agent 的每一步输出，包括工具参数和 HITL 的问题，都会原样进入下一步输入，所以这个效应在 agent 里会被放大。</p>
+<h3 id="1-4-通用的复核提示替代不了推理"><a href="#1-4-通用的复核提示替代不了推理" class="headerlink" title="1.4 通用的复核提示替代不了推理"></a>1.4 通用的复核提示替代不了推理</h3><p>不开推理，由 harness 追加一条通用提醒，不说要核实哪句话。前两种在模型说完结束语后追加，第三种附在用户的回答后面，每种 10 次：</p>
+<table>
+<thead>
+<tr>
+<th>harness 追加的提醒</th>
+<th class="nowrap-cell">继续执行</th>
+<th class="nowrap-cell">再问用户</th>
+<th class="nowrap-cell">仍然结束</th>
+<th class="nowrap-cell">读了 skill</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>「结束前检查结束是否合理、指令是否要求继续」</td>
+<td>0&#x2F;10</td>
+<td>8&#x2F;10</td>
+<td>1&#x2F;10</td>
+<td>0&#x2F;10</td>
+</tr>
+<tr>
+<td>「每条停止理由都要找到出处，必须是 skill 文件或工具结果；你自己之前说的话不算出处；找不到就去读 skill」</td>
+<td>1&#x2F;10</td>
+<td>1&#x2F;10</td>
+<td>7&#x2F;10</td>
+<td>10&#x2F;10</td>
+</tr>
+<tr>
+<td>在用户回答后附一句通用提醒（不在结束时触发）</td>
+<td>0&#x2F;10</td>
+<td>0&#x2F;10</td>
+<td>10&#x2F;10</td>
+<td>0&#x2F;10</td>
+</tr>
+</tbody></table>
+<p>前两行各有 1 次调用了执行工具，但没有带「不适用」这个参数，所以加起来是 9 次。第二行的问题在 §3 讨论。</p>
+<p>外部研究的结果相同。Diminishing Returns 用 prompt 要求模型每轮先复核前面的状态：Gemma3 早期有提升，但输出变长，上下文更早耗尽，后期崩得更陡；Qwen3 thinking 几乎没有提升。Loud Failures<a href="#n4">[N4]</a> 在 system prompt 里加一句「每次调用工具后检查结果是否符合预期」，各项指标都没有显著变化。</p>
+<hr>
+<h2 id="§2-核实能不能成功，取决于环境给不给依据"><a href="#§2-核实能不能成功，取决于环境给不给依据" class="headerlink" title="§2 核实能不能成功，取决于环境给不给依据"></a>§2 核实能不能成功，取决于环境给不给依据</h2><h3 id="2-1-案例里改过来的几乎都读了-skill"><a href="#2-1-案例里改过来的几乎都读了-skill" class="headerlink" title="2.1 案例里改过来的几乎都读了 skill"></a>2.1 案例里改过来的几乎都读了 skill</h3><p>回到 1.1 的表。读了 skill 的 24 次里，21 次继续执行，1 次结束，2 次看不出。none 和 low 一次都没读，30 次里 26 次照那句话结束。不读 skill 就继续的一共 7 次，这条路不稳。</p>
+<p>反过来，推理档保持 none，只在上下文里补上模型读取 skill 文档的结果，单步重放 10 次里 8 次继续执行。推理没有给模型新知识，起作用的是依据本身，推理的作用是让模型自己去把依据拿来。</p>
+<p>1.4 第一行的通用提醒也说明了这一点：模型 8 次改成再问用户，说明它察觉到有点不对，但一次都没去读 skill。能推翻那句话的依据在 skill 文档里，模型只回看自己写过的内容，找不到依据。</p>
+<h3 id="2-2-工具明确报错时，模型大多能察觉"><a href="#2-2-工具明确报错时，模型大多能察觉" class="headerlink" title="2.2 工具明确报错时，模型大多能察觉"></a>2.2 工具明确报错时，模型大多能察觉</h3><p>Loud Failures, Quiet Failures（2026-10）<a href="#n4">[N4]</a> 测了 Claude Haiku 4.5、DeepSeek-V3&#x2F;R1、Qwen3 三个家族，各一对推理版和非推理版，实际分析 1694 次试验。工具明确报错时，agent 在 91.3% 的试验里把结果当作问题处理；工具返回的类型、形状都对，内容却是错的，这一比例只有 58.8%，而没有故障时也有 26.8% 会误报。</p>
+<p>案例里环境没有报错，依据得模型自己去 skill 文档里找。</p>
+<h3 id="2-3-没有外部依据时，推理里的反思大多只是确认前文"><a href="#2-3-没有外部依据时，推理里的反思大多只是确认前文" class="headerlink" title="2.3 没有外部依据时，推理里的反思大多只是确认前文"></a>2.3 没有外部依据时，推理里的反思大多只是确认前文</h3><p>Reflection Is Not Monolithic（Findings of EMNLP 2026，2026-10）<a href="#n5">[N5]</a> 分析了 Qwen3-8B、QwQ-32B、gpt-oss-20b、DeepSeek-R1-Distill-Qwen-7B 在 4 个数学基准上的推理轨迹。反思步骤常接近或超过全部步骤的三分之一，其中局部复核有 80% 到 95% 只是确认前面的结果。</p>
+<p>Superficial Reflection or Genuine Thought?（Findings of IJCNLP-AACL 2026，2026-11）<a href="#n6">[N6]</a> 主要分析 DeepSeek-R1（0120 版）和 QwQ。DeepSeek-R1 答错的题经过「再检查一遍」只改对 5 道，都是格式修正；QwQ 一道都没改对。在较新的 MiniMax-M2 上复核，反思仍以自我监控为主。</p>
+<p>两篇研究测的都是数学题，推理过程中没有可以查的外部依据。所以推理内容里出现多少 <code>wait</code>，不能作为纠偏的证据，要看决定有没有翻转。</p>
+<pre class="mermaid">flowchart TD
+    Own["模型自己写下的错误前提"] --> Next{"是否开推理"}
+    Next -->|none / low| Follow["照着前提执行"]
+    Next -->|medium / high| Pause["停下核实"]
+    Pause --> Env{"环境里有没有依据"}
+    Env -->|"有，模型去取"| Fix["推翻前提，改正"]
+    Env -->|没有| Intro["只能回看自己的输出"]
+    Intro --> Confirm["大多确认前文"]
+    Hint["通用复核提示"] -.-> Intro
+
+    classDef input fill:#f5f5f5,stroke:#757575,color:#212121,stroke-width:1px
+    classDef decision fill:#f3e5f5,stroke:#7b1fa2,color:#4a148c,stroke-width:2px
+    classDef critical fill:#ffebee,stroke:#c62828,color:#b71c1c,stroke-width:3px,font-weight:bold
+    classDef results fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20,stroke-width:3px
+    classDef neutral fill:#f5f5f5,stroke:#9e9e9e,color:#424242,stroke-width:1px
+    class Own input
+    class Next decision
+    class Env critical
+    class Pause critical
+    class Fix results
+    class Follow,Intro,Confirm,Hint neutral
+    linkStyle 2,3,4 stroke:#c62828,stroke-width:3px</pre>
+
+<p>推理让模型停下来核实，环境里有没有依据决定核实能不能成功。</p>
+<hr>
+<h2 id="§3-有了依据，模型还要肯怀疑自己写的话"><a href="#§3-有了依据，模型还要肯怀疑自己写的话" class="headerlink" title="§3 有了依据，模型还要肯怀疑自己写的话"></a>§3 有了依据，模型还要肯怀疑自己写的话</h2><p>依据到手不等于一定能改。1.4 第二行要求每条停止理由都找出处，模型 10 次都读了 skill，仍有 7 次结束，结束时说的是「停止有 skill 依据」。它没意识到要核实的就是自己写的那句话，带着那句话去读 skill，读出了支持它的理由。2.1 里直接给 skill 内容的 10 次中，也有 2 次没改。</p>
+<p>不开推理，由 harness 在模型说完结束语后指出要核实的就是 HITL 的问题里那句停止条件：</p>
+<table>
+<thead>
+<tr>
+<th>harness 追加的提醒</th>
+<th class="nowrap-cell">继续执行</th>
+<th class="nowrap-cell">仍然结束</th>
+<th class="nowrap-cell">读了 skill</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>「审阅者指出，你发给用户的问题说选『不适用』就会结束分析，请对照 skill 核实」</td>
+<td>7&#x2F;10</td>
+<td>2&#x2F;10</td>
+<td>10&#x2F;10</td>
+</tr>
+<tr>
+<td>贴出 HITL 的问题和用户的回答，要求去 skill 查这个回答的含义</td>
+<td>4&#x2F;10</td>
+<td>5&#x2F;10</td>
+<td>10&#x2F;10</td>
+</tr>
+<tr>
+<td>同上，另加一句「问题的措辞是助手起草的，不是指令」</td>
+<td>10&#x2F;10</td>
+<td>0&#x2F;10</td>
+<td>10&#x2F;10</td>
+</tr>
+</tbody></table>
+<p>第一行的「审阅者」只是提醒的措辞，消息由 harness 写入。第一行有 1 次超过步数上限，第二行有 1 次改成再问用户，所以这两行加起来不到 10。</p>
+<p>三种提醒都让模型读了 skill。第二行只要求核实，没有否定那句话，模型仍有一半判定停止是对的。第三行只多一句「不是指令」，结果从 4&#x2F;10 变成 10&#x2F;10。</p>
+<blockquote>
+<p><strong>⚠️ 这种做法只能证明机制</strong></p>
+<p>我们事后知道错误在哪一句，才写得出这条提醒。真实运行时，错误可能在 HITL 的问题里，也可能在结论或工具参数里，事先不知道。开 high 推理时，模型自己完成了怀疑和取证两步，不需要事先知道错误位置。</p>
+</blockquote>
+<table>
+<thead class="nowrap-cell">
+<tr>
+<th>做法</th>
+<th class="nowrap-cell">让模型怀疑那句话</th>
+<th class="nowrap-cell">让模型拿到依据</th>
+<th class="nowrap-cell">继续执行</th>
+</tr>
+</thead>
+<tbody><tr>
+<td class="nowrap-cell">通用提醒</td>
+<td class="nowrap-cell">否</td>
+<td>有的去读了，有的没读</td>
+<td>0&#x2F;10 到 1&#x2F;10</td>
+</tr>
+<tr>
+<td>直接给 skill 内容</td>
+<td class="nowrap-cell">否</td>
+<td>是，harness 给的</td>
+<td>8&#x2F;10</td>
+</tr>
+<tr>
+<td>告诉模型核实哪句话</td>
+<td>是，harness 指出的</td>
+<td class="nowrap-cell">是，模型自己去读</td>
+<td>4&#x2F;10 到 10&#x2F;10</td>
+</tr>
+<tr>
+<td>开 high 推理</td>
+<td class="nowrap-cell">是，模型自己</td>
+<td class="nowrap-cell">是，模型自己去读</td>
+<td>18&#x2F;20</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="§4-次要问题"><a href="#§4-次要问题" class="headerlink" title="§4 次要问题"></a>§4 次要问题</h2><h3 id="4-1-反复自纠偶尔把对的改错"><a href="#4-1-反复自纠偶尔把对的改错" class="headerlink" title="4.1 反复自纠偶尔把对的改错"></a>4.1 反复自纠偶尔把对的改错</h3><p>Self-Correction as Feedback Control（2026-04 首发，2026-05 v2）<a href="#n7">[N7]</a> 在 GSM8K 上让 7 个模型各自纠 4 轮，统计把对的改错的错误引入率（Error Introduction Rate, EIR）和把错的改对的错误纠正率（Error Correction Rate, ECR）：</p>
+<table>
+<thead class="nowrap-cell">
+<tr>
+<th>结果</th>
+<th>模型（准确率变化）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td class="nowrap-cell">涨分</td>
+<td>o3-mini（+3.4 pp）、Claude Opus 4.6（+0.6 pp）</td>
+</tr>
+<tr>
+<td class="nowrap-cell">不变</td>
+<td>o4-mini（±0）</td>
+</tr>
+<tr>
+<td class="nowrap-cell">掉分</td>
+<td>GPT-4o-mini（−6.2 pp）、GPT-5（−1.8 pp）、Claude Sonnet 4（−1.2 pp）、GPT-4.1（−0.2 pp）</td>
+</tr>
+</tbody></table>
+<p>上表按论文的表格计数，论文正文写的「5 个模型掉分」与表格不符。7 个模型里 6 个的变化在 2 个百分点以内，只有 GPT-4o-mini 掉了 6.2 个百分点。它在 500 题里本来就对了 456 题、错了 44 题，EIR 只有 1.3%，但正确的题基数大，误改的数量就超过了改对的数量。论文给出的一般条件是 ECR&#x2F;EIR 小于 Acc&#x2F;(1−Acc) 时继续自纠会掉分。</p>
+<p>准确率已经很高、又反复要求模型自纠时，才需要留意这一点。</p>
+<h3 id="4-2-推理有成本"><a href="#4-2-推理有成本" class="headerlink" title="4.2 推理有成本"></a>4.2 推理有成本</h3><p>案例里 high 档每步多出 0 到 900 个推理 token。</p>
+<hr>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ol>
+<li><a id="n1"></a><em>Self-Correction Bench</em>, arXiv 2507.02778（2025-07 首发，v3 2026-08，COLM 2026）. <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2507.02778">arxiv.org&#x2F;abs&#x2F;2507.02778</a></li>
+<li><a id="n2"></a><em>The Self-Correction Illusion</em>, arXiv 2606.05976（2026-06 首发，v2 2026-07）. <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2606.05976">arxiv.org&#x2F;abs&#x2F;2606.05976</a></li>
+<li><a id="n3"></a><em>The Illusion of Diminishing Returns</em>, arXiv 2509.09677（2025-09 首发，v3 2026-03，ICLR 2026）. <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2509.09677">arxiv.org&#x2F;abs&#x2F;2509.09677</a></li>
+<li><a id="n4"></a><em>Loud Failures, Quiet Failures</em>, arXiv 2610.10062（2026-10）. <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2610.10062">arxiv.org&#x2F;abs&#x2F;2610.10062</a></li>
+<li><a id="n5"></a><em>Reflection Is Not Monolithic</em>, Findings of EMNLP 2026（2026-10）. <a target="_blank" rel="noopener" href="https://aclanthology.org/2026.findings-emnlp.1130/">aclanthology.org&#x2F;2026.findings-emnlp.1130</a></li>
+<li><a id="n6"></a><em>Superficial Reflection or Genuine Thought?</em>, Findings of IJCNLP-AACL 2026（2026-11）. <a target="_blank" rel="noopener" href="https://aclanthology.org/2026.findings-aacl.229/">aclanthology.org&#x2F;2026.findings-aacl.229</a></li>
+<li><a id="n7"></a><em>Self-Correction as Feedback Control</em>, arXiv 2604.22273（2026-04 首发，v2 2026-05）. <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2604.22273">arxiv.org&#x2F;abs&#x2F;2604.22273</a></li>
+</ol>
+
+    </article>
+    <!-- license -->
+        <div class="license-wrapper">
+            <p>原文作者：<a href="https://edison-a-n.github.io">Edison</a>
+            <p>原文链接：<a href="https://edison-a-n.github.io/2026/11/23/reasoning-self-correction/">https://edison-a-n.github.io/2026/11/23/reasoning-self-correction/</a>
+            <p>发表日期：<a href="https://edison-a-n.github.io/2026/11/23/reasoning-self-correction/">November 23rd 2026, 4:00:00 pm</a>
+            <p>更新日期：<a href="https://edison-a-n.github.io/2026/11/23/reasoning-self-correction/">November 28th 2026, 2:57:19 pm</a>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+                <div class="nextSlogan">Next Post</div>
+                <a href="/2026/11/24/agent-context-offloading/" title="Agent 上下文卸载：业界做法、学术进展与 magic-context 的缓存安全设计">
+                    <div class="nextTitle">Agent 上下文卸载：业界做法、学术进展与 magic-context 的缓存安全设计</div>
+                </a>
+        </li>
+        <li class="previous">
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2026/11/20/dynamic-tool-registration/" title="动态工具注册：把工具当成要检索的数据集">
+                    <div class="prevTitle">动态工具注册：把工具当成要检索的数据集</div>
+                </a>
+        </li>
+    </ul>
+    <!-- comment -->
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+            
+            
+            
+            <!-- utteranc评论 -->
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+            
+            
+            
+        </div>
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    <!-- Mathjax -->
+</main>
+
+                <!-- profile -->
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+        <div class="social">
+                            <a href="mailto:zhangn661@gmail.com" class="iconfont-archer email" title="email" ></a>
+                <a href="//github.com/Edison-A-N" class="iconfont-archer github" target="_blank" title="github"></a>
+
+        </div>
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    <!-- 不蒜子  -->
+        <div class="busuanzi-container">
+                <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+        </div>
+</footer>
+
+        </div>
+        <!-- toc -->
+            <div class="toc-wrapper toc-wrapper-loding" style=    top:50vh;
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%C2%A71-%E6%8E%A8%E7%90%86%E8%AE%A9%E6%A8%A1%E5%9E%8B%E6%9C%89%E6%9C%BA%E4%BC%9A%E6%A0%B8%E5%AE%9E%E8%87%AA%E5%B7%B1%E5%86%99%E4%B8%8B%E7%9A%84%E8%AF%9D"><span class="toc-number">1.</span> <span class="toc-text">§1 推理让模型有机会核实自己写下的话</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-%E6%8E%A8%E7%90%86%E6%A1%A3%E8%B6%8A%E9%AB%98%EF%BC%8C%E6%94%B9%E8%BF%87%E6%9D%A5%E7%9A%84%E8%B6%8A%E5%A4%9A"><span class="toc-number">1.1.</span> <span class="toc-text">1.1 推理档越高，改过来的越多</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-%E9%94%99%E8%AF%AF%E5%86%99%E5%9C%A8%E6%A8%A1%E5%9E%8B%E8%87%AA%E5%B7%B1%E7%9A%84%E8%BE%93%E5%87%BA%E9%87%8C%EF%BC%8C%E9%9D%9E%E6%8E%A8%E7%90%86%E6%A8%A1%E5%9E%8B%E5%BE%88%E9%9A%BE%E7%BA%A0%E6%AD%A3"><span class="toc-number">1.2.</span> <span class="toc-text">1.2 错误写在模型自己的输出里，非推理模型很难纠正</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-3-%E6%8E%A8%E7%90%86%E8%83%BD%E5%88%87%E6%96%AD%E4%B8%8A%E4%B8%8B%E6%96%87%E9%94%99%E8%AF%AF%E7%9A%84%E8%87%AA%E6%88%91%E5%BC%BA%E5%8C%96"><span class="toc-number">1.3.</span> <span class="toc-text">1.3 推理能切断上下文错误的自我强化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-4-%E9%80%9A%E7%94%A8%E7%9A%84%E5%A4%8D%E6%A0%B8%E6%8F%90%E7%A4%BA%E6%9B%BF%E4%BB%A3%E4%B8%8D%E4%BA%86%E6%8E%A8%E7%90%86"><span class="toc-number">1.4.</span> <span class="toc-text">1.4 通用的复核提示替代不了推理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%C2%A72-%E6%A0%B8%E5%AE%9E%E8%83%BD%E4%B8%8D%E8%83%BD%E6%88%90%E5%8A%9F%EF%BC%8C%E5%8F%96%E5%86%B3%E4%BA%8E%E7%8E%AF%E5%A2%83%E7%BB%99%E4%B8%8D%E7%BB%99%E4%BE%9D%E6%8D%AE"><span class="toc-number">2.</span> <span class="toc-text">§2 核实能不能成功，取决于环境给不给依据</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E6%A1%88%E4%BE%8B%E9%87%8C%E6%94%B9%E8%BF%87%E6%9D%A5%E7%9A%84%E5%87%A0%E4%B9%8E%E9%83%BD%E8%AF%BB%E4%BA%86-skill"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 案例里改过来的几乎都读了 skill</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E5%B7%A5%E5%85%B7%E6%98%8E%E7%A1%AE%E6%8A%A5%E9%94%99%E6%97%B6%EF%BC%8C%E6%A8%A1%E5%9E%8B%E5%A4%A7%E5%A4%9A%E8%83%BD%E5%AF%9F%E8%A7%89"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 工具明确报错时，模型大多能察觉</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E6%B2%A1%E6%9C%89%E5%A4%96%E9%83%A8%E4%BE%9D%E6%8D%AE%E6%97%B6%EF%BC%8C%E6%8E%A8%E7%90%86%E9%87%8C%E7%9A%84%E5%8F%8D%E6%80%9D%E5%A4%A7%E5%A4%9A%E5%8F%AA%E6%98%AF%E7%A1%AE%E8%AE%A4%E5%89%8D%E6%96%87"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 没有外部依据时，推理里的反思大多只是确认前文</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%C2%A73-%E6%9C%89%E4%BA%86%E4%BE%9D%E6%8D%AE%EF%BC%8C%E6%A8%A1%E5%9E%8B%E8%BF%98%E8%A6%81%E8%82%AF%E6%80%80%E7%96%91%E8%87%AA%E5%B7%B1%E5%86%99%E7%9A%84%E8%AF%9D"><span class="toc-number">3.</span> <span class="toc-text">§3 有了依据，模型还要肯怀疑自己写的话</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%C2%A74-%E6%AC%A1%E8%A6%81%E9%97%AE%E9%A2%98"><span class="toc-number">4.</span> <span class="toc-text">§4 次要问题</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%8F%8D%E5%A4%8D%E8%87%AA%E7%BA%A0%E5%81%B6%E5%B0%94%E6%8A%8A%E5%AF%B9%E7%9A%84%E6%94%B9%E9%94%99"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 反复自纠偶尔把对的改错</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%8E%A8%E7%90%86%E6%9C%89%E6%88%90%E6%9C%AC"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 推理有成本</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-number">5.</span> <span class="toc-text">参考资料</span></a></li></ol>
+            </div>
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 49
+        </div>
+        <!-- search  -->
+    </div>
+    <div class="post-archive">
+            <div class="archive-year"> 2026 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2026/11/25/long-conversation-memory/">长对话怎么记：按时间压缩，按内容索引</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/24</span>
+            <a class="archive-post-title" href="/2026/11/24/agent-context-offloading/">Agent 上下文卸载：业界做法、学术进展与 magic-context 的缓存安全设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/23</span>
+            <a class="archive-post-title" href="/2026/11/23/reasoning-self-correction/">推理能帮 agent 纠偏，但成败取决于环境给不给依据</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/20</span>
+            <a class="archive-post-title" href="/2026/11/20/dynamic-tool-registration/">动态工具注册：把工具当成要检索的数据集</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/18</span>
+            <a class="archive-post-title" href="/2026/11/18/architecture-design-essentials/">架构设计要点：分析、综合与评估</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span>
+            <a class="archive-post-title" href="/2026/11/09/vertical-saas-agent-research/">全球垂类 Agent / SaaS Agent 调研：需要关注什么</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/24</span>
+            <a class="archive-post-title" href="/2026/09/24/agent-sandbox-network-access-control/">Agent 沙箱网络访问控制：从凭证暴露面到凭证代理</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/02</span>
+            <a class="archive-post-title" href="/2026/06/02/claude-code-memory-research/">Claude Code 内置 Memory 深度研究：CLAUDE.md、Auto Memory 与上下文工程</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span>
+            <a class="archive-post-title" href="/2026/05/21/agent-memory-frontier-survey/">Agent Memory 前沿调研：从长期记忆到经验系统</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/13</span>
+            <a class="archive-post-title" href="/2026/05/13/saas-agent-design-doc/">SaaS Agent 应该怎么设计：从竞品实践到生产级架构</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/12</span>
+            <a class="archive-post-title" href="/2026/05/12/saas-agent-sandbox-research/">SaaS Agent Sandbox 设计原则：不要把 Sandbox 当成容器</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span>
+            <a class="archive-post-title" href="/2026/05/08/agent-engineer-interview-2026/">2026 Agent 开发工程师面试指南：从架构、MCP 到生产化</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/19</span>
+            <a class="archive-post-title" href="/2026/04/19/multi-agent-architecture-survey/">Multi-Agent LLM 系统架构全景调研（2023–2026）</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/14</span>
+            <a class="archive-post-title" href="/2026/04/14/llm-tool-calling-decision-bias/">LLM Agent 中 Skill/Tool 调用决策偏差：技术调研报告</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span>
+            <a class="archive-post-title" href="/2026/04/12/harness-engineering/">Harness Engineering：当 AI 的缰绳比 AI 本身更重要</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span>
+            <a class="archive-post-title" href="/2026/03/30/coding-agent-evolution/">从代码到行动：Coding Agent 如何演变为通用数字助手</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2026/03/21/multi-agent-investment-research/">用 OpenAgents Workspace 协调多 Agent 投研</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/16</span>
+            <a class="archive-post-title" href="/2026/03/16/agent-loop-study/">Agent Loop 技术调研报告</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/14</span>
+            <a class="archive-post-title" href="/2026/03/14/harness-engineering-practical-guide/">Harness Engineering 实践指南：来自 OpenAI、Stripe、Anthropic 等团队的一线经验</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/17</span>
+            <a class="archive-post-title" href="/2026/01/17/trading-drawdown-control-guide/">交易回撤控制指南：认知、守心与仓位管理</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2025 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/28</span>
+            <a class="archive-post-title" href="/2025/12/28/code-execution-sandbox-mcp/">LLM-Driven Agent Architecture with Sandbox and MCP Integration</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2025/11/10/mcp-recent-sharing/">MCP 近期内容分享：从 Resources、Tools 到 Prompts 的实践探索</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span>
+            <a class="archive-post-title" href="/2025/10/28/args_doc_format_comparison/">Tool Args Documentation Format Comparison Analysis</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span>
+            <a class="archive-post-title" href="/2025/10/27/asgi_lifespan_complete_guide/">ASGI Lifespan 完整指南</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/mcp-output-schema/">MCP Output Schema：数据验证与结构化输出的技术实现</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/stop-converting-rest-api-to-mcp/">停止转换REST API到MCP：设计AI原生接口的正确方式</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span>
+            <a class="archive-post-title" href="/2025/09/20/llm-consistency-challenges-large-data-processing/">大型语言模型在处理大批量数据时的一致性挑战与解决方案</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/01</span>
+            <a class="archive-post-title" href="/2024/02/01/nextjs-pagination/">nextjs-pagination</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span>
+            <a class="archive-post-title" href="/2023/09/20/smart-contract-demo/">smart-contract-demo</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/30</span>
+            <a class="archive-post-title" href="/2023/08/30/multi-tenant/">多租户应用与架构设计关注点</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2022 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span>
+            <a class="archive-post-title" href="/2022/12/13/go-ddd/">go-ddd</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/07</span>
+            <a class="archive-post-title" href="/2022/12/07/git-rebase/">使用 `git pull --rebase`</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span>
+            <a class="archive-post-title" href="/2022/12/03/opentelemetry-jaeger/">opnetelemetry-jaeger</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/09</span>
+            <a class="archive-post-title" href="/2022/06/09/ddd-thinking/">ddd-thinking</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/23</span>
+            <a class="archive-post-title" href="/2022/05/23/mvc-and-ddd/">mvc-and-ddd</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span>
+            <a class="archive-post-title" href="/2022/02/13/commit-format-and-auto-changelog/">Git commit 规范</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/tight-lipped/">思考与交流</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/30</span>
+            <a class="archive-post-title" href="/2022/01/30/knowledge-breath-and-depth/">知识掌握的广度与深度</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2021 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/16</span>
+            <a class="archive-post-title" href="/2021/12/16/software-design-doc/">如何撰写技术设计文档</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/21</span>
+            <a class="archive-post-title" href="/2021/11/21/breaking-creation-product/">突破式创新的产品设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span>
+            <a class="archive-post-title" href="/2021/07/15/parallel-and-asynchronous-python/">DRF Exception Handle</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/17</span>
+            <a class="archive-post-title" href="/2021/06/17/DRF-Exception/">DRF Exception Handle</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span>
+            <a class="archive-post-title" href="/2021/06/15/Django-With-DDD/">Django With DDD</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/09</span>
+            <a class="archive-post-title" href="/2021/05/09/Agile-Design/">敏捷软件开发：设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span>
+            <a class="archive-post-title" href="/2021/03/30/DRF-Bussiness-Logic/">Django Restful Framework Business Logic</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2021/03/21/graphql-and-restful/">Graphql and Restful API</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/08</span>
+            <a class="archive-post-title" href="/2021/03/08/grpc-hello-world/">grpc hello world</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/03</span>
+            <a class="archive-post-title" href="/2021/01/03/New-Coding-Language/">我如何学一门新的编程语言</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2020 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/08</span>
+            <a class="archive-post-title" href="/2020/11/08/Agile-Dev/">敏捷开发辅助新项目验证与落地</a>
+        </li>
+            </ul>
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+            <span class="sidebar-tag-name" data-tags="agile">
+                <span class="iconfont-archer">&#xe606;</span>
+                agile
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="LLM">
+                <span class="iconfont-archer">&#xe606;</span>
+                LLM
+            </span>
+            <span class="sidebar-tag-name" data-tags="Context Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Context Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="Prompt Caching">
+                <span class="iconfont-archer">&#xe606;</span>
+                Prompt Caching
+            </span>
+            <span class="sidebar-tag-name" data-tags="MCP">
+                <span class="iconfont-archer">&#xe606;</span>
+                MCP
+            </span>
+            <span class="sidebar-tag-name" data-tags="面试">
+                <span class="iconfont-archer">&#xe606;</span>
+                面试
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent Loop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent Loop
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent Memory">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent Memory
+            </span>
+            <span class="sidebar-tag-name" data-tags="Memory System">
+                <span class="iconfont-archer">&#xe606;</span>
+                Memory System
+            </span>
+            <span class="sidebar-tag-name" data-tags="Security">
+                <span class="iconfont-archer">&#xe606;</span>
+                Security
+            </span>
+            <span class="sidebar-tag-name" data-tags="Credential Brokering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Credential Brokering
+            </span>
+            <span class="sidebar-tag-name" data-tags="Sandbox">
+                <span class="iconfont-archer">&#xe606;</span>
+                Sandbox
+            </span>
+            <span class="sidebar-tag-name" data-tags="Software Architecture">
+                <span class="iconfont-archer">&#xe606;</span>
+                Software Architecture
+            </span>
+            <span class="sidebar-tag-name" data-tags="Software Design">
+                <span class="iconfont-archer">&#xe606;</span>
+                Software Design
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Format">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Format
+            </span>
+            <span class="sidebar-tag-name" data-tags="ASGI, Python, FastAPI">
+                <span class="iconfont-archer">&#xe606;</span>
+                ASGI, Python, FastAPI
+            </span>
+            <span class="sidebar-tag-name" data-tags="Claude Code">
+                <span class="iconfont-archer">&#xe606;</span>
+                Claude Code
+            </span>
+            <span class="sidebar-tag-name" data-tags="Memory">
+                <span class="iconfont-archer">&#xe606;</span>
+                Memory
+            </span>
+            <span class="sidebar-tag-name" data-tags="Hooks">
+                <span class="iconfont-archer">&#xe606;</span>
+                Hooks
+            </span>
+            <span class="sidebar-tag-name" data-tags="Skills">
+                <span class="iconfont-archer">&#xe606;</span>
+                Skills
+            </span>
+            <span class="sidebar-tag-name" data-tags="thinking">
+                <span class="iconfont-archer">&#xe606;</span>
+                thinking
+            </span>
+            <span class="sidebar-tag-name" data-tags="Architecture">
+                <span class="iconfont-archer">&#xe606;</span>
+                Architecture
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI
+            </span>
+            <span class="sidebar-tag-name" data-tags="Harness Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Harness Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="DDD">
+                <span class="iconfont-archer">&#xe606;</span>
+                DDD
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Use">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Use
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Calling">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Calling
+            </span>
+            <span class="sidebar-tag-name" data-tags="Prompt Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Prompt Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="OpenAgents">
+                <span class="iconfont-archer">&#xe606;</span>
+                OpenAgents
+            </span>
+            <span class="sidebar-tag-name" data-tags="投研">
+                <span class="iconfont-archer">&#xe606;</span>
+                投研
+            </span>
+            <span class="sidebar-tag-name" data-tags="Multi-Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                Multi-Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI Architecture">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI Architecture
+            </span>
+            <span class="sidebar-tag-name" data-tags="multi-tenant">
+                <span class="iconfont-archer">&#xe606;</span>
+                multi-tenant
+            </span>
+            <span class="sidebar-tag-name" data-tags="可观测性">
+                <span class="iconfont-archer">&#xe606;</span>
+                可观测性
+            </span>
+            <span class="sidebar-tag-name" data-tags="opentelemetry">
+                <span class="iconfont-archer">&#xe606;</span>
+                opentelemetry
+            </span>
+            <span class="sidebar-tag-name" data-tags="Reasoning">
+                <span class="iconfont-archer">&#xe606;</span>
+                Reasoning
+            </span>
+            <span class="sidebar-tag-name" data-tags="Self-Correction">
+                <span class="iconfont-archer">&#xe606;</span>
+                Self-Correction
+            </span>
+            <span class="sidebar-tag-name" data-tags="SaaS">
+                <span class="iconfont-archer">&#xe606;</span>
+                SaaS
+            </span>
+            <span class="sidebar-tag-name" data-tags="系统设计">
+                <span class="iconfont-archer">&#xe606;</span>
+                系统设计
+            </span>
+            <span class="sidebar-tag-name" data-tags="产品设计">
+                <span class="iconfont-archer">&#xe606;</span>
+                产品设计
+            </span>
+            <span class="sidebar-tag-name" data-tags="API Design">
+                <span class="iconfont-archer">&#xe606;</span>
+                API Design
+            </span>
+            <span class="sidebar-tag-name" data-tags="Trading">
+                <span class="iconfont-archer">&#xe606;</span>
+                Trading
+            </span>
+            <span class="sidebar-tag-name" data-tags="Vertical AI">
+                <span class="iconfont-archer">&#xe606;</span>
+                Vertical AI
+            </span>
+            <span class="sidebar-tag-name" data-tags="Pricing">
+                <span class="iconfont-archer">&#xe606;</span>
+                Pricing
+            </span>
+            <span class="sidebar-tag-name" data-tags="Deep Research">
+                <span class="iconfont-archer">&#xe606;</span>
+                Deep Research
+            </span>
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+        <span class="sidebar-category-name" data-categories="AI Agent">
+            <span class="iconfont-archer">&#xe60a;</span>
+            AI Agent
+        </span>
+        <span class="sidebar-category-name" data-categories="软件架构">
+            <span class="iconfont-archer">&#xe60a;</span>
+            软件架构
+        </span>
+        <span class="sidebar-category-name" data-categories="交易策略">
+            <span class="iconfont-archer">&#xe60a;</span>
+            交易策略
+        </span>
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "https://edison-a-n.github.io",
+        root: siteMetaRoot,
+        author: "Edison"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+        <!-- main func -->
+        <script src="/scripts/main.js"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.umd.js" onload="window.Fancybox.bind('[data-fancybox]')" defer></script>
+        <!-- algolia -->
+        <!-- busuanzi -->
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        <!-- async load share.js -->
+            <script src="/scripts/share.js" async></script>
+        <!-- mermaid -->
+            <script src='https://cdn.jsdelivr.net/npm/mermaid@8.11.0/dist/mermaid.min.js' onload="window.mermaid.initialize({theme: 'dark'})" async></script>
+    </body>
+</html>

@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 880 470" role="img" aria-label="新内容来了，旧记忆的四种处理：改写、删除、标成失效、只追加；以用户住址为例" style="max-width:880px">
+<title>新内容来了，旧记忆的四种处理：改写、删除、标成失效、只追加；以用户住址为例</title>
+<defs>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d1d5db"/></marker>
+</defs>
+<style>text{font-family:-apple-system, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'Noto Sans SC', sans-serif;}</style>
+<rect x="0" y="0" width="880" height="470" rx="14" fill="#111827"/>
+<text x="40" y="38" fill="#e5e7eb" font-size="15" text-anchor="start" font-weight="bold">新内容来了，旧记忆怎么办</text>
+<rect x="40" y="60" width="250" height="40" rx="8" fill="#374151" stroke="#6b7280" stroke-width="1.5" opacity="1"/>
+<text x="54" y="85" fill="#d1d5db" font-size="12" text-anchor="start" font-weight="normal">旧记忆（第 20 轮）：用户住在上海</text>
+<rect x="320" y="60" width="250" height="40" rx="8" fill="#ffffff" stroke="#e5e7eb" stroke-width="2" opacity="1"/>
+<text x="334" y="85" fill="#111827" font-size="12" text-anchor="start" font-weight="bold">新内容（第 150 轮）：我搬到北京了</text>
+<text x="600" y="78" fill="#e5e7eb" font-size="12" text-anchor="start" font-weight="normal">检索出相似的旧记忆，</text>
+<text x="600" y="96" fill="#e5e7eb" font-size="12" text-anchor="start" font-weight="normal">由 LLM 判断怎么处理</text>
+<rect x="24" y="140" width="196" height="262" rx="10" fill="#1f2937" stroke="#374151" stroke-width="1.2"/>
+<text x="38" y="166" fill="#e5e7eb" font-size="14" text-anchor="start" font-weight="bold">改写旧记忆</text>
+<text x="38" y="186" fill="#9ca3af" font-size="12" text-anchor="start" font-weight="normal">新内容是补充时</text>
+<path d="M122.0,112 L122.0,136" fill="none" stroke="#6b7280" stroke-width="1.2" marker-end="url(#ar)"/>
+<text x="38" y="388" fill="#93c5fd" font-size="12" text-anchor="start" font-weight="normal">A-MEM、MemTree、Mem0</text>
+<rect x="238" y="140" width="196" height="262" rx="10" fill="#1f2937" stroke="#374151" stroke-width="1.2"/>
+<text x="252" y="166" fill="#e5e7eb" font-size="14" text-anchor="start" font-weight="bold">删掉旧记忆</text>
+<text x="252" y="186" fill="#9ca3af" font-size="12" text-anchor="start" font-weight="normal">新内容和旧的矛盾时</text>
+<path d="M336.0,112 L336.0,136" fill="none" stroke="#6b7280" stroke-width="1.2" marker-end="url(#ar)"/>
+<text x="252" y="388" fill="#93c5fd" font-size="12" text-anchor="start" font-weight="normal">Mem0、Think-in-Memory</text>
+<rect x="452" y="140" width="196" height="262" rx="10" fill="#1f2937" stroke="#ef5350" stroke-width="2"/>
+<text x="466" y="166" fill="#fca5a5" font-size="14" text-anchor="start" font-weight="bold">标成失效，原样保留</text>
+<text x="466" y="186" fill="#9ca3af" font-size="12" text-anchor="start" font-weight="normal">新内容和旧的矛盾时</text>
+<path d="M550.0,112 L550.0,136" fill="none" stroke="#6b7280" stroke-width="1.2" marker-end="url(#ar)"/>
+<text x="466" y="388" fill="#93c5fd" font-size="12" text-anchor="start" font-weight="normal">Zep、Mem0 图版本</text>
+<rect x="666" y="140" width="196" height="262" rx="10" fill="#1f2937" stroke="#374151" stroke-width="1.2"/>
+<text x="680" y="166" fill="#e5e7eb" font-size="14" text-anchor="start" font-weight="bold">只追加</text>
+<text x="680" y="186" fill="#9ca3af" font-size="12" text-anchor="start" font-weight="normal">不管什么关系</text>
+<path d="M764.0,112 L764.0,136" fill="none" stroke="#6b7280" stroke-width="1.2" marker-end="url(#ar)"/>
+<text x="680" y="388" fill="#93c5fd" font-size="12" text-anchor="start" font-weight="normal">LD-Agent、MemoChat、SeCom</text>
+<text x="38" y="220" fill="#9ca3af" font-size="12" text-anchor="start" font-weight="normal">例：新内容是「住在浦东」</text>
+<rect x="38" y="232" width="168" height="50" rx="6" fill="#ffffff" stroke="#e5e7eb" stroke-width="1.4" opacity="1"/>
+<text x="48" y="253" fill="#111827" font-size="12" text-anchor="start" font-weight="normal">用户住在上海浦东</text>
+<text x="48" y="271" fill="#111827" font-size="11" text-anchor="start" font-weight="normal">旧记忆被补充成一条</text>
+<rect x="252" y="204" width="168" height="50" rx="6" fill="#111827" stroke="#4b5563" stroke-width="1.4" opacity="1"/>
+<text x="262" y="225" fill="#9ca3af" font-size="12" text-anchor="start" font-weight="normal">用户住在上海</text>
+<text x="262" y="243" fill="#9ca3af" font-size="11" text-anchor="start" font-weight="normal">已删除</text>
+<line x1="258" y1="221" x2="414" y2="221" stroke="#ef5350" stroke-width="2"/>
+<rect x="252" y="262" width="168" height="50" rx="6" fill="#ffffff" stroke="#e5e7eb" stroke-width="1.4" opacity="1"/>
+<text x="262" y="283" fill="#111827" font-size="12" text-anchor="start" font-weight="normal">用户住在北京</text>
+<text x="262" y="301" fill="#111827" font-size="11" text-anchor="start" font-weight="normal">旧的已经没有了</text>
+<rect x="466" y="204" width="168" height="50" rx="6" fill="#111827" stroke="#4b5563" stroke-width="1.4" opacity="1"/>
+<text x="476" y="225" fill="#9ca3af" font-size="12" text-anchor="start" font-weight="normal">用户住在上海</text>
+<text x="476" y="243" fill="#9ca3af" font-size="11" text-anchor="start" font-weight="normal">有效：第 20 轮到第 150 轮</text>
+<rect x="466" y="262" width="168" height="50" rx="6" fill="#ffffff" stroke="#e5e7eb" stroke-width="1.4" opacity="1"/>
+<text x="476" y="283" fill="#111827" font-size="12" text-anchor="start" font-weight="normal">用户住在北京</text>
+<text x="476" y="301" fill="#111827" font-size="11" text-anchor="start" font-weight="normal">有效：第 150 轮起</text>
+<rect x="680" y="204" width="168" height="50" rx="6" fill="#ffffff" stroke="#e5e7eb" stroke-width="1.4" opacity="1"/>
+<text x="690" y="225" fill="#111827" font-size="12" text-anchor="start" font-weight="normal">用户住在上海</text>
+<text x="690" y="243" fill="#111827" font-size="11" text-anchor="start" font-weight="normal">仍然有效</text>
+<rect x="680" y="262" width="168" height="50" rx="6" fill="#ffffff" stroke="#e5e7eb" stroke-width="1.4" opacity="1"/>
+<text x="690" y="283" fill="#111827" font-size="12" text-anchor="start" font-weight="normal">用户住在北京</text>
+<text x="690" y="301" fill="#111827" font-size="11" text-anchor="start" font-weight="normal">仍然有效</text>
+<text x="680" y="338" fill="#fca5a5" font-size="12" text-anchor="start" font-weight="bold">两条都会被查到，</text>
+<text x="680" y="356" fill="#fca5a5" font-size="12" text-anchor="start" font-weight="bold">分不清哪条是现在的</text>
+<text x="40" y="436" fill="#e5e7eb" font-size="12" text-anchor="start" font-weight="normal">标成失效的做法既知道现在是什么，也留着以前是什么；删除和改写只留现在；只追加会让被推翻的旧事实一直留在索引里。</text>
+</svg>

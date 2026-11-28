@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <!-- title -->
+<!-- keywords -->
+<head>
+    <meta charset="utf-8">
+    <meta name="google-site-verification" content="JB-maqhhwUFVUFApXAdvEnVFMjbiaUSIwUQFvCk1VMQ" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="author" content="Edison">
+    <meta name="renderer" content="webkit">
+    <meta name="copyright" content="Edison">
+        <meta name="keywords" content="hexo,hexo-theme,hexo-blog,software architecture,domain-driven design,DDD,AI agents,MCP,Model Context Protocol,Python,Go,full-stack development,LLM,software engineering,hexo blog">
+    <link rel="canonical" href="https://edison-a-n.github.io/2026/11/25/long-conversation-memory/"/>
+    <meta name="description" content="一段很长的对话要解决两个问题：旧内容留多详细，需要时怎么找回来。本文对照认知科学、Transformer 长上下文结构和 Agent 记忆系统，分别梳理按时间压缩（切段、越旧越简略、保护最近原文）和按内容索引（标签、embedding 聚类、图）两条线，以及两条线合起来时的问题。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="长对话怎么记：按时间压缩，按内容索引">
+<meta property="og:url" content="https://edison-a-n.github.io/2026/11/25/long-conversation-memory/">
+<meta property="og:site_name" content="Edison&#39;s Tech Blog">
+<meta property="og:description" content="一段很长的对话要解决两个问题：旧内容留多详细，需要时怎么找回来。本文对照认知科学、Transformer 长上下文结构和 Agent 记忆系统，分别梳理按时间压缩（切段、越旧越简略、保护最近原文）和按内容索引（标签、embedding 聚类、图）两条线，以及两条线合起来时的问题。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://edison-a-n.github.io/intro/index-bg.jpg">
+<meta property="article:published_time" content="2026-11-24T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-11-28T06:57:19.847Z">
+<meta property="article:author" content="Edison">
+<meta property="article:tag" content="AI Agent">
+<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="Context Engineering">
+<meta property="article:tag" content="Agent Memory">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://edison-a-n.github.io/intro/index-bg.jpg">
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"长对话怎么记：按时间压缩，按内容索引","description":"一段很长的对话要解决两个问题：旧内容留多详细，需要时怎么找回来。本文对照认知科学、Transformer 长上下文结构和 Agent 记忆系统，分别梳理按时间压缩（切段、越旧越简略、保护最近原文）和按内容索引（标签、embedding 聚类、图）两条线，以及两条线合起来时的问题。","url":"https://edison-a-n.github.io/2026/11/25/long-conversation-memory/","mainEntityOfPage":{"@type":"WebPage","@id":"https://edison-a-n.github.io/2026/11/25/long-conversation-memory/"},"image":["https://edison-a-n.github.io/intro/index-bg.jpg"],"datePublished":"2026-11-24T16:00:00.000Z","dateModified":"2026-11-28T06:57:19.847Z","author":{"@type":"Person","name":"Edison","url":"https://edison-a-n.github.io"},"publisher":{"@type":"Person","name":"Edison"}}</script>
+
+    <meta http-equiv="Cache-control" content="no-cache">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <link rel="icon" href="/avatar/avatar.jpg">
+    <title>长对话怎么记：按时间压缩，按内容索引 · Edison&#39;s Tech Blog | Software Architecture, AI &amp; DDD</title>
+    <!-- /*! loadCSS. [c]2017 Filament Group, Inc. MIT License */
+/* This file is meant as a standalone workflow for
+- testing support for link[rel=preload]
+- enabling async CSS loading in browsers that do not support rel=preload
+- applying rel preload css once loaded, whether supported or not.
+*/ -->
+<script>
+    (function (w) {
+        'use strict'
+        // rel=preload support test
+        if (!w.loadCSS) {
+            w.loadCSS = function () {}
+        }
+        // define on the loadCSS obj
+        var rp = (loadCSS.relpreload = {})
+        // rel=preload feature support test
+        // runs once and returns a function for compat purposes
+        rp.support = (function () {
+            var ret
+            try {
+                ret = w.document.createElement('link').relList.supports('preload')
+            } catch (e) {
+                ret = false
+            }
+            return function () {
+                return ret
+            }
+        })()
+
+        // if preload isn't supported, get an asynchronous load by using a non-matching media attribute
+        // then change that media back to its intended value on load
+        rp.bindMediaToggle = function (link) {
+            // remember existing media attr for ultimate state, or default to 'all'
+            var finalMedia = link.media || 'all'
+
+            function enableStylesheet() {
+                link.media = finalMedia
+            }
+
+            // bind load handlers to enable media
+            if (link.addEventListener) {
+                link.addEventListener('load', enableStylesheet)
+            } else if (link.attachEvent) {
+                link.attachEvent('onload', enableStylesheet)
+            }
+
+            // Set rel and non-applicable media type to start an async request
+            // note: timeout allows this to happen async to let rendering continue in IE
+            setTimeout(function () {
+                link.rel = 'stylesheet'
+                link.media = 'only x'
+            })
+            // also enable media after 3 seconds,
+            // which will catch very old browsers (android 2.x, old firefox) that don't support onload on link
+            setTimeout(enableStylesheet, 3000)
+        }
+
+        // loop through link elements in DOM
+        rp.poly = function () {
+            // double check this to prevent external calls from running
+            if (rp.support()) {
+                return
+            }
+            var links = w.document.getElementsByTagName('link')
+            for (var i = 0; i < links.length; i++) {
+                var link = links[i]
+                // qualify links to those with rel=preload and as=style attrs
+                if (
+                    link.rel === 'preload' &&
+                    link.getAttribute('as') === 'style' &&
+                    !link.getAttribute('data-loadcss')
+                ) {
+                    // prevent rerunning on link
+                    link.setAttribute('data-loadcss', true)
+                    // bind listeners to toggle media back
+                    rp.bindMediaToggle(link)
+                }
+            }
+        }
+
+        // if unsupported, run the polyfill
+        if (!rp.support()) {
+            // run once at least
+            rp.poly()
+
+            // rerun poly on an interval until onload
+            var run = w.setInterval(rp.poly, 500)
+            if (w.addEventListener) {
+                w.addEventListener('load', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            } else if (w.attachEvent) {
+                w.attachEvent('onload', function () {
+                    rp.poly()
+                    w.clearInterval(run)
+                })
+            }
+        }
+
+        // commonjs
+        if (typeof exports !== 'undefined') {
+            exports.loadCSS = loadCSS
+        } else {
+            w.loadCSS = loadCSS
+        }
+    })(typeof global !== 'undefined' ? global : this)
+</script>
+
+    <style type="text/css">
+    @font-face {
+        font-family: 'Oswald-Regular';
+        src: url("/font/Oswald-Regular.ttf");
+    }
+
+    body {
+        margin: 0;
+    }
+
+    header,
+    footer,
+    .footer-fixed-btn,
+    .sidebar,
+    .container,
+    .site-intro-meta,
+    .toc-wrapper {
+        display: none;
+    }
+
+    .site-intro {
+        position: relative;
+        z-index: 3;
+        width: 100%;
+        /* height: 50vh; */
+        overflow: hidden;
+    }
+
+    .site-intro-placeholder {
+        position: absolute;
+        z-index: -2;
+        top: 0;
+        left: 0;
+        width: calc(100% + 300px);
+        height: 100%;
+        background: repeating-linear-gradient(
+            -45deg,
+            #444 0,
+            #444 80px,
+            #333 80px,
+            #333 160px
+        );
+        background-position: center center;
+        transform: translate3d(-226px, 0, 0);
+        animation: gradient-move 2.5s ease-out 0s infinite;
+    }
+
+    @keyframes gradient-move {
+        0% {
+            transform: translate3d(-226px, 0, 0);
+        }
+        100% {
+            transform: translate3d(0, 0, 0);
+        }
+    }
+</style>
+
+    <link id="stylesheet-fancybox" rel="preload" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link id="stylesheet-base" rel="preload" href="/css/style.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link id="stylesheet-mobile" rel="preload" href="/css/mobile.css" as="style" onload="this.onload=null;this.rel='stylesheet';this.media='screen and (max-width: 960px)'">
+    <link id="stylesheet-theme-dark" rel="preload" href="/css/dark.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" as="script">
+    <link rel="preload" href="/scripts/main.js" as="script">
+    <link rel="preload" href="/font/Oswald-Regular.ttf" as="font" crossorigin>
+    <link rel="preload" href="https://at.alicdn.com/t/font_327081_1dta1rlogw17zaor.woff" as="font" crossorigin>
+    <!-- algolia -->
+    <!-- 百度统计  -->
+    <!-- CNZZ 统计  -->
+    <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-J2YNL2R8V3"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-J2YNL2R8V3');
+        </script>
+<meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="Edison's Tech Blog" type="application/atom+xml">
+</head>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script type="text/javascript">
+        if (typeof window.$ == undefined) {
+            console.warn('jquery load from jsdelivr failed, will load local script')
+            document.write('<script src="/lib/jquery.min.js" />')
+        }
+    </script>
+        <body class="post-body">
+        <!-- header -->
+        <header class="header header-mobile">
+    <!-- top read progress line -->
+    <div class="header-element">
+        <div class="read-progress"></div>
+    </div>
+    <!-- sidebar menu button -->
+    <div class="header-element">
+        <div class="header-sidebar-menu">
+            <div style="padding-left: 1px;">&#xe775;</div>
+        </div>
+    </div>
+    <!-- header actions -->
+    <div class="header-actions">
+        <!-- theme mode switch button -->
+        <span class="header-theme-btn header-element">
+            <i class="fas fa-adjust"></i>
+        </span>
+        <!-- back to home page text -->
+        <span class="home-link header-element">
+            <a href="/">Edison's Studio.</a>
+        </span>
+    </div>
+    <!-- toggle banner -->
+    <div class="banner">
+        <div class="blog-title header-element">
+            <a href="/">Edison&#39;s Studio.</a>
+        </div>
+        <div class="post-title header-element">
+            <a href="#" class="post-name">长对话怎么记：按时间压缩，按内容索引</a>
+        </div>
+    </div>
+</header>
+
+        <!-- fixed footer -->
+        <footer class="footer-fixed">
+    <!-- donate button -->
+
+    <!-- back to top button -->
+    <div class="footer-fixed-btn footer-fixed-btn--hidden back-top">
+        <div>&#xe639;</div>
+    </div>
+</footer>
+
+        <!-- wrapper -->
+        <div class="wrapper">
+            <div class="site-intro" style="    height:50vh;
+">
+    <!-- 主页  -->
+    <!-- 404页  -->
+    <div class="site-intro-placeholder"></div>
+    <div class="site-intro-img" style="background-image: url(/intro/post-bg.jpg)"></div>
+    <div class="site-intro-meta">
+        <!-- 标题  -->
+        <h1 class="intro-title">
+            <!-- 主页  -->
+                长对话怎么记：按时间压缩，按内容索引
+            <!-- 404 -->
+        </h1>
+        <!-- 副标题 -->
+        <p class="intro-subtitle">
+            <!-- 主页副标题  -->
+            <!-- 404 -->
+        </p>
+        <!-- 文章页 meta -->
+            <div class="post-intros">
+                <!-- 文章页标签  -->
+                    <div class="post-intro-tags" >
+        <a class="post-tag" href="javascript:void(0);" data-tags="AI Agent">AI Agent</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="LLM">LLM</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Context Engineering">Context Engineering</a>
+        <a class="post-tag" href="javascript:void(0);" data-tags="Agent Memory">Agent Memory</a>
+</div>
+
+                <!-- 文章字数统计 -->
+                    <div class="post-intro-read">
+                        <span>字数统计: <span class="post-count word-count">8.1k</span>阅读时长: <span class="post-count reading-time">29 min</span></span>
+                    </div>
+                <div class="post-intro-meta">
+                    <!-- 撰写日期 -->
+                    <span class="iconfont-archer post-intro-calander">&#xe676;</span>
+                    <span class="post-intro-time">2026/11/25</span>
+                    <!-- busuanzi -->
+                        <span id="busuanzi_container_page_pv" class="busuanzi-pv">
+                            <span class="iconfont-archer post-intro-busuanzi">&#xe602;</span>
+                            <span id="busuanzi_value_page_pv"></span>
+                        </span>
+                    <!-- 文章分享 -->
+                    <span class="share-wrapper">
+                        <span class="iconfont-archer share-icon">&#xe71d;</span>
+                        <span class="share-text">Share</span>
+                        <ul class="share-list">
+                            <li class="iconfont-archer share-qr" data-type="qr">&#xe75b;
+                                <div class="share-qrcode"></div>
+                            </li>
+                            <li class="iconfont-archer" data-type="weibo">&#xe619;</li>
+                            <li class="iconfont-archer" data-type="qzone">&#xe62e;</li>
+                            <li class="iconfont-archer" data-type="twitter">&#xe634;</li>
+                            <li class="iconfont-archer" data-type="facebook">&#xe67a;</li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+    </div>
+</div>
+
+            <script>
+  // get user agent
+  function getBrowserVersions() {
+    var u = window.navigator.userAgent
+    return {
+      userAgent: u,
+      trident: u.indexOf('Trident') > -1, //IE内核
+      presto: u.indexOf('Presto') > -1, //opera内核
+      webKit: u.indexOf('AppleWebKit') > -1, //苹果、谷歌内核
+      gecko: u.indexOf('Gecko') > -1 && u.indexOf('KHTML') == -1, //火狐内核
+      mobile: !!u.match(/AppleWebKit.*Mobile.*/), //是否为移动终端
+      ios: !!u.match(/\(i[^;]+;( U;)? CPU.+Mac OS X/), //ios终端
+      android: u.indexOf('Android') > -1 || u.indexOf('Linux') > -1, //android终端或者uc浏览器
+      iPhone: u.indexOf('iPhone') > -1 || u.indexOf('Mac') > -1, //是否为iPhone或者安卓QQ浏览器
+      iPad: u.indexOf('iPad') > -1, //是否为iPad
+      webApp: u.indexOf('Safari') == -1, //是否为web应用程序，没有头部与底部
+      weixin: u.indexOf('MicroMessenger') == -1, //是否为微信浏览器
+      uc: u.indexOf('UCBrowser') > -1, //是否为android下的UC浏览器
+    }
+  }
+  var browser = {
+    versions: getBrowserVersions(),
+  }
+  console.log('userAgent: ' + browser.versions.userAgent)
+
+  // callback
+  function fontLoaded() {
+    console.log('font loaded')
+    if (document.getElementsByClassName('site-intro-meta')) {
+      document
+        .getElementsByClassName('intro-title')[0]
+        .classList.add('intro-fade-in')
+      document
+        .getElementsByClassName('intro-subtitle')[0]
+        .classList.add('intro-fade-in')
+      var postIntros = document.getElementsByClassName('post-intros')[0]
+      if (postIntros) {
+        postIntros.classList.add('post-fade-in')
+      }
+    }
+  }
+
+  // UC不支持跨域，所以直接显示
+  function asyncCb() {
+    if (browser.versions.uc) {
+      console.log('UCBrowser')
+      fontLoaded()
+    } else {
+      WebFont.load({
+        custom: {
+          families: ['Oswald-Regular'],
+        },
+        loading: function () {
+          // 所有字体开始加载
+          // console.log('font loading');
+        },
+        active: function () {
+          // 所有字体已渲染
+          fontLoaded()
+        },
+        inactive: function () {
+          // 字体预加载失败，无效字体或浏览器不支持加载
+          console.log('inactive: timeout')
+          fontLoaded()
+        },
+        timeout: 5000, // Set the timeout to two seconds
+      })
+    }
+  }
+
+  function asyncErr() {
+    console.warn('script load from CDN failed, will load local script')
+  }
+
+  // load webfont-loader async, and add callback function
+  function async(u, cb, err) {
+    var d = document,
+      t = 'script',
+      o = d.createElement(t),
+      s = d.getElementsByTagName(t)[0]
+    o.src = u
+    if (cb) {
+      o.addEventListener(
+        'load',
+        function (e) {
+          cb(null, e)
+        },
+        false
+      )
+    }
+    if (err) {
+      o.addEventListener(
+        'error',
+        function (e) {
+          err(null, e)
+        },
+        false
+      )
+    }
+    s.parentNode.insertBefore(o, s)
+  }
+
+  var asyncLoadWithFallBack = function (arr, success, reject) {
+    var currReject = function () {
+      reject()
+      arr.shift()
+      if (arr.length) async(arr[0], success, currReject)
+    }
+
+    async(arr[0], success, currReject)
+  }
+
+  asyncLoadWithFallBack(
+    [
+      'https://cdn.jsdelivr.net/npm/webfontloader@1.6.28/webfontloader.min.js',
+      'https://cdn.bootcss.com/webfont/1.6.28/webfontloader.js',
+      "/lib/webfontloader.min.js",
+    ],
+    asyncCb,
+    asyncErr
+  )
+</script>
+
+            <img class="loading" src="/assets/loading.svg" style="display: block; margin: 6rem auto 0 auto; width: 6rem; height: 6rem;" alt="loading">
+            <div class="container container-unloaded">
+                <main class="main post-page">
+    <article class="article-entry">
+        <div style="color: #666; font-style: italic; font-size: 0.9em; margin-bottom: 1em;">
+本文内容由 AI 协助生成，资料截至 2026-11-28，出处见文中链接和文末清单。
+</div>
+
+<p><span style="color: #d93025; font-weight: 700;">结论：一段很长的对话，旧内容要解决两个问题。一是留多详细，按时间处理：最近的原话完整留着，更早的只剩要点，原文存在外面。二是怎么找回来，按内容处理：给旧内容打标签、做 embedding 或者连成图，让分散在不同时间的同一件事能一起查到。</span></p>
+<p>人的记忆在两条线上都有对应的机制。Transformer 的长上下文方法主要在第一条线上，Agent 记忆系统两条线都有。两条线合起来时，有两个问题还没解决好：同一个话题散在不同时间段，按时间各自变简略，按内容又要一起取回；旧事实被新事实推翻后，只靠变简略改不掉它，要在索引上标出来。</p>
+<p>这篇是《<a href="/2026/11/24/agent-context-offloading/">Agent 上下文卸载</a>》的延伸。那篇讲工程上怎么腾上下文、怎么算缓存账，这篇讲旧内容以什么形式留下来、怎么找回来。跨会话的长期记忆系统（Letta、Mem0、Zep 这类）的产品对比见《<a href="/2026/05/21/agent-memory-frontier-survey/">Agent Memory 前沿调研</a>》，这里只讲它们的索引机制。</p>
+<hr>
+<h2 id="1-两个问题"><a href="#1-两个问题" class="headerlink" title="1. 两个问题"></a>1. 两个问题</h2><p>一段几百轮的对话，上下文窗口装不下，或者装得下但太贵、太乱。同一个用户分几十次聊，问题也一样，只是对话被切成了几段，第 5 节的很多系统就是为这种跨会话场景设计的。旧内容要回答两个问题：</p>
+<table>
+<thead class="nowrap-cell">
+<tr>
+<th>问题</th>
+<th class="nowrap-cell">按什么处理</th>
+<th class="nowrap-cell">典型做法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td class="nowrap-cell">留多详细</td>
+<td>时间：越旧越简略，最近的原样保留</td>
+<td>切段、多档摘要、按年龄衰减、保护最近一段原文、原文可取回</td>
+</tr>
+<tr>
+<td class="nowrap-cell">怎么找回来</td>
+<td>内容：相关的内容放在一起，一次查到</td>
+<td>打标签和关键词、embedding 聚类、知识图谱和链接</td>
+</tr>
+</tbody></table>
+<p>比如同一个话题在第 10 轮、第 80 轮、第 200 轮各聊过一次。按时间切段，它会落进三个不同的段，各自变简略；只有按内容建了索引，才能一次把三处都查出来。反过来，只建内容索引、不做时间压缩，上下文还是会被塞满。</p>
+<p><span style="color: #d93025; font-weight: 700;">两个问题互不替代：时间压缩管上下文放得下，内容索引管需要时找得到。</span></p>
+<p>两条线落到一个系统里，大致是这样：旧内容移出最近窗口时，原文存档、建好索引，上下文里只留摘要；之后需要旧内容时，才去查索引，把命中的原文取回来，和新消息一起交给模型。什么时候查、放回多少，各系统做法不同，见 5.6。</p>
+<p><a href="/images/long-conversation-memory/context-layout.svg"><img src="/images/long-conversation-memory/context-layout.svg" alt="模型每次看到的上下文：较早的段越旧越简略，最近一段保留原文；旧内容移出时原文存档并建索引，需要旧内容时才查索引，有命中才把原文放回上下文"></a></p>
+<h2 id="2-人怎么记一段长对话"><a href="#2-人怎么记一段长对话" class="headerlink" title="2. 人怎么记一段长对话"></a>2. 人怎么记一段长对话</h2><p>人听一段长对话也记不住每一句。心理学实验测过人会忘掉什么、留下什么、怎么切分、怎么取回。</p>
+<h3 id="2-1-原话很快就忘，意思留得久"><a href="#2-1-原话很快就忘，意思留得久" class="headerlink" title="2.1 原话很快就忘，意思留得久"></a>2.1 原话很快就忘，意思留得久</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://link.springer.com/article/10.3758/BF03208784">Sachs（1967）</a>让被试听一段话，在原句之后插入 0、80 或 160 个音节的其他内容，再测他们能不能认出句子改过没有。插入 80 到 160 个音节后，被试几乎认不出句式上的改动，和瞎猜差不多，但意思上的改动仍然能认出来。</li>
+<li><a target="_blank" rel="noopener" href="https://doi.org/10.1016/s0022-5371(71)80040-3">Jarvella（1971）</a>发现，人能逐字回忆的只有刚听到的这一句，而且往往只有最后一个分句，他后来的<a target="_blank" rel="noopener" href="https://link.springer.com/content/pdf/10.1007/978-1-4684-2535-2_19.pdf">综述</a>也是这样总结的。</li>
+<li>真实对话也是这样。<a target="_blank" rel="noopener" href="https://doi.org/10.1111/j.1468-2958.1984.tb00024.x">Stafford 和 Daly（1984）</a>发现，对话结束才 5 分钟，人只能回忆出说过内容的约 10%。</li>
+<li>但重要的话例外。<a target="_blank" rel="noopener" href="https://doi.org/10.1016/S0022-5371(77)80018-2">Keenan、MacWhinney 和 Mayhew（1977）</a>在一次午餐讨论会 30 小时后测参与者的记忆。带有说话人意图、态度或彼此关系的话，原话和意思都记得很好；不带这些的话，原话基本记不住。</li>
+<li>模糊痕迹理论（fuzzy-trace theory）把这些现象归结为：人同时存两份记忆，一份是逐字的，一份是要点，两份的存活时间不同（<a target="_blank" rel="noopener" href="https://doi.org/10.1016/j.dr.2004.08.005">Brainerd 和 Reyna 2004</a>）。</li>
+</ul>
+<p><a href="/images/long-conversation-memory/human-verbatim-gist.svg"><img src="/images/long-conversation-memory/human-verbatim-gist.svg" alt="人记一段对话：原话很快就忘，意思留得久；带意图、态度的话，原话也记得久"></a></p>
+<p><span style="color: #d93025; font-weight: 700;">对应到系统设计：越旧的内容只留越简略的摘要；原话能留多久，要看它重不重要。</span></p>
+<h3 id="2-2-按事件切分"><a href="#2-2-按事件切分" class="headerlink" title="2.2 按事件切分"></a>2.2 按事件切分</h3><p>事件切分理论（event segmentation theory）认为，人一边经历一边预测接下来会发生什么。预测突然出错的地方，人就感到一件事结束了、另一件开始了，记忆也按这些边界组织（<a target="_blank" rel="noopener" href="https://pubmed.ncbi.nlm.nih.gov/17338600/">Zacks 等 2007</a>）。</p>
+<p><span style="color: #d93025; font-weight: 700;">对应到系统设计：切段的边界放在一件事做完、目标变了的地方，不按固定长度切。</span></p>
+<h3 id="2-3-越旧越淡，用得多的留得久"><a href="#2-3-越旧越淡，用得多的留得久" class="headerlink" title="2.3 越旧越淡，用得多的留得久"></a>2.3 越旧越淡，用得多的留得久</h3><ul>
+<li>遗忘曲线最早由 Ebbinghaus 在 1885 年测出。<a target="_blank" rel="noopener" href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0120644">Murre 和 Dros（2015）</a>用一名被试、70 小时的学习复现了这条曲线，分别在 20 分钟、1 小时、9 小时、1 天、2 天和 31 天后测试，结果和原始数据相近。</li>
+<li><a target="_blank" rel="noopener" href="https://doi.org/10.1111/j.1467-9280.1991.tb00174.x">Anderson 和 Schooler（1991）</a>统计了环境里信息重复出现的规律，发现一条信息以后用得上的概率，取决于它以前出现的频率、新近程度和出现模式。他们认为人的记忆就是按这个规律调出来的。认知架构 ACT-R 里「激活值随时间衰减、每用一次就提升」的设定，依据就是这个规律。</li>
+</ul>
+<p><span style="color: #d93025; font-weight: 700;">对应到系统设计：衰减速度不必固定，用得多的衰减慢一些，再加上 2.1 说的重要度。</span></p>
+<h3 id="2-4-脑子里放线索，细节放在外面"><a href="#2-4-脑子里放线索，细节放在外面" class="headerlink" title="2.4 脑子里放线索，细节放在外面"></a>2.4 脑子里放线索，细节放在外面</h3><ul>
+<li>工作记忆容量很小，<a target="_blank" rel="noopener" href="https://pubmed.ncbi.nlm.nih.gov/11515286/">Cowan（2001）</a>估计平均只有 4 个组块左右。</li>
+<li>熟手怎么绕开这个限制？<a target="_blank" rel="noopener" href="https://pubmed.ncbi.nlm.nih.gov/7740089/">Ericsson 和 Kintsch（1995）</a>提出了长时工作记忆：信息存在长时记忆里，工作记忆里只放检索线索，靠线索直接取回细节。</li>
+<li>普通人也会把细节交给外部：记笔记、设提醒，这叫认知卸载（cognitive offloading），即借助身体动作或外部工具减轻记忆负担（<a target="_blank" rel="noopener" href="https://pubmed.ncbi.nlm.nih.gov/27542527/">Risko 和 Gilbert 2016</a>）。</li>
+<li><a target="_blank" rel="noopener" href="https://pubmed.ncbi.nlm.nih.gov/21764755/">Sparrow 等（2011）</a>发现，人预期以后还能查到某条信息时，对信息本身记得更差，对去哪里查记得更好。要注意，这篇论文的第一个实验（Stroop 启动效应）在 Camerer 等 2018 年的<a target="_blank" rel="noopener" href="https://doi.org/10.1038/s41562-018-0399-z">复现项目</a>里没有复现成功，效应量约为原文的 14%（<a target="_blank" rel="noopener" href="https://www.felixholzmeister.com/resources/supplements/camerer_etal_2018__sm.pdf">补充材料</a>）。「记住去哪里查」那部分没有被复现项目检验过。</li>
+</ul>
+<p><span style="color: #d93025; font-weight: 700;">对应到系统设计：上下文里的摘要要带着能找回原文的线索。</span>两条线在这里接上：时间线留下的摘要是线索，内容线上的索引决定顺着哪条线索去查。</p>
+<h3 id="2-5-最近的内容记得最清楚"><a href="#2-5-最近的内容记得最清楚" class="headerlink" title="2.5 最近的内容记得最清楚"></a>2.5 最近的内容记得最清楚</h3><p>自由回忆实验里，列表最后几项记得特别好，这叫新近效应（recency effect）。<a target="_blank" rel="noopener" href="https://psychologyrocks.org/wp-content/uploads/2019/07/glanzer1966.pdf">Glanzer 和 Cunitz（1966）</a>让被试听完列表后先出声计数，再回忆。计数 10 秒就去掉了大部分新近效应，30 秒后完全消失，列表开头几项的回忆不受影响。</p>
+<p><span style="color: #d93025; font-weight: 700;">对应到系统设计：最近的一段原样留着，更早的才压缩。</span>人的逐字窗口以句子和分句为单位（见 2.1），所以保留的单位要结构完整，比如不把一次工具调用和它的结果拆到边界两侧。</p>
+<h2 id="3-Agent-记忆系统：按时间压缩"><a href="#3-Agent-记忆系统：按时间压缩" class="headerlink" title="3. Agent 记忆系统：按时间压缩"></a>3. Agent 记忆系统：按时间压缩</h2><p>Agent 系统里，一段对话移出最近窗口后，会一档一档变短，原文另外存着，任何时候都能取回。</p>
+<p><a href="/images/long-conversation-memory/segment-decay.svg"><img src="/images/long-conversation-memory/segment-decay.svg" alt="一段对话随时间变化：原文、完整摘要、简略摘要、一行锚点，原文一直存着，任何一档都能取回"></a></p>
+<h3 id="3-1-重要度和遗忘曲线"><a href="#3-1-重要度和遗忘曲线" class="headerlink" title="3.1 重要度和遗忘曲线"></a>3.1 重要度和遗忘曲线</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2304.03442">Generative Agents</a>（UIST 2023）让 LLM 给每条记忆打 1 到 10 分的重要度。检索时把新近程度、重要度和相关度加在一起排序，相关度是记忆和查询 embedding 的余弦相似度。新近程度按「上次被检索后过了几个游戏小时」指数衰减，衰减因子 0.995。最近事件的重要度之和超过 150，就触发一次反思。</li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2305.10250">MemoryBank</a>（AAAI 2024）直接用遗忘曲线 R &#x3D; e^(−t&#x2F;S) 算一条记忆还保留多少。记忆每被召回一次，S 加 1，t 清零。</li>
+</ul>
+<p><span style="color: #d93025; font-weight: 700;">两者的衰减都只决定检索排第几，或者这条记忆留不留，不决定显示多详细。</span></p>
+<h3 id="3-2-最近原文加摘要，原文可取回"><a href="#3-2-最近原文加摘要，原文可取回" class="headerlink" title="3.2 最近原文加摘要，原文可取回"></a>3.2 最近原文加摘要，原文可取回</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2310.08560">MemGPT</a> 把主上下文里的消息排成先进先出的队列，队首放一段递归摘要。论文举的例子是：占用到窗口 70% 时插入「内存压力」警告，让模型自己把要紧内容存走；到 100% 时挤出一批消息（例如占窗口 50%），重新生成摘要。被挤出的原文永久存着，模型调用函数就能取回。</li>
+<li>LangChain 的 <code>ConversationSummaryBufferMemory</code> 固定保留 2000 token 的原文（<a target="_blank" rel="noopener" href="https://github.com/langchain-ai/langchain/blob/4ac61670b283897dca3ff9aaba0a5eed80389b3d/libs/langchain/langchain/memory/summary_buffer.py?plain=1#L13">源码</a>）。超出时从最旧的消息起逐条弹出，和旧摘要一起交给 LLM 生成新摘要（<a target="_blank" rel="noopener" href="https://github.com/langchain-ai/langchain/blob/4ac61670b283897dca3ff9aaba0a5eed80389b3d/libs/langchain/langchain/memory/summary_buffer.py?plain=1#L62-L73">源码</a>）。弹出的原文就丢了。</li>
+</ul>
+<p><span style="color: #d93025; font-weight: 700;">这两种做法的最近窗口都是固定值，或者到阈值就整批挤出；旧内容只有一档摘要，没有多档详略。</span></p>
+<h3 id="3-3-切段、摘要、按需查原文"><a href="#3-3-切段、摘要、按需查原文" class="headerlink" title="3.3 切段、摘要、按需查原文"></a>3.3 切段、摘要、按需查原文</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2402.09727">ReadAgent</a>（ICML 2024）让 LLM 自己决定在哪里分页，把每页压成一段要点（gist），需要细节时由模型主动查回原页，论文报告有效上下文扩大了 3.5 到 20 倍。它只有一档要点，没有重要度，也不随时间衰减，而且是为读一篇长文档设计的，不是为一直往下聊的对话。</li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2408.09559">HiAgent</a>（ACL 2025）以子目标为单位管理记忆：一个子目标做完，就把它的动作和观察换成摘要，只保留当前子目标的原始步骤。</li>
+</ul>
+<p><span style="color: #d93025; font-weight: 700;">切段、摘要、按需查原文这三步已经有现成的做法，切段边界也按事件和子目标来定，和 2.2 的事件切分一致。</span></p>
+<h3 id="3-4-模型内部也是这样留旧内容"><a href="#3-4-模型内部也是这样留旧内容" class="headerlink" title="3.4 模型内部也是这样留旧内容"></a>3.4 模型内部也是这样留旧内容</h3><p>同样的问题在模型内部也有：Transformer 处理超长输入时，KV 缓存装不下全部内容，也要决定旧内容留多少。这一层压缩的是 KV 和隐状态，人读不了，也不能按需展开成文字，但安排和上面的系统一样：开头留几个 token，最近一段原样保留，中间的压缩、丢弃，或者存到外面按需检索。</p>
+<p><a href="/images/long-conversation-memory/kv-cache-layout.svg"><img src="/images/long-conversation-memory/kv-cache-layout.svg" alt="KV 缓存里的一段超长输入：开头几个 token 一直留着，中间的旧内容压缩、丢弃或存到外面，最近窗口原样保留且长度固定"></a></p>
+<table>
+<thead class="nowrap-cell">
+<tr>
+<th>工作</th>
+<th class="nowrap-cell">做法</th>
+<th>对应第 2 节的哪一条</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/1901.02860">Transformer-XL</a>（ACL 2019）</td>
+<td>缓存上一段的隐状态接着用，长度固定</td>
+<td>最近一段原样留着（2.5）</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/1911.05507">Compressive Transformer</a>（ICLR 2020）</td>
+<td>最近的记忆原样保存，被挤出的最旧部分按压缩率 c 压进压缩记忆，PG-19 用 c&#x3D;2，Enwik8 用 c&#x3D;3，WikiText-103 用 c&#x3D;4</td>
+<td>最近一段原样留着（2.5）；越旧越简略（2.1）</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2309.17453">StreamingLLM</a>（ICLR 2024）</td>
+<td>保留开头 4 个 token（attention sink）加一个滚动窗口，论文里的配置是 4+1020</td>
+<td>最近一段原样留着（2.5）</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2306.14048" class="nowrap-cell">H2O</a>（NeurIPS 2023）</td>
+<td>KV 缓存一半留最近的 token，一半留累计注意力最高的 token</td>
+<td>最近一段原样留着（2.5）；重要的留得久（2.1）</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2407.09450" class="nowrap-cell">EM-LLM</a>（ICLR 2025）</td>
+<td>按「意外程度」把 token 序列切成事件，再按相似度和时间邻近检索事件</td>
+<td>按事件切分（2.2）；按线索取回（2.4）</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2203.08913">Memorizing Transformers</a>（ICLR 2022）、<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2402.04617" class="nowrap-cell">InfLLM</a></td>
+<td>被挤出的 KV 存在外面，按需检索回来</td>
+<td>细节放在外面，按线索取回（2.4）</td>
+</tr>
+</tbody></table>
+<p>这些方法里，最近窗口的长度都是固定的超参，或者总预算的固定比例。StreamingLLM 给的依据是「4 个开头 token 一般就够」，滚动窗口就是总预算减去这 4 个。能动态变化的只有预算在层或注意力头之间怎么分。</p>
+<p><span style="color: #d93025; font-weight: 700;">模型内部的做法和人的记忆、Agent 记忆系统是同一种安排：最近一段原样保留，更早的压缩或存到外面。但最近窗口都是固定长度，没有一项随上下文占用伸缩。</span></p>
+<h3 id="3-5-时间线上少有人做的两点"><a href="#3-5-时间线上少有人做的两点" class="headerlink" title="3.5 时间线上少有人做的两点"></a>3.5 时间线上少有人做的两点</h3><p><a href="/images/long-conversation-memory/time-line-gaps.svg"><img src="/images/long-conversation-memory/time-line-gaps.svg" alt="时间线上已有的做法和少有人做的两点：衰减只决定排序和去留、最近窗口固定；按年龄和重要度挑摘要档位、最近窗口随上下文占用伸缩"></a></p>
+<ul>
+<li><span style="color: #d93025; font-weight: 700;">用重要度和年龄从几档摘要里挑一档。</span> 前面的重要度和衰减只用来排检索顺序（Generative Agents），或者决定留不留（MemoryBank）；第 5 节的多档摘要（RAPTOR、MemGAS）按查询挑档。每段预先写好几档、渲染时按年龄和重要度挑一档的做法，我们只在开源插件 <a target="_blank" rel="noopener" href="https://github.com/cortexkit/magic-context/blob/11a19167bbb0752cc4d1a710e977264dfdac366f/docs/architecture/historian.md?plain=1#L92-L102">magic-context</a> 里见到。好处是渲染不用调模型，同一组段每次渲染出来都一样，不会让 prompt 缓存失效。</li>
+<li><span style="color: #d93025; font-weight: 700;">最近窗口随上下文占用伸缩。</span> 3.1 到 3.4 的方法里，最近窗口都是固定长度或固定比例。上下文空的时候留长一点、满的时候留短一点，这种做法在论文里没找到，我们也只在 magic-context 里见到。</li>
+</ul>
+<h2 id="4-人怎么按内容找回记忆"><a href="#4-人怎么按内容找回记忆" class="headerlink" title="4. 人怎么按内容找回记忆"></a>4. 人怎么按内容找回记忆</h2><p>人的记忆也按内容组织：相关的东西会被一起想起来，不管它们是什么时候记住的。</p>
+<h3 id="4-1-同类的东西一起想起来"><a href="#4-1-同类的东西一起想起来" class="headerlink" title="4.1 同类的东西一起想起来"></a>4.1 同类的东西一起想起来</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://doi.org/10.1080/00221309.1953.9710088">Bousfield（1953）</a>的实验里，词表包含几个类别的词，呈现时类别是打乱的。自由回忆时，被试倾向于把同一类的词连在一起说出来，这叫类别聚类（category clustering）。回忆的顺序跟着语义走，不跟着呈现的顺序走。</li>
+<li><a target="_blank" rel="noopener" href="https://doi.org/10.1037/0033-295X.82.6.407">Collins 和 Loftus（1975）</a>的扩散激活理论把这个现象模型化：概念是网络里的节点，想起一个概念，激活就沿连线扩散到相关的概念。</li>
+</ul>
+<p><span style="color: #d93025; font-weight: 700;">对应到系统设计：相关的内容要能一起取回，不管它们是在哪一轮说的。5.3 的图检索让相关性沿着边扩散，和扩散激活的思路很像。</span></p>
+<h3 id="4-2-想不起来，多半是缺线索"><a href="#4-2-想不起来，多半是缺线索" class="headerlink" title="4.2 想不起来，多半是缺线索"></a>4.2 想不起来，多半是缺线索</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://doi.org/10.1016/S0022-5371(66)80048-8">Tulving 和 Pearlstone（1966）</a>让被试学一串分好类的词，回忆时一组给类别名作提示，另一组不给。有提示的一组回忆得更多，词表越长，差距越大。作者的解释是，没想起来的词多数还在记忆里，只是缺少提取线索：记忆「可得」（available），但不「可达」（accessible）。</li>
+<li><a target="_blank" rel="noopener" href="https://doi.org/10.1037/h0020071">Tulving 和 Thomson（1973）</a>的编码特异性原则更进一步：一个线索管不管用，取决于它在存的时候有没有和目标一起存进去。</li>
+</ul>
+<p><span style="color: #d93025; font-weight: 700;">对应到系统设计：索引要在写入时就建好，标签和关键词要和以后会怎么问对得上。</span></p>
+<h3 id="4-3-想起一件事，会带出前后的事"><a href="#4-3-想起一件事，会带出前后的事" class="headerlink" title="4.3 想起一件事，会带出前后的事"></a>4.3 想起一件事，会带出前后的事</h3><p><a target="_blank" rel="noopener" href="https://doi.org/10.3758/BF03197276">Kahana（1996）</a>分析自由回忆的顺序发现，回忆出一个词后，下一个词往往来自学习时紧挨着它的位置，正向（往后）的概率约是反向的两倍。这叫时间邻近效应。<a target="_blank" rel="noopener" href="https://doi.org/10.1006/jmps.2001.1388">Howard 和 Kahana（2002）</a>的时间上下文模型用「回忆时取回当时的上下文」解释了它。<a target="_blank" rel="noopener" href="https://doi.org/10.1037/a0014420">Polyn、Norman 和 Kahana（2009）</a>的 CMR 模型把时间和语义放进同一个框架：回忆由一个内部上下文驱动，这个上下文同时带着语义特征和「在哪、什么时候学的」，所以语义聚类、时间聚类和来源聚类会同时出现。</p>
+<p><a href="/images/long-conversation-memory/semantic-temporal-recall.svg"><img src="/images/long-conversation-memory/semantic-temporal-recall.svg" alt="人回忆一串学过的词：想起一个词，会带出同类的词，也会带出学的时候紧挨着它的词，往后的比往前的多"></a></p>
+<p><span style="color: #d93025; font-weight: 700;">所以在人的记忆里，时间和内容两条线是一起起作用的。对应到系统设计：检索时除了看内容像不像，还可以把前后相邻的内容一起带出来。</span></p>
+<h3 id="4-4-海马存的是索引"><a href="#4-4-海马存的是索引" class="headerlink" title="4.4 海马存的是索引"></a>4.4 海马存的是索引</h3><p><a target="_blank" rel="noopener" href="https://pubmed.ncbi.nlm.nih.gov/3008780/">Teyler 和 DiScenna（1986）</a>提出海马索引理论：海马不存经历的内容本身，只存一份索引，记录这次经历激活了新皮层的哪些区域；重新激活索引，就能调出当时的整个皮层模式。<a target="_blank" rel="noopener" href="https://pubmed.ncbi.nlm.nih.gov/17696170/">Teyler 和 Rudy（2007）</a>补充说，只要用部分线索激活索引，就能调出整个情景。第 5 节的 HippoRAG 就是照这个理论设计的。</p>
+<p><span style="color: #d93025; font-weight: 700;">对应到系统设计：索引只存指向原文的线索，原文另外存。这和 2.4 的「脑子里放线索，细节放在外面」是同一个思路。</span></p>
+<h3 id="4-5-一个线索挂太多东西，就不灵了"><a href="#4-5-一个线索挂太多东西，就不灵了" class="headerlink" title="4.5 一个线索挂太多东西，就不灵了"></a>4.5 一个线索挂太多东西，就不灵了</h3><p><a target="_blank" rel="noopener" href="https://doi.org/10.1037/0278-7393.1.4.442">Watkins 和 Watkins（1975）</a>提出线索过载原则：一个提取线索下挂的条目越多，其中每一条被想起来的概率就越低。</p>
+<p><span style="color: #d93025; font-weight: 700;">对应到系统设计：一个标签或聚类下面挂的内容太多，用它召回时，每一条都更难找准。</span></p>
+<h2 id="5-Agent-记忆系统：按内容索引"><a href="#5-Agent-记忆系统：按内容索引" class="headerlink" title="5. Agent 记忆系统：按内容索引"></a>5. Agent 记忆系统：按内容索引</h2><p>Agent 记忆系统按内容建索引的做法分三类：给记忆打标签和关键词，用 embedding 聚类，把内容连成图。</p>
+<p><a href="/images/long-conversation-memory/index-families.svg"><img src="/images/long-conversation-memory/index-families.svg" alt="按内容建索引的三种做法：打标签和话题名、按 embedding 归类、连成知识图谱；写入时建好索引，查询时一次找回散在各轮的相关内容"></a></p>
+<h3 id="5-1-标签、关键词和笔记"><a href="#5-1-标签、关键词和笔记" class="headerlink" title="5.1 标签、关键词和笔记"></a>5.1 标签、关键词和笔记</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2502.12110">A-MEM</a>（NeurIPS 2025）照卡片笔记法（Zettelkasten）组织记忆。每条记忆写成一张笔记，除了原文，还有 LLM 生成的关键词、标签、一段上下文描述和指向其他笔记的链接。新笔记写入时，先用 embedding 找出最相近的几条旧笔记，由 LLM 判断要不要和它们建链接、要不要更新它们的关键词和描述（§3.2–3.3）。在 LoCoMo 的多跳问题上，去掉链接和更新时 F1 是 9.65，只去掉更新是 21.35，完整版是 27.02（Table 3，GPT-4o-mini）。</li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2406.05925">LD-Agent</a>（NAACL 2025）每段会话结束后写一条事件摘要，同时把对话里的名词收进话题库。检索分数是语义相似度加话题词重叠度，再乘一个随时间衰减的系数（§3.2.1）。</li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2308.08239">MemoChat</a> 让模型把对话按话题切开，每段写一个话题名和摘要。检索时把话题列表给模型，由模型挑出相关的话题，不算向量相似度（§3.2）。</li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2410.10813">LongMemEval</a>（ICLR 2025）测了「用什么当索引的键」。把从内容里抽出的用户事实拼进键里，召回率平均高 9.4%，最终问答准确率平均高 5.4%；只用压缩后的形式当键反而更差（§5.3，Table 3）。另一个做法是按事件日期建索引，查询时先由 LLM 推出时间范围再过滤，时间类问题的召回率平均高 11.3%（以轮为单位存时，Table 4）。</li>
+</ul>
+<h3 id="5-2-embedding-聚类和话题分组"><a href="#5-2-embedding-聚类和话题分组" class="headerlink" title="5.2 embedding 聚类和话题分组"></a>5.2 embedding 聚类和话题分组</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2401.18059">RAPTOR</a>（ICLR 2024）把文本块做 embedding，再软聚类（一个块可以属于几个簇），每个簇交给 LLM 写摘要，摘要再聚类、再摘要，建成一棵多层的摘要树。检索时把所有层拉平一起比相似度，效果比逐层往下找好。</li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2410.14052">MemTree</a> 逐条插入：新内容从根节点往下走，每层和子节点比 embedding 相似度，够相似就往下，都不够就挂成新叶子；插入后，路径上的父节点摘要由 LLM 重写（§3.1–3.2）。</li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2311.08719">Think-in-Memory</a> 每轮回复后让模型写一句归纳出的「想法」，用局部敏感哈希把相似的想法分到同一组。组内支持插入、遗忘（比如删掉互相矛盾的）和合并（§3.2–3.4）。</li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2502.05589">SeCom</a>（ICLR 2025）按话题把对话切成连贯的段，作为检索单位，再用 LLMLingua-2 压缩去噪。在 LoCoMo 上，按段存比按轮、按整个会话存都好（Table 1），结论是记忆单元的粒度会影响效果。</li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2505.19549">MemGAS</a> 给每段对话同时存几种粒度的记忆单元，检索时按查询挑粒度。</li>
+</ul>
+<h3 id="5-3-图和链接"><a href="#5-3-图和链接" class="headerlink" title="5.3 图和链接"></a>5.3 图和链接</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2405.14831">HippoRAG</a>（NeurIPS 2024）照海马索引理论设计（见 4.4）。建索引时，LLM 从每段文字里抽出三元组，组成知识图谱，再在相近的名词之间补同义边。查询时，先把查询里的实体对到图上的节点，再跑个性化 PageRank，让相关性沿着边扩散，一步检索就能做多跳推理（§2.2–2.3）。<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2502.14802">HippoRAG 2</a>（ICML 2025）把原文段落也放进图里，测的是语料不断增长的场景，没有测长对话；作者把长对话列为以后的工作。</li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2501.13956">Zep</a> 把记忆建成带时间的知识图谱，分三层：原始消息一字不改，实体和事实之间的边，以及按社区写的摘要。每条事实边记两条时间线：事实什么时候为真，什么时候存进来。新事实和旧事实矛盾时，旧边不删，只把它的失效时间设成新事实生效的时间（§2.2.3）。</li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2504.19413">Mem0</a> 抽出候选事实后，先检索相似的旧记忆，再由 LLM 选择新增、更新、删除或不动。它的图版本（Mem0^g）遇到过时的关系时，标成失效而不是直接删掉。在 LoCoMo 上，图版本的总分略高（68.44 对 66.88），但多跳问题反而更低（47.19 对 51.15，Table 1、2）。</li>
+</ul>
+<h3 id="5-4-三类索引比下来"><a href="#5-4-三类索引比下来" class="headerlink" title="5.4 三类索引比下来"></a>5.4 三类索引比下来</h3><p><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2507.05257">MemoryAgentBench</a>（ICLR 2026）把三类检索放在一张表里比：关键词检索（BM25，按查询词在文档里出现的次数和词的稀有程度打分，不看语义）、embedding 检索、图和树结构的检索（RAPTOR、HippoRAG 2、Mem0、Zep 等）。以 GPT-4o-mini 为底座，总分 HippoRAG 2 是 41.6，BM25 是 41.5，embedding 检索最好的是 38.2，Zep 是 24.0，Mem0 是 21.1（Table 3）。图和树结构的方法里，只有 HippoRAG 2 和最简单的关键词检索打平。要注意，这个基准的测试数据不全是对话。</p>
+<p><a href="/images/long-conversation-memory/memoryagentbench-overall.svg"><img src="/images/long-conversation-memory/memoryagentbench-overall.svg" alt="MemoryAgentBench 总分：BM25 41.5，HippoRAG 2 41.6，embedding 检索 29.8 到 38.2，其余图和树结构方法 20.6 到 30.9"></a></p>
+<p><span style="color: #d93025; font-weight: 700;">索引结构做得越复杂，效果不一定越好，BM25 这样的关键词检索应该先作为基线跑一遍。</span></p>
+<h3 id="5-5-什么时候建索引，旧记忆改不改"><a href="#5-5-什么时候建索引，旧记忆改不改" class="headerlink" title="5.5 什么时候建索引，旧记忆改不改"></a>5.5 什么时候建索引，旧记忆改不改</h3><p>新内容进来时，多数系统会先检索出相似的旧记忆，再决定旧的那条怎么处理。</p>
+<p><a href="/images/long-conversation-memory/old-memory-update.svg"><img src="/images/long-conversation-memory/old-memory-update.svg" alt="新内容来了，旧记忆的四种处理：改写、删除、标成失效、只追加；以用户从上海搬到北京为例"></a></p>
+<table>
+<thead class="nowrap-cell">
+<tr>
+<th>做法</th>
+<th class="nowrap-cell">什么时候建索引</th>
+<th>新内容来了，旧记忆怎么办</th>
+</tr>
+</thead>
+<tbody><tr>
+<td class="nowrap-cell">A-MEM</td>
+<td>写入时打标签、建链接</td>
+<td>更新旧笔记的关键词和描述</td>
+</tr>
+<tr>
+<td class="nowrap-cell">MemTree</td>
+<td class="nowrap-cell">写入时插进树</td>
+<td>重写路径上的父节点摘要</td>
+</tr>
+<tr>
+<td>Think-in-Memory</td>
+<td class="nowrap-cell">写入时按哈希分组</td>
+<td>合并相似的，删掉矛盾的</td>
+</tr>
+<tr>
+<td class="nowrap-cell">Mem0</td>
+<td class="nowrap-cell">写入时抽事实</td>
+<td>更新或删除旧记忆；图版本标成失效</td>
+</tr>
+<tr>
+<td class="nowrap-cell">Zep</td>
+<td class="nowrap-cell">写入时建图</td>
+<td>旧事实标上失效时间，原样保留</td>
+</tr>
+<tr>
+<td>HippoRAG、Generative Agents 的反思</td>
+<td>写入时建图或写反思</td>
+<td>只加新节点、新指针，旧记忆不动</td>
+</tr>
+<tr>
+<td>LD-Agent、MemoChat、SeCom</td>
+<td>写入时抽话题或切段</td>
+<td class="nowrap-cell">只追加</td>
+</tr>
+<tr>
+<td class="nowrap-cell">RAPTOR</td>
+<td>对整批语料一次性建树</td>
+<td class="nowrap-cell">不处理增量</td>
+</tr>
+</tbody></table>
+<p><span style="color: #d93025; font-weight: 700;">这些系统大多在写入时就建好索引。新内容来了，旧记忆有四种处理：改写、删除、标成失效、只追加（旧的不动）。只追加的系统，被推翻的旧事实会一直留在索引里。</span></p>
+<h3 id="5-6-什么时候查，放回多少"><a href="#5-6-什么时候查，放回多少" class="headerlink" title="5.6 什么时候查，放回多少"></a>5.6 什么时候查，放回多少</h3><p>索引建好以后，还要决定什么时候查，查到的放回多少，放回的留多久。查得太少，模型想不起该想起的；放回太多，上下文又被撑长，对话越长，候选越多，这个问题越明显。</p>
+<p>多放不一定更好。<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2307.03172">Lost in the Middle</a>（TACL 2023）把答案所在的段落放在 20 篇文档里的不同位置，模型的表现呈 U 形：答案在开头或结尾时最好，在中间时明显变差。GPT-3.5-Turbo 在答案位于中间时，甚至比不给任何文档时还差（不给文档是 56.1%）。</p>
+<p>「什么时候查」有三种做法：</p>
+<table>
+<thead class="nowrap-cell">
+<tr>
+<th>做法</th>
+<th class="nowrap-cell">例子</th>
+<th class="nowrap-cell">代价</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>模型自己判断，需要时调用检索</td>
+<td>MemGPT、ReadAgent</td>
+<td>模型不知道自己忘了什么，就不会去查</td>
+</tr>
+<tr>
+<td>每轮自动查，过了阈值才放回</td>
+<td><a target="_blank" rel="noopener" href="https://github.com/cortexkit/magic-context/blob/11a19167bbb0752cc4d1a710e977264dfdac366f/CONFIGURATION.md?plain=1#L816-L845">magic-context</a> 每条用户消息都在后台查一次，最高相似度过 0.6 才附上提示，少于 20 个字符的消息不查</td>
+<td>每轮多一次检索；阈值低了会带进噪音</td>
+</tr>
+<tr>
+<td class="nowrap-cell">先判断该不该查</td>
+<td><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2305.06983" class="nowrap-cell">FLARE</a>（EMNLP 2023）在生成的句子里有低置信度的词时才查；<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2310.11511" class="nowrap-cell">Self-RAG</a> 训练模型自己输出「要不要检索」；<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2403.14403">Adaptive-RAG</a>（NAACL 2024）用一个小分类器按问题难度选不查、查一次或查多轮</td>
+<td>多一步判断，有的要专门训练</td>
+</tr>
+</tbody></table>
+<p>「放回多少、留多久」也有几种处理：</p>
+<ul>
+<li><strong>每次只放有限的量。</strong> MemGPT 的检索结果分页返回，一次只取一页，避免一次检索就撑爆上下文。</li>
+<li><strong>放回的内容会留在对话里。</strong> MemGPT 的检索结果是函数调用的返回值，和普通消息一样留在先进先出的队列里，直到被挤出去。查得越多，这部分占得越多。</li>
+<li><strong>只放线索，不放原文。</strong> magic-context 自动查到的不是原文，而是几条压缩过的关键词片段，后面附一句「需要的话再查全文」。模型觉得有用，再自己调用检索取原文；不相关就忽略。它的文档也说明了阈值为什么设得宽：误报的代价很小，因为模型会忽略不相关的提示。</li>
+</ul>
+<p><a href="/images/long-conversation-memory/retrieval-timing.svg"><img src="/images/long-conversation-memory/retrieval-timing.svg" alt="三种检索时机在多轮对话里往上下文加了什么：模型自己查会漏查；每轮放回原文会越堆越长；每轮只放线索最省，需要时模型再取原文"></a></p>
+<p><span style="color: #d93025; font-weight: 700;">每轮自动查和模型自己查可以合起来用：每轮自动查，但只放回一两行线索，原文由模型决定要不要取。这样每轮只多几十个 token，也不依赖模型自己记得去查。</span>这和 2.4 的「脑子里放线索」、4.4 的「索引只存指向原文的线索」是同一个思路。</p>
+<h2 id="6-两条线合起来"><a href="#6-两条线合起来" class="headerlink" title="6. 两条线合起来"></a>6. 两条线合起来</h2><h3 id="6-1-两条线的对照"><a href="#6-1-两条线的对照" class="headerlink" title="6.1 两条线的对照"></a>6.1 两条线的对照</h3><table>
+<thead class="nowrap-cell">
+<tr>
+<th>部件</th>
+<th class="nowrap-cell">人的记忆</th>
+<th class="nowrap-cell">模型内部</th>
+<th>Agent 记忆系统</th>
+</tr>
+</thead>
+<tbody><tr>
+<td class="nowrap-cell">切段</td>
+<td>按预测出错的地方切成事件（Zacks）</td>
+<td>EM-LLM 按意外程度切</td>
+<td>ReadAgent 让模型分页；HiAgent 按子目标；SeCom 按话题</td>
+</tr>
+<tr>
+<td class="nowrap-cell">越旧越简略</td>
+<td>原话很快忘，意思留得久（Sachs、Jarvella）</td>
+<td>Compressive Transformer 越旧压得越狠</td>
+<td>RAPTOR、MemGAS 有多档，但按查询挑</td>
+</tr>
+<tr>
+<td class="nowrap-cell">重要度调节</td>
+<td>重要的话原话也记得住（Keenan）；ACT-R 按使用提升激活</td>
+<td>H2O 按累计注意力保留</td>
+<td>Generative Agents、MemoryBank 用于检索排序和去留</td>
+</tr>
+<tr>
+<td class="nowrap-cell">保护最近一段</td>
+<td>逐字窗口约一句话；新近效应几十秒内消失</td>
+<td>各方法都留固定长度的最近窗口</td>
+<td>LangChain 固定 2000 token；MemGPT 到阈值整批挤出</td>
+</tr>
+<tr>
+<td class="nowrap-cell">原文可取回</td>
+<td>工作记忆放线索，细节在长时记忆或外部（Ericsson 和 Kintsch、认知卸载）</td>
+<td>Memorizing Transformers、InfLLM 检索被挤出的 KV</td>
+<td>MemGPT 函数调用；ReadAgent 查原页</td>
+</tr>
+<tr>
+<td class="nowrap-cell">按内容归类</td>
+<td>类别聚类（Bousfield）；扩散激活（Collins 和 Loftus）</td>
+<td>Memorizing Transformers、InfLLM、EM-LLM 按相似度检索，但不归类</td>
+<td>标签（A-MEM、LD-Agent）；聚类（RAPTOR、MemTree）；图（HippoRAG、Zep）</td>
+</tr>
+<tr>
+<td class="nowrap-cell">带出前后内容</td>
+<td>时间邻近效应（Kahana）</td>
+<td>EM-LLM 取回事件时带上前后的邻居</td>
+<td>较少，多数检索只返回命中的条目</td>
+</tr>
+</tbody></table>
+<h3 id="6-2-同一个话题，时间上散着"><a href="#6-2-同一个话题，时间上散着" class="headerlink" title="6.2 同一个话题，时间上散着"></a>6.2 同一个话题，时间上散着</h3><p>按时间切段，同一个话题会散在几个段里，每段按自己的年龄变简略。第 10 轮的讨论可能已经只剩一行，第 200 轮的还是原文。内容索引能把三处一起找到，但取回来的三段详略不一样。</p>
+<p><a href="/images/long-conversation-memory/topic-scattered.svg"><img src="/images/long-conversation-memory/topic-scattered.svg" alt="同一个话题散在第 10、80、200 轮，三段按时间各自变简略，话题索引一次查到三处"></a></p>
+<p>人的记忆在这里是两条线一起起作用的：CMR 模型里，同一个内部上下文既带语义也带时间（见 4.3）。Agent 系统里，Generative Agents 和 LD-Agent 在检索打分时把新近程度和相关度合在一起算，但摘要留多详细和内容怎么索引，多数系统还是分开管的。几个可以考虑的做法，我们没有见到系统实现过：</p>
+<ul>
+<li>一段被内容检索查回原文，就提高它的重要度，让它的摘要变简略得慢一点。这和 ACT-R「用一次就提升」的设定一致；MemoryBank 也是召回一次就让记忆保留得更久，但它只管留不留，不管摘要留多详细。代价是重要度一变，已经显示出来的摘要也要跟着变，会让 prompt 缓存失效，只能等下一次重建上下文时生效。</li>
+<li>取回一段时，像 EM-LLM 那样把它前后相邻的段也带上，补上时间邻近这一路。</li>
+<li>同一话题的几段共用一个话题标签，衰减时一起考虑，而不是各自变简略。</li>
+</ul>
+<h3 id="6-3-旧事实被新事实推翻"><a href="#6-3-旧事实被新事实推翻" class="headerlink" title="6.3 旧事实被新事实推翻"></a>6.3 旧事实被新事实推翻</h3><p>一条旧事实被推翻后，只靠变简略改不掉它：旧摘要只会越来越短，但内容不会因为后来的事实变了而改正。内容索引这条线上有现成的处理办法：Zep 给旧事实标失效时间，Mem0 更新或删除旧记忆，Think-in-Memory 删掉矛盾的想法。但效果还不好，MemoryAgentBench 里「旧事实被新事实覆盖」的多跳任务，所有方法最好也只有 28%。</p>
+<p><span style="color: #d93025; font-weight: 700;">旧事实被推翻这件事，要在内容索引上处理：时间压缩只会让旧摘要变短，不会让它变对。</span></p>
+<h3 id="6-4-评测给的提醒"><a href="#6-4-评测给的提醒" class="headerlink" title="6.4 评测给的提醒"></a>6.4 评测给的提醒</h3><ul>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2410.10813">LongMemEval</a> 发现，商用聊天助手和长上下文模型在持续交互里的准确率会下降 30%。存储时按轮存比按整个会话存好；把事实拼进索引的键，比直接用原文当键效果好（见 5.1）。</li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2507.05257">MemoryAgentBench</a> 发现，查精确细节时检索占优，整体理解和边做边学时完整的长上下文最好。</li>
+</ul>
+<p><span style="color: #d93025; font-weight: 700;">两项评测指向同一件事：压缩过的内容代替不了原文。索引适合当入口，精确细节要回原文查。</span></p>
+<h3 id="6-5-类比在哪里不成立"><a href="#6-5-类比在哪里不成立" class="headerlink" title="6.5 类比在哪里不成立"></a>6.5 类比在哪里不成立</h3><ul>
+<li><strong>人会改写记忆，系统存的是原文。</strong> 人回忆时会重构，会出错，原话忘了之后往往不知道自己忘了，也就不会去查。由模型自己决定查不查的系统也有同样的问题（5.6）。系统可以把原文一字不改地存着，但摘要和标签是模型写的，也可能写错，所以原文必须能取回来。</li>
+<li><strong>人的索引改不了，系统的可以重建。</strong> 人在存的时候就把线索和内容绑在一起，事后改不了（4.2）。系统可以换 embedding 模型、重新打标签、重新建图。</li>
+<li><strong>embedding 只有一路语义。</strong> CMR 模型里，语义关联来自长期积累，来源和时间关联来自这次经历本身。embedding 的相似度来自训练语料，和这段对话在什么时候、什么场合说的无关，相当于只有长期语义这一路。</li>
+<li><strong>窗口的尺度不同。</strong> 人的逐字窗口是一两句话、几十秒。系统的最近窗口按 token 算，从一千左右（StreamingLLM 的 1020）到近十万 token。</li>
+</ul>
+<hr>
+<h2 id="出处与版本"><a href="#出处与版本" class="headerlink" title="出处与版本"></a>出处与版本</h2><ul>
+<li><strong>认知科学</strong>：<ul>
+<li>Sachs 1967，<em>Perception &amp; Psychophysics</em> 2:437–442，<a target="_blank" rel="noopener" href="https://link.springer.com/article/10.3758/BF03208784">Springer</a></li>
+<li>Jarvella 1971，<em>Journal of Verbal Learning and Verbal Behavior</em> 10:409–416，<a target="_blank" rel="noopener" href="https://doi.org/10.1016/s0022-5371(71)80040-3">DOI</a></li>
+<li>Stafford 和 Daly 1984，<em>Human Communication Research</em> 10:379–402，<a target="_blank" rel="noopener" href="https://doi.org/10.1111/j.1468-2958.1984.tb00024.x">DOI</a></li>
+<li>Keenan、MacWhinney 和 Mayhew 1977，<em>Journal of Verbal Learning and Verbal Behavior</em> 16:549–560，<a target="_blank" rel="noopener" href="https://doi.org/10.1016/S0022-5371(77)80018-2">DOI</a></li>
+<li>Brainerd 和 Reyna 2004，<em>Developmental Review</em> 24:396–439，<a target="_blank" rel="noopener" href="https://doi.org/10.1016/j.dr.2004.08.005">DOI</a></li>
+<li>Zacks 等 2007，<em>Psychological Bulletin</em> 133:273–293，<a target="_blank" rel="noopener" href="https://pubmed.ncbi.nlm.nih.gov/17338600/">PubMed</a></li>
+<li>Murre 和 Dros 2015，<em>PLOS ONE</em> 10:e0120644，<a target="_blank" rel="noopener" href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0120644">PLOS</a></li>
+<li>Anderson 和 Schooler 1991，<em>Psychological Science</em> 2:396–408，<a target="_blank" rel="noopener" href="https://doi.org/10.1111/j.1467-9280.1991.tb00174.x">DOI</a></li>
+<li>Cowan 2001，<em>Behavioral and Brain Sciences</em> 24:87–114，<a target="_blank" rel="noopener" href="https://pubmed.ncbi.nlm.nih.gov/11515286/">PubMed</a></li>
+<li>Ericsson 和 Kintsch 1995，<em>Psychological Review</em> 102:211–245，<a target="_blank" rel="noopener" href="https://pubmed.ncbi.nlm.nih.gov/7740089/">PubMed</a></li>
+<li>Risko 和 Gilbert 2016，<em>Trends in Cognitive Sciences</em> 20:676–688，<a target="_blank" rel="noopener" href="https://pubmed.ncbi.nlm.nih.gov/27542527/">PubMed</a></li>
+<li>Sparrow、Liu 和 Wegner 2011，<em>Science</em> 333:776–778，<a target="_blank" rel="noopener" href="https://pubmed.ncbi.nlm.nih.gov/21764755/">PubMed</a>；复现见 Camerer 等 2018，<em>Nature Human Behaviour</em> 2:637–644，<a target="_blank" rel="noopener" href="https://doi.org/10.1038/s41562-018-0399-z">DOI</a></li>
+<li>Glanzer 和 Cunitz 1966，<em>Journal of Verbal Learning and Verbal Behavior</em> 5:351–360，<a target="_blank" rel="noopener" href="https://doi.org/10.1016/S0022-5371(66)80044-0">DOI</a></li>
+<li>Bousfield 1953，<em>The Journal of General Psychology</em> 49:229–240，<a target="_blank" rel="noopener" href="https://doi.org/10.1080/00221309.1953.9710088">DOI</a></li>
+<li>Tulving 和 Pearlstone 1966，<em>Journal of Verbal Learning and Verbal Behavior</em> 5:381–391，<a target="_blank" rel="noopener" href="https://doi.org/10.1016/S0022-5371(66)80048-8">DOI</a></li>
+<li>Tulving 和 Thomson 1973，<em>Psychological Review</em> 80:352–373，<a target="_blank" rel="noopener" href="https://doi.org/10.1037/h0020071">DOI</a></li>
+<li>Collins 和 Loftus 1975，<em>Psychological Review</em> 82:407–428，<a target="_blank" rel="noopener" href="https://doi.org/10.1037/0033-295X.82.6.407">DOI</a></li>
+<li>Kahana 1996，<em>Memory &amp; Cognition</em> 24:103–109，<a target="_blank" rel="noopener" href="https://doi.org/10.3758/BF03197276">DOI</a></li>
+<li>Howard 和 Kahana 2002，<em>Journal of Mathematical Psychology</em> 46:269–299，<a target="_blank" rel="noopener" href="https://doi.org/10.1006/jmps.2001.1388">DOI</a></li>
+<li>Polyn、Norman 和 Kahana 2009，<em>Psychological Review</em> 116:129–156，<a target="_blank" rel="noopener" href="https://doi.org/10.1037/a0014420">DOI</a></li>
+<li>Teyler 和 DiScenna 1986，<em>Behavioral Neuroscience</em> 100:147–154，<a target="_blank" rel="noopener" href="https://pubmed.ncbi.nlm.nih.gov/3008780/">PubMed</a></li>
+<li>Teyler 和 Rudy 2007，<em>Hippocampus</em> 17:1158–1169，<a target="_blank" rel="noopener" href="https://pubmed.ncbi.nlm.nih.gov/17696170/">PubMed</a></li>
+<li>Watkins 和 Watkins 1975，<em>Journal of Experimental Psychology: Human Learning and Memory</em> 1:442–452，<a target="_blank" rel="noopener" href="https://doi.org/10.1037/0278-7393.1.4.442">DOI</a></li>
+</ul>
+</li>
+<li><strong>模型结构与评测</strong>：Transformer-XL、Compressive Transformer、StreamingLLM、H2O、EM-LLM、Memorizing Transformers、InfLLM、Lost in the Middle、LongMemEval、MemoryAgentBench，链接见正文，会议名取自 arXiv 备注、论文页眉或会议页面。</li>
+<li><strong>Agent 记忆系统</strong>：Generative Agents、MemoryBank、MemGPT、ReadAgent、HiAgent、A-MEM、LD-Agent、MemoChat、RAPTOR、MemTree、Think-in-Memory、SeCom、MemGAS、HippoRAG、HippoRAG 2、Zep、Mem0，以及检索时机相关的 FLARE、Self-RAG、Adaptive-RAG，链接见正文；没写会议名的，是我们没能确认。LangChain 源码固定在 v0.1.0 的提交 <code>4ac6167</code>。</li>
+<li><strong>magic-context</strong>：<a target="_blank" rel="noopener" href="https://github.com/cortexkit/magic-context">cortexkit&#x2F;magic-context</a>，提交 <code>11a1916</code>。</li>
+</ul>
+
+    </article>
+    <!-- license -->
+        <div class="license-wrapper">
+            <p>原文作者：<a href="https://edison-a-n.github.io">Edison</a>
+            <p>原文链接：<a href="https://edison-a-n.github.io/2026/11/25/long-conversation-memory/">https://edison-a-n.github.io/2026/11/25/long-conversation-memory/</a>
+            <p>发表日期：<a href="https://edison-a-n.github.io/2026/11/25/long-conversation-memory/">November 25th 2026, 12:00:00 am</a>
+            <p>更新日期：<a href="https://edison-a-n.github.io/2026/11/25/long-conversation-memory/">November 28th 2026, 2:57:19 pm</a>
+            <p>版权声明：本文采用<a rel="license noopener" target="_blank" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
+        </div>
+    <!-- paginator -->
+    <ul class="post-paginator">
+        <li class="next">
+        </li>
+        <li class="previous">
+                <div class="prevSlogan">Previous Post</div>
+                <a href="/2026/11/24/agent-context-offloading/" title="Agent 上下文卸载：业界做法、学术进展与 magic-context 的缓存安全设计">
+                    <div class="prevTitle">Agent 上下文卸载：业界做法、学术进展与 magic-context 的缓存安全设计</div>
+                </a>
+        </li>
+    </ul>
+    <!-- comment -->
+        <div class="post-comment">
+            <!-- 来必力 City 版安装代码 -->
+
+            
+            
+            
+            <!-- utteranc评论 -->
+
+            <!-- partial('_partial/comment/changyan') -->
+            <!--PC版-->
+
+            
+            
+            
+        </div>
+    <!-- timeliness note -->
+    <!-- idea from: https://hexo.fluid-dev.com/posts/hexo-injector/#%E6%96%87%E7%AB%A0%E6%97%B6%E6%95%88%E6%80%A7%E6%8F%90%E7%A4%BA -->
+    <!-- Mathjax -->
+</main>
+
+                <!-- profile -->
+            </div>
+            <footer class="footer footer-unloaded">
+    <!-- social  -->
+        <div class="social">
+                            <a href="mailto:zhangn661@gmail.com" class="iconfont-archer email" title="email" ></a>
+                <a href="//github.com/Edison-A-N" class="iconfont-archer github" target="_blank" title="github"></a>
+
+        </div>
+    <!-- powered by Hexo  -->
+    <div class="copyright">
+        <span id="hexo-power">Powered by <a href="https://hexo.io/" target="_blank">Hexo</a></span><span class="iconfont-archer power">&#xe635;</span><span id="theme-info">theme <a href="https://github.com/fi3ework/hexo-theme-archer" target="_blank">Archer</a></span>
+    </div>
+    <!-- website approve for Chinese user -->
+    <!-- 不蒜子  -->
+        <div class="busuanzi-container">
+                <span id="busuanzi_container_site_pv">PV: <span id="busuanzi_value_site_pv"></span> :)</span>
+        </div>
+</footer>
+
+        </div>
+        <!-- toc -->
+            <div class="toc-wrapper toc-wrapper-loding" style=    top:50vh;
+>
+                <div class="toc-catalog">
+                    <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
+                </div>
+                <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E4%B8%A4%E4%B8%AA%E9%97%AE%E9%A2%98"><span class="toc-number">1.</span> <span class="toc-text">1. 两个问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E4%BA%BA%E6%80%8E%E4%B9%88%E8%AE%B0%E4%B8%80%E6%AE%B5%E9%95%BF%E5%AF%B9%E8%AF%9D"><span class="toc-number">2.</span> <span class="toc-text">2. 人怎么记一段长对话</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E5%8E%9F%E8%AF%9D%E5%BE%88%E5%BF%AB%E5%B0%B1%E5%BF%98%EF%BC%8C%E6%84%8F%E6%80%9D%E7%95%99%E5%BE%97%E4%B9%85"><span class="toc-number">2.1.</span> <span class="toc-text">2.1 原话很快就忘，意思留得久</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E6%8C%89%E4%BA%8B%E4%BB%B6%E5%88%87%E5%88%86"><span class="toc-number">2.2.</span> <span class="toc-text">2.2 按事件切分</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E8%B6%8A%E6%97%A7%E8%B6%8A%E6%B7%A1%EF%BC%8C%E7%94%A8%E5%BE%97%E5%A4%9A%E7%9A%84%E7%95%99%E5%BE%97%E4%B9%85"><span class="toc-number">2.3.</span> <span class="toc-text">2.3 越旧越淡，用得多的留得久</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E8%84%91%E5%AD%90%E9%87%8C%E6%94%BE%E7%BA%BF%E7%B4%A2%EF%BC%8C%E7%BB%86%E8%8A%82%E6%94%BE%E5%9C%A8%E5%A4%96%E9%9D%A2"><span class="toc-number">2.4.</span> <span class="toc-text">2.4 脑子里放线索，细节放在外面</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-%E6%9C%80%E8%BF%91%E7%9A%84%E5%86%85%E5%AE%B9%E8%AE%B0%E5%BE%97%E6%9C%80%E6%B8%85%E6%A5%9A"><span class="toc-number">2.5.</span> <span class="toc-text">2.5 最近的内容记得最清楚</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-Agent-%E8%AE%B0%E5%BF%86%E7%B3%BB%E7%BB%9F%EF%BC%9A%E6%8C%89%E6%97%B6%E9%97%B4%E5%8E%8B%E7%BC%A9"><span class="toc-number">3.</span> <span class="toc-text">3. Agent 记忆系统：按时间压缩</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E9%87%8D%E8%A6%81%E5%BA%A6%E5%92%8C%E9%81%97%E5%BF%98%E6%9B%B2%E7%BA%BF"><span class="toc-number">3.1.</span> <span class="toc-text">3.1 重要度和遗忘曲线</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E6%9C%80%E8%BF%91%E5%8E%9F%E6%96%87%E5%8A%A0%E6%91%98%E8%A6%81%EF%BC%8C%E5%8E%9F%E6%96%87%E5%8F%AF%E5%8F%96%E5%9B%9E"><span class="toc-number">3.2.</span> <span class="toc-text">3.2 最近原文加摘要，原文可取回</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E5%88%87%E6%AE%B5%E3%80%81%E6%91%98%E8%A6%81%E3%80%81%E6%8C%89%E9%9C%80%E6%9F%A5%E5%8E%9F%E6%96%87"><span class="toc-number">3.3.</span> <span class="toc-text">3.3 切段、摘要、按需查原文</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E6%A8%A1%E5%9E%8B%E5%86%85%E9%83%A8%E4%B9%9F%E6%98%AF%E8%BF%99%E6%A0%B7%E7%95%99%E6%97%A7%E5%86%85%E5%AE%B9"><span class="toc-number">3.4.</span> <span class="toc-text">3.4 模型内部也是这样留旧内容</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-%E6%97%B6%E9%97%B4%E7%BA%BF%E4%B8%8A%E5%B0%91%E6%9C%89%E4%BA%BA%E5%81%9A%E7%9A%84%E4%B8%A4%E7%82%B9"><span class="toc-number">3.5.</span> <span class="toc-text">3.5 时间线上少有人做的两点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E4%BA%BA%E6%80%8E%E4%B9%88%E6%8C%89%E5%86%85%E5%AE%B9%E6%89%BE%E5%9B%9E%E8%AE%B0%E5%BF%86"><span class="toc-number">4.</span> <span class="toc-text">4. 人怎么按内容找回记忆</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E5%90%8C%E7%B1%BB%E7%9A%84%E4%B8%9C%E8%A5%BF%E4%B8%80%E8%B5%B7%E6%83%B3%E8%B5%B7%E6%9D%A5"><span class="toc-number">4.1.</span> <span class="toc-text">4.1 同类的东西一起想起来</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%83%B3%E4%B8%8D%E8%B5%B7%E6%9D%A5%EF%BC%8C%E5%A4%9A%E5%8D%8A%E6%98%AF%E7%BC%BA%E7%BA%BF%E7%B4%A2"><span class="toc-number">4.2.</span> <span class="toc-text">4.2 想不起来，多半是缺线索</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E6%83%B3%E8%B5%B7%E4%B8%80%E4%BB%B6%E4%BA%8B%EF%BC%8C%E4%BC%9A%E5%B8%A6%E5%87%BA%E5%89%8D%E5%90%8E%E7%9A%84%E4%BA%8B"><span class="toc-number">4.3.</span> <span class="toc-text">4.3 想起一件事，会带出前后的事</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E6%B5%B7%E9%A9%AC%E5%AD%98%E7%9A%84%E6%98%AF%E7%B4%A2%E5%BC%95"><span class="toc-number">4.4.</span> <span class="toc-text">4.4 海马存的是索引</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-%E4%B8%80%E4%B8%AA%E7%BA%BF%E7%B4%A2%E6%8C%82%E5%A4%AA%E5%A4%9A%E4%B8%9C%E8%A5%BF%EF%BC%8C%E5%B0%B1%E4%B8%8D%E7%81%B5%E4%BA%86"><span class="toc-number">4.5.</span> <span class="toc-text">4.5 一个线索挂太多东西，就不灵了</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-Agent-%E8%AE%B0%E5%BF%86%E7%B3%BB%E7%BB%9F%EF%BC%9A%E6%8C%89%E5%86%85%E5%AE%B9%E7%B4%A2%E5%BC%95"><span class="toc-number">5.</span> <span class="toc-text">5. Agent 记忆系统：按内容索引</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E6%A0%87%E7%AD%BE%E3%80%81%E5%85%B3%E9%94%AE%E8%AF%8D%E5%92%8C%E7%AC%94%E8%AE%B0"><span class="toc-number">5.1.</span> <span class="toc-text">5.1 标签、关键词和笔记</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-embedding-%E8%81%9A%E7%B1%BB%E5%92%8C%E8%AF%9D%E9%A2%98%E5%88%86%E7%BB%84"><span class="toc-number">5.2.</span> <span class="toc-text">5.2 embedding 聚类和话题分组</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E5%9B%BE%E5%92%8C%E9%93%BE%E6%8E%A5"><span class="toc-number">5.3.</span> <span class="toc-text">5.3 图和链接</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-%E4%B8%89%E7%B1%BB%E7%B4%A2%E5%BC%95%E6%AF%94%E4%B8%8B%E6%9D%A5"><span class="toc-number">5.4.</span> <span class="toc-text">5.4 三类索引比下来</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-5-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E5%BB%BA%E7%B4%A2%E5%BC%95%EF%BC%8C%E6%97%A7%E8%AE%B0%E5%BF%86%E6%94%B9%E4%B8%8D%E6%94%B9"><span class="toc-number">5.5.</span> <span class="toc-text">5.5 什么时候建索引，旧记忆改不改</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-6-%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E6%9F%A5%EF%BC%8C%E6%94%BE%E5%9B%9E%E5%A4%9A%E5%B0%91"><span class="toc-number">5.6.</span> <span class="toc-text">5.6 什么时候查，放回多少</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E4%B8%A4%E6%9D%A1%E7%BA%BF%E5%90%88%E8%B5%B7%E6%9D%A5"><span class="toc-number">6.</span> <span class="toc-text">6. 两条线合起来</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E4%B8%A4%E6%9D%A1%E7%BA%BF%E7%9A%84%E5%AF%B9%E7%85%A7"><span class="toc-number">6.1.</span> <span class="toc-text">6.1 两条线的对照</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E5%90%8C%E4%B8%80%E4%B8%AA%E8%AF%9D%E9%A2%98%EF%BC%8C%E6%97%B6%E9%97%B4%E4%B8%8A%E6%95%A3%E7%9D%80"><span class="toc-number">6.2.</span> <span class="toc-text">6.2 同一个话题，时间上散着</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E6%97%A7%E4%BA%8B%E5%AE%9E%E8%A2%AB%E6%96%B0%E4%BA%8B%E5%AE%9E%E6%8E%A8%E7%BF%BB"><span class="toc-number">6.3.</span> <span class="toc-text">6.3 旧事实被新事实推翻</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-%E8%AF%84%E6%B5%8B%E7%BB%99%E7%9A%84%E6%8F%90%E9%86%92"><span class="toc-number">6.4.</span> <span class="toc-text">6.4 评测给的提醒</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-5-%E7%B1%BB%E6%AF%94%E5%9C%A8%E5%93%AA%E9%87%8C%E4%B8%8D%E6%88%90%E7%AB%8B"><span class="toc-number">6.5.</span> <span class="toc-text">6.5 类比在哪里不成立</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%87%BA%E5%A4%84%E4%B8%8E%E7%89%88%E6%9C%AC"><span class="toc-number">7.</span> <span class="toc-text">出处与版本</span></a></li></ol>
+            </div>
+        <!-- sidebar -->
+        <div class="sidebar sidebar-hide">
+    <ul class="sidebar-tabs sidebar-tabs-active-0">
+        <li class="sidebar-tab-archives"><span class="iconfont-archer">&#xe67d;</span><span class="tab-name">Archive</span></li>
+        <li class="sidebar-tab-tags"><span class="iconfont-archer">&#xe61b;</span><span class="tab-name">Tag</span></li>
+        <li class="sidebar-tab-categories"><span class="iconfont-archer">&#xe666;</span><span class="tab-name">Cate</span></li>
+    </ul>
+    <div class="sidebar-content sidebar-content-show-archive">
+        <div class="sidebar-panel-archives">
+    <!-- 在 ejs 中将 archive 按照时间排序 -->
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    <div class="total-and-search">
+        <div class="total-archive">
+        Total : 49
+        </div>
+        <!-- search  -->
+    </div>
+    <div class="post-archive">
+            <div class="archive-year"> 2026 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/25</span>
+            <a class="archive-post-title" href="/2026/11/25/long-conversation-memory/">长对话怎么记：按时间压缩，按内容索引</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/24</span>
+            <a class="archive-post-title" href="/2026/11/24/agent-context-offloading/">Agent 上下文卸载：业界做法、学术进展与 magic-context 的缓存安全设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/23</span>
+            <a class="archive-post-title" href="/2026/11/23/reasoning-self-correction/">推理能帮 agent 纠偏，但成败取决于环境给不给依据</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/20</span>
+            <a class="archive-post-title" href="/2026/11/20/dynamic-tool-registration/">动态工具注册：把工具当成要检索的数据集</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/18</span>
+            <a class="archive-post-title" href="/2026/11/18/architecture-design-essentials/">架构设计要点：分析、综合与评估</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/09</span>
+            <a class="archive-post-title" href="/2026/11/09/vertical-saas-agent-research/">全球垂类 Agent / SaaS Agent 调研：需要关注什么</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/24</span>
+            <a class="archive-post-title" href="/2026/09/24/agent-sandbox-network-access-control/">Agent 沙箱网络访问控制：从凭证暴露面到凭证代理</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/02</span>
+            <a class="archive-post-title" href="/2026/06/02/claude-code-memory-research/">Claude Code 内置 Memory 深度研究：CLAUDE.md、Auto Memory 与上下文工程</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/21</span>
+            <a class="archive-post-title" href="/2026/05/21/agent-memory-frontier-survey/">Agent Memory 前沿调研：从长期记忆到经验系统</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/13</span>
+            <a class="archive-post-title" href="/2026/05/13/saas-agent-design-doc/">SaaS Agent 应该怎么设计：从竞品实践到生产级架构</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/12</span>
+            <a class="archive-post-title" href="/2026/05/12/saas-agent-sandbox-research/">SaaS Agent Sandbox 设计原则：不要把 Sandbox 当成容器</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/08</span>
+            <a class="archive-post-title" href="/2026/05/08/agent-engineer-interview-2026/">2026 Agent 开发工程师面试指南：从架构、MCP 到生产化</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/19</span>
+            <a class="archive-post-title" href="/2026/04/19/multi-agent-architecture-survey/">Multi-Agent LLM 系统架构全景调研（2023–2026）</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/14</span>
+            <a class="archive-post-title" href="/2026/04/14/llm-tool-calling-decision-bias/">LLM Agent 中 Skill/Tool 调用决策偏差：技术调研报告</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">04/12</span>
+            <a class="archive-post-title" href="/2026/04/12/harness-engineering/">Harness Engineering：当 AI 的缰绳比 AI 本身更重要</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span>
+            <a class="archive-post-title" href="/2026/03/30/coding-agent-evolution/">从代码到行动：Coding Agent 如何演变为通用数字助手</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2026/03/21/multi-agent-investment-research/">用 OpenAgents Workspace 协调多 Agent 投研</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/16</span>
+            <a class="archive-post-title" href="/2026/03/16/agent-loop-study/">Agent Loop 技术调研报告</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/14</span>
+            <a class="archive-post-title" href="/2026/03/14/harness-engineering-practical-guide/">Harness Engineering 实践指南：来自 OpenAI、Stripe、Anthropic 等团队的一线经验</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/17</span>
+            <a class="archive-post-title" href="/2026/01/17/trading-drawdown-control-guide/">交易回撤控制指南：认知、守心与仓位管理</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2025 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/28</span>
+            <a class="archive-post-title" href="/2025/12/28/code-execution-sandbox-mcp/">LLM-Driven Agent Architecture with Sandbox and MCP Integration</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/10</span>
+            <a class="archive-post-title" href="/2025/11/10/mcp-recent-sharing/">MCP 近期内容分享：从 Resources、Tools 到 Prompts 的实践探索</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/28</span>
+            <a class="archive-post-title" href="/2025/10/28/args_doc_format_comparison/">Tool Args Documentation Format Comparison Analysis</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">10/27</span>
+            <a class="archive-post-title" href="/2025/10/27/asgi_lifespan_complete_guide/">ASGI Lifespan 完整指南</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/mcp-output-schema/">MCP Output Schema：数据验证与结构化输出的技术实现</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/29</span>
+            <a class="archive-post-title" href="/2025/09/29/stop-converting-rest-api-to-mcp/">停止转换REST API到MCP：设计AI原生接口的正确方式</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span>
+            <a class="archive-post-title" href="/2025/09/20/llm-consistency-challenges-large-data-processing/">大型语言模型在处理大批量数据时的一致性挑战与解决方案</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2024 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/01</span>
+            <a class="archive-post-title" href="/2024/02/01/nextjs-pagination/">nextjs-pagination</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2023 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">09/20</span>
+            <a class="archive-post-title" href="/2023/09/20/smart-contract-demo/">smart-contract-demo</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">08/30</span>
+            <a class="archive-post-title" href="/2023/08/30/multi-tenant/">多租户应用与架构设计关注点</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2022 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/13</span>
+            <a class="archive-post-title" href="/2022/12/13/go-ddd/">go-ddd</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/07</span>
+            <a class="archive-post-title" href="/2022/12/07/git-rebase/">使用 `git pull --rebase`</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/03</span>
+            <a class="archive-post-title" href="/2022/12/03/opentelemetry-jaeger/">opnetelemetry-jaeger</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/09</span>
+            <a class="archive-post-title" href="/2022/06/09/ddd-thinking/">ddd-thinking</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/23</span>
+            <a class="archive-post-title" href="/2022/05/23/mvc-and-ddd/">mvc-and-ddd</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/13</span>
+            <a class="archive-post-title" href="/2022/02/13/commit-format-and-auto-changelog/">Git commit 规范</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">02/03</span>
+            <a class="archive-post-title" href="/2022/02/03/tight-lipped/">思考与交流</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/30</span>
+            <a class="archive-post-title" href="/2022/01/30/knowledge-breath-and-depth/">知识掌握的广度与深度</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2021 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">12/16</span>
+            <a class="archive-post-title" href="/2021/12/16/software-design-doc/">如何撰写技术设计文档</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/21</span>
+            <a class="archive-post-title" href="/2021/11/21/breaking-creation-product/">突破式创新的产品设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">07/15</span>
+            <a class="archive-post-title" href="/2021/07/15/parallel-and-asynchronous-python/">DRF Exception Handle</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/17</span>
+            <a class="archive-post-title" href="/2021/06/17/DRF-Exception/">DRF Exception Handle</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">06/15</span>
+            <a class="archive-post-title" href="/2021/06/15/Django-With-DDD/">Django With DDD</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">05/09</span>
+            <a class="archive-post-title" href="/2021/05/09/Agile-Design/">敏捷软件开发：设计</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/30</span>
+            <a class="archive-post-title" href="/2021/03/30/DRF-Bussiness-Logic/">Django Restful Framework Business Logic</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/21</span>
+            <a class="archive-post-title" href="/2021/03/21/graphql-and-restful/">Graphql and Restful API</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">03/08</span>
+            <a class="archive-post-title" href="/2021/03/08/grpc-hello-world/">grpc hello world</a>
+        </li>
+        <li class="archive-post-item">
+            <span class="archive-post-date">01/03</span>
+            <a class="archive-post-title" href="/2021/01/03/New-Coding-Language/">我如何学一门新的编程语言</a>
+        </li>
+                </ul>
+            <div class="archive-year"> 2020 </div>
+            <ul class="year-list">
+        <li class="archive-post-item">
+            <span class="archive-post-date">11/08</span>
+            <a class="archive-post-title" href="/2020/11/08/Agile-Dev/">敏捷开发辅助新项目验证与落地</a>
+        </li>
+            </ul>
+    </div>
+</div>
+
+        <div class="sidebar-panel-tags">
+    <div class="sidebar-tags-name">
+            <span class="sidebar-tag-name" data-tags="agile">
+                <span class="iconfont-archer">&#xe606;</span>
+                agile
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="LLM">
+                <span class="iconfont-archer">&#xe606;</span>
+                LLM
+            </span>
+            <span class="sidebar-tag-name" data-tags="Context Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Context Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="Prompt Caching">
+                <span class="iconfont-archer">&#xe606;</span>
+                Prompt Caching
+            </span>
+            <span class="sidebar-tag-name" data-tags="MCP">
+                <span class="iconfont-archer">&#xe606;</span>
+                MCP
+            </span>
+            <span class="sidebar-tag-name" data-tags="面试">
+                <span class="iconfont-archer">&#xe606;</span>
+                面试
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent Loop">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent Loop
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent Memory">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent Memory
+            </span>
+            <span class="sidebar-tag-name" data-tags="Memory System">
+                <span class="iconfont-archer">&#xe606;</span>
+                Memory System
+            </span>
+            <span class="sidebar-tag-name" data-tags="Security">
+                <span class="iconfont-archer">&#xe606;</span>
+                Security
+            </span>
+            <span class="sidebar-tag-name" data-tags="Credential Brokering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Credential Brokering
+            </span>
+            <span class="sidebar-tag-name" data-tags="Sandbox">
+                <span class="iconfont-archer">&#xe606;</span>
+                Sandbox
+            </span>
+            <span class="sidebar-tag-name" data-tags="Software Architecture">
+                <span class="iconfont-archer">&#xe606;</span>
+                Software Architecture
+            </span>
+            <span class="sidebar-tag-name" data-tags="Software Design">
+                <span class="iconfont-archer">&#xe606;</span>
+                Software Design
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Format">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Format
+            </span>
+            <span class="sidebar-tag-name" data-tags="ASGI, Python, FastAPI">
+                <span class="iconfont-archer">&#xe606;</span>
+                ASGI, Python, FastAPI
+            </span>
+            <span class="sidebar-tag-name" data-tags="Claude Code">
+                <span class="iconfont-archer">&#xe606;</span>
+                Claude Code
+            </span>
+            <span class="sidebar-tag-name" data-tags="Memory">
+                <span class="iconfont-archer">&#xe606;</span>
+                Memory
+            </span>
+            <span class="sidebar-tag-name" data-tags="Hooks">
+                <span class="iconfont-archer">&#xe606;</span>
+                Hooks
+            </span>
+            <span class="sidebar-tag-name" data-tags="Skills">
+                <span class="iconfont-archer">&#xe606;</span>
+                Skills
+            </span>
+            <span class="sidebar-tag-name" data-tags="thinking">
+                <span class="iconfont-archer">&#xe606;</span>
+                thinking
+            </span>
+            <span class="sidebar-tag-name" data-tags="Architecture">
+                <span class="iconfont-archer">&#xe606;</span>
+                Architecture
+            </span>
+            <span class="sidebar-tag-name" data-tags="Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI
+            </span>
+            <span class="sidebar-tag-name" data-tags="Harness Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Harness Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="DDD">
+                <span class="iconfont-archer">&#xe606;</span>
+                DDD
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Use">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Use
+            </span>
+            <span class="sidebar-tag-name" data-tags="Tool Calling">
+                <span class="iconfont-archer">&#xe606;</span>
+                Tool Calling
+            </span>
+            <span class="sidebar-tag-name" data-tags="Prompt Engineering">
+                <span class="iconfont-archer">&#xe606;</span>
+                Prompt Engineering
+            </span>
+            <span class="sidebar-tag-name" data-tags="OpenAgents">
+                <span class="iconfont-archer">&#xe606;</span>
+                OpenAgents
+            </span>
+            <span class="sidebar-tag-name" data-tags="投研">
+                <span class="iconfont-archer">&#xe606;</span>
+                投研
+            </span>
+            <span class="sidebar-tag-name" data-tags="Multi-Agent">
+                <span class="iconfont-archer">&#xe606;</span>
+                Multi-Agent
+            </span>
+            <span class="sidebar-tag-name" data-tags="AI Architecture">
+                <span class="iconfont-archer">&#xe606;</span>
+                AI Architecture
+            </span>
+            <span class="sidebar-tag-name" data-tags="multi-tenant">
+                <span class="iconfont-archer">&#xe606;</span>
+                multi-tenant
+            </span>
+            <span class="sidebar-tag-name" data-tags="可观测性">
+                <span class="iconfont-archer">&#xe606;</span>
+                可观测性
+            </span>
+            <span class="sidebar-tag-name" data-tags="opentelemetry">
+                <span class="iconfont-archer">&#xe606;</span>
+                opentelemetry
+            </span>
+            <span class="sidebar-tag-name" data-tags="Reasoning">
+                <span class="iconfont-archer">&#xe606;</span>
+                Reasoning
+            </span>
+            <span class="sidebar-tag-name" data-tags="Self-Correction">
+                <span class="iconfont-archer">&#xe606;</span>
+                Self-Correction
+            </span>
+            <span class="sidebar-tag-name" data-tags="SaaS">
+                <span class="iconfont-archer">&#xe606;</span>
+                SaaS
+            </span>
+            <span class="sidebar-tag-name" data-tags="系统设计">
+                <span class="iconfont-archer">&#xe606;</span>
+                系统设计
+            </span>
+            <span class="sidebar-tag-name" data-tags="产品设计">
+                <span class="iconfont-archer">&#xe606;</span>
+                产品设计
+            </span>
+            <span class="sidebar-tag-name" data-tags="API Design">
+                <span class="iconfont-archer">&#xe606;</span>
+                API Design
+            </span>
+            <span class="sidebar-tag-name" data-tags="Trading">
+                <span class="iconfont-archer">&#xe606;</span>
+                Trading
+            </span>
+            <span class="sidebar-tag-name" data-tags="Vertical AI">
+                <span class="iconfont-archer">&#xe606;</span>
+                Vertical AI
+            </span>
+            <span class="sidebar-tag-name" data-tags="Pricing">
+                <span class="iconfont-archer">&#xe606;</span>
+                Pricing
+            </span>
+            <span class="sidebar-tag-name" data-tags="Deep Research">
+                <span class="iconfont-archer">&#xe606;</span>
+                Deep Research
+            </span>
+    </div>
+    <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
+    <div class="tag-load-fail" style="display: none; color: #ccc; font-size: 0.6rem;">
+        缺失模块，请参考主题文档进行安装配置：https://github.com/fi3ework/hexo-theme-archer#%E5%AE%89%E8%A3%85%E4%B8%BB%E9%A2%98
+    </div> 
+    <div class="sidebar-tags-list"></div>
+</div>
+
+        <div class="sidebar-panel-categories">
+    <div class="sidebar-categories-name">
+        <span class="sidebar-category-name" data-categories="AI Agent">
+            <span class="iconfont-archer">&#xe60a;</span>
+            AI Agent
+        </span>
+        <span class="sidebar-category-name" data-categories="软件架构">
+            <span class="iconfont-archer">&#xe60a;</span>
+            软件架构
+        </span>
+        <span class="sidebar-category-name" data-categories="交易策略">
+            <span class="iconfont-archer">&#xe60a;</span>
+            交易策略
+        </span>
+    </div>
+    <div class="iconfont-archer sidebar-categories-empty">&#xe678;</div>
+    <div class="sidebar-categories-list"></div>
+</div>
+
+    </div>
+</div>
+
+        <!-- site-meta -->
+        <script>
+    var siteMetaRoot = "/"
+    if (siteMetaRoot === "undefined") {
+        siteMetaRoot = '/'
+    }
+    var siteMeta = {
+        url: "https://edison-a-n.github.io",
+        root: siteMetaRoot,
+        author: "Edison"
+    }
+</script>
+
+        <!-- import experimental options here -->
+        <!-- Custom Font -->
+
+        <!-- main func -->
+        <script src="/scripts/main.js"></script>
+        <!-- fancybox -->
+        <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0.36/dist/fancybox/fancybox.umd.js" onload="window.Fancybox.bind('[data-fancybox]')" defer></script>
+        <!-- algolia -->
+        <!-- busuanzi -->
+            <script src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" async></script>
+        <!-- async load share.js -->
+            <script src="/scripts/share.js" async></script>
+        <!-- mermaid -->
+            <script src='https://cdn.jsdelivr.net/npm/mermaid@8.11.0/dist/mermaid.min.js' onload="window.mermaid.initialize({theme: 'dark'})" async></script>
+    </body>
+</html>

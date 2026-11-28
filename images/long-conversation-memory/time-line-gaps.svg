@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 880 420" role="img" aria-label="已有做法和少有人做的两点：衰减只决定排序和去留、最近窗口固定；按年龄和重要度挑摘要档位、最近窗口随上下文占用伸缩" style="max-width:880px">
+<title>已有做法和少有人做的两点：衰减只决定排序和去留、最近窗口固定；按年龄和重要度挑摘要档位、最近窗口随上下文占用伸缩</title>
+<defs>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d1d5db"/></marker>
+</defs>
+<style>text{font-family:-apple-system, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'Noto Sans SC', sans-serif;}</style>
+<rect x="0" y="0" width="880" height="420" rx="14" fill="#111827"/>
+<text x="40" y="38" fill="#e5e7eb" font-size="15" text-anchor="start" font-weight="bold">时间线上：已有的做法，和少有人做的两点</text>
+<rect x="24" y="56" width="404" height="340" rx="10" fill="#1f2937" stroke="#374151" stroke-width="1.2"/>
+<text x="40" y="82" fill="#e5e7eb" font-size="14" text-anchor="start" font-weight="bold">已有的做法</text>
+<rect x="452" y="56" width="404" height="340" rx="10" fill="#1f2937" stroke="#ef5350" stroke-width="2"/>
+<text x="468" y="82" fill="#fca5a5" font-size="14" text-anchor="start" font-weight="bold">少有人做</text>
+<text x="40" y="110" fill="#e5e7eb" font-size="12" text-anchor="start" font-weight="normal">衰减决定的是：排第几、留不留</text>
+<rect x="40" y="122" width="220" height="24" rx="5" fill="#f5f5f5" stroke="#9e9e9e" stroke-width="1.5" opacity="1"/>
+<text x="50" y="139" fill="#424242" font-size="12" text-anchor="start" font-weight="normal">1. 记忆 A</text>
+<rect x="130" y="132" width="110" height="5" rx="2.5" fill="#d4d4d4"/>
+<rect x="40" y="152" width="220" height="24" rx="5" fill="#f5f5f5" stroke="#9e9e9e" stroke-width="1.5" opacity="1"/>
+<text x="50" y="169" fill="#424242" font-size="12" text-anchor="start" font-weight="normal">2. 记忆 B</text>
+<rect x="130" y="162" width="110" height="5" rx="2.5" fill="#d4d4d4"/>
+<rect x="40" y="182" width="220" height="24" rx="5" fill="#111827" stroke="#4b5563" stroke-width="1.5" opacity="1"/>
+<text x="50" y="199" fill="#9ca3af" font-size="12" text-anchor="start" font-weight="normal">3. 记忆 C</text>
+<rect x="130" y="192" width="110" height="5" rx="2.5" fill="#374151"/>
+<line x1="44" y1="194" x2="256" y2="194" stroke="#9ca3af" stroke-width="1.5"/>
+<text x="272" y="138" fill="#9ca3af" font-size="11" text-anchor="start" font-weight="normal">Generative Agents：</text>
+<text x="272" y="154" fill="#9ca3af" font-size="11" text-anchor="start" font-weight="normal">按分数排序</text>
+<text x="272" y="184" fill="#9ca3af" font-size="11" text-anchor="start" font-weight="normal">MemoryBank：</text>
+<text x="272" y="200" fill="#9ca3af" font-size="11" text-anchor="start" font-weight="normal">保留率低就丢</text>
+<text x="40" y="246" fill="#9ca3af" font-size="11" text-anchor="start" font-weight="normal">每条记忆的内容本身不变</text>
+<text x="40" y="268" fill="#e5e7eb" font-size="12" text-anchor="start" font-weight="normal">最近窗口：长度固定</text>
+<text x="40" y="296" fill="#9ca3af" font-size="11" text-anchor="start" font-weight="normal">占用 30%</text>
+<rect x="104" y="280" width="300" height="22" rx="4" fill="#111827" stroke="#4b5563" stroke-width="1.5" opacity="1"/>
+<rect x="284" y="280" width="120" height="22" rx="4" fill="#f5f5f5" stroke="#9e9e9e" stroke-width="1.5" opacity="1"/>
+<text x="40" y="330" fill="#9ca3af" font-size="11" text-anchor="start" font-weight="normal">占用 60%</text>
+<rect x="104" y="314" width="300" height="22" rx="4" fill="#111827" stroke="#4b5563" stroke-width="1.5" opacity="1"/>
+<rect x="284" y="314" width="120" height="22" rx="4" fill="#f5f5f5" stroke="#9e9e9e" stroke-width="1.5" opacity="1"/>
+<text x="40" y="364" fill="#9ca3af" font-size="11" text-anchor="start" font-weight="normal">占用 90%</text>
+<rect x="104" y="348" width="300" height="22" rx="4" fill="#111827" stroke="#4b5563" stroke-width="1.5" opacity="1"/>
+<rect x="284" y="348" width="120" height="22" rx="4" fill="#f5f5f5" stroke="#9e9e9e" stroke-width="1.5" opacity="1"/>
+<text x="104" y="386" fill="#9ca3af" font-size="11" text-anchor="start" font-weight="normal">灰色：原样保留的最近窗口</text>
+<text x="468" y="110" fill="#fca5a5" font-size="12" text-anchor="start" font-weight="normal">衰减决定的是：显示哪一档摘要</text>
+<text x="468" y="138" fill="#9ca3af" font-size="11" text-anchor="start" font-weight="normal">旧、不重要</text>
+<rect x="546" y="122" width="250" height="24" rx="5" fill="#ffebee" stroke="#c62828" stroke-width="1.5" opacity="1"/>
+<text x="556" y="138" fill="#b71c1c" font-size="12" text-anchor="start" font-weight="normal">一行锚点</text>
+<text x="468" y="168" fill="#9ca3af" font-size="11" text-anchor="start" font-weight="normal">旧、重要</text>
+<rect x="546" y="152" width="250" height="32" rx="5" fill="#ffebee" stroke="#c62828" stroke-width="1.5" opacity="1"/>
+<text x="556" y="168" fill="#b71c1c" font-size="12" text-anchor="start" font-weight="normal">简略摘要</text>
+<rect x="556" y="174" width="110" height="4" rx="2.5" fill="#f4b6bd"/>
+<text x="468" y="206" fill="#9ca3af" font-size="11" text-anchor="start" font-weight="normal">较新</text>
+<rect x="546" y="190" width="250" height="40" rx="5" fill="#ffebee" stroke="#c62828" stroke-width="1.5" opacity="1"/>
+<text x="556" y="206" fill="#b71c1c" font-size="12" text-anchor="start" font-weight="normal">完整摘要</text>
+<rect x="556" y="212" width="200" height="4" rx="2.5" fill="#f4b6bd"/>
+<rect x="556" y="223" width="150" height="4" rx="2.5" fill="#f4b6bd"/>
+<text x="468" y="246" fill="#9ca3af" font-size="11" text-anchor="start" font-weight="normal">每段预先写好几档，渲染时按年龄和重要度挑</text>
+<text x="468" y="268" fill="#fca5a5" font-size="12" text-anchor="start" font-weight="normal">最近窗口：上下文越满，留得越短</text>
+<text x="468" y="296" fill="#9ca3af" font-size="11" text-anchor="start" font-weight="normal">占用 30%</text>
+<rect x="532" y="280" width="300" height="22" rx="4" fill="#111827" stroke="#4b5563" stroke-width="1.5" opacity="1"/>
+<rect x="632" y="280" width="200" height="22" rx="4" fill="#ffebee" stroke="#c62828" stroke-width="1.5" opacity="1"/>
+<text x="468" y="330" fill="#9ca3af" font-size="11" text-anchor="start" font-weight="normal">占用 60%</text>
+<rect x="532" y="314" width="300" height="22" rx="4" fill="#111827" stroke="#4b5563" stroke-width="1.5" opacity="1"/>
+<rect x="702" y="314" width="130" height="22" rx="4" fill="#ffebee" stroke="#c62828" stroke-width="1.5" opacity="1"/>
+<text x="468" y="364" fill="#9ca3af" font-size="11" text-anchor="start" font-weight="normal">占用 90%</text>
+<rect x="532" y="348" width="300" height="22" rx="4" fill="#111827" stroke="#4b5563" stroke-width="1.5" opacity="1"/>
+<rect x="762" y="348" width="70" height="22" rx="4" fill="#ffebee" stroke="#c62828" stroke-width="1.5" opacity="1"/>
+<text x="532" y="386" fill="#9ca3af" font-size="11" text-anchor="start" font-weight="normal">论文里没找到，只在 magic-context 里见到</text>
+</svg>

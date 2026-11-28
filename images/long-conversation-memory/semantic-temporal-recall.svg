@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 880 330" role="img" aria-label="人回忆一串学过的词：想起一个词，会带出同类的词，也会带出学的时候紧挨着它的词，往后的比往前的多" style="max-width:880px">
+<title>人回忆一串学过的词：想起一个词，会带出同类的词，也会带出学的时候紧挨着它的词，往后的比往前的多</title>
+<defs>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d1d5db"/></marker>
+</defs>
+<style>text{font-family:-apple-system, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', 'Noto Sans SC', sans-serif;}</style>
+<rect x="0" y="0" width="880" height="330" rx="14" fill="#111827"/>
+<text x="40" y="38" fill="#e5e7eb" font-size="15" text-anchor="start" font-weight="bold">想起一个词之后，下一个会想起什么</text>
+<line x1="56" y1="210" x2="836" y2="210" stroke="#9ca3af" stroke-width="1.2" marker-end="url(#ar)"/>
+<text x="60" y="230" fill="#9ca3af" font-size="12" text-anchor="start" font-weight="normal">学的时候先后呈现的顺序</text>
+<rect x="60" y="150" width="64" height="36" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="1.2" opacity="1"/>
+<text x="92.0" y="173" fill="#b71c1c" font-size="13" text-anchor="middle" font-weight="normal">苹果</text>
+<rect x="142" y="150" width="64" height="36" rx="6" fill="#f5f5f5" stroke="#9e9e9e" stroke-width="1.2" opacity="1"/>
+<text x="174.0" y="173" fill="#424242" font-size="13" text-anchor="middle" font-weight="normal">锤子</text>
+<rect x="224" y="150" width="64" height="36" rx="6" fill="#374151" stroke="#6b7280" stroke-width="1.2" opacity="1"/>
+<text x="256.0" y="173" fill="#e5e7eb" font-size="13" text-anchor="middle" font-weight="normal">老虎</text>
+<rect x="306" y="150" width="64" height="36" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="3" opacity="1"/>
+<text x="338.0" y="173" fill="#b71c1c" font-size="13" text-anchor="middle" font-weight="bold">香蕉</text>
+<rect x="388" y="150" width="64" height="36" rx="6" fill="#f5f5f5" stroke="#9e9e9e" stroke-width="1.2" opacity="1"/>
+<text x="420.0" y="173" fill="#424242" font-size="13" text-anchor="middle" font-weight="normal">钳子</text>
+<rect x="470" y="150" width="64" height="36" rx="6" fill="#374151" stroke="#6b7280" stroke-width="1.2" opacity="1"/>
+<text x="502.0" y="173" fill="#e5e7eb" font-size="13" text-anchor="middle" font-weight="normal">狮子</text>
+<rect x="552" y="150" width="64" height="36" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="1.2" opacity="1"/>
+<text x="584.0" y="173" fill="#b71c1c" font-size="13" text-anchor="middle" font-weight="normal">葡萄</text>
+<rect x="634" y="150" width="64" height="36" rx="6" fill="#f5f5f5" stroke="#9e9e9e" stroke-width="1.2" opacity="1"/>
+<text x="666.0" y="173" fill="#424242" font-size="13" text-anchor="middle" font-weight="normal">扳手</text>
+<rect x="716" y="150" width="64" height="36" rx="6" fill="#374151" stroke="#6b7280" stroke-width="1.2" opacity="1"/>
+<text x="748.0" y="173" fill="#e5e7eb" font-size="13" text-anchor="middle" font-weight="normal">大象</text>
+<rect x="798" y="150" width="64" height="36" rx="6" fill="#ffebee" stroke="#c62828" stroke-width="1.2" opacity="1"/>
+<text x="830.0" y="173" fill="#b71c1c" font-size="13" text-anchor="middle" font-weight="normal">西瓜</text>
+<path d="M352.0,146 C358.0,110 400.0,110 414.0,146" fill="none" stroke="#e5e7eb" stroke-width="3.2" marker-end="url(#ar)"/>
+<path d="M324.0,146 C318.0,116 276.0,116 262.0,146" fill="none" stroke="#e5e7eb" stroke-width="1.6" marker-end="url(#ar)"/>
+<text x="428.0" y="106" fill="#e5e7eb" font-size="12" text-anchor="start" font-weight="normal">往后的邻居</text>
+<text x="428.0" y="122" fill="#e5e7eb" font-size="12" text-anchor="start" font-weight="normal">概率约是往前的两倍</text>
+<text x="246.0" y="112" fill="#e5e7eb" font-size="12" text-anchor="end" font-weight="normal">往前的邻居</text>
+<text x="40" y="72" fill="#e5e7eb" font-size="12" text-anchor="start" font-weight="normal">粗框的「香蕉」是刚想起的词。时间邻近（Kahana 1996）：带出学的时候紧挨着它的词</text>
+<path d="M338.0,190 C338.0,270 92.0,270 92.0,192" fill="none" stroke="#ef5350" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#ar)"/>
+<path d="M338.0,190 C338.0,270 584.0,270 584.0,192" fill="none" stroke="#ef5350" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#ar)"/>
+<path d="M338.0,190 C338.0,270 830.0,270 830.0,192" fill="none" stroke="#ef5350" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#ar)"/>
+<text x="40" y="286" fill="#fca5a5" font-size="12" text-anchor="start" font-weight="normal">同类聚集（Bousfield 1953）：带出同一类的词，不管学的时候隔多远</text>
+<text x="40" y="310" fill="#9ca3af" font-size="12" text-anchor="start" font-weight="normal">红色是水果。CMR 模型用同一个内部上下文同时解释这两种关联（Polyn 等 2009）</text>
+</svg>
